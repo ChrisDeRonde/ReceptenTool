@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
+import { icons } from "@/lib/icons";
 import { formatAmount, formatClock } from "@/lib/recipe/format";
 import { ingredientsForStep, type Recipe } from "@/lib/recipe/schema";
 
@@ -125,7 +127,8 @@ export function CookMode({
     <div className="cook">
       <header className="cook-bar">
         <Link href={backHref} className="cook-exit">
-          ✕ Stoppen
+          <Icon icon={icons.close} size={16} />
+          Stoppen
         </Link>
         <span className="cook-count">
           Stap {current + 1} van {recipe.steps.length}
@@ -188,40 +191,22 @@ export function CookMode({
         <p className="cook-text">{step.text}</p>
 
         {step.timerMinutes !== null && (
-          <section className={`cook-timer ${timer?.done ? "ringing" : ""}`}>
-            <div className="cook-timer-face">
-              <span>{timer?.done ? "Tijd is om" : "Tijd voor deze stap"}</span>
-              <strong>
-                {timer ? formatClock(remainingSeconds) : `${step.timerMinutes} min`}
-              </strong>
-            </div>
-            <div className="row">
-              {timer?.endsAt ? (
-                <button type="button" onClick={() => pauseTimer(current)}>
-                  Pauzeren
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => startTimer(current, step.timerMinutes as number)}
-                >
-                  {timer && !timer.done && timer.remaining > 0
-                    ? "Hervatten"
-                    : `Timer starten (${step.timerMinutes} min)`}
-                </button>
-              )}
-              {timer && (
-                <button type="button" className="secondary" onClick={() => clearTimer(current)}>
-                  Wissen
-                </button>
-              )}
-            </div>
-          </section>
+          <Timer
+            minutes={step.timerMinutes}
+            timer={timer}
+            remainingSeconds={remainingSeconds}
+            onStart={() => startTimer(current, step.timerMinutes as number)}
+            onPause={() => pauseTimer(current)}
+            onClear={() => clearTimer(current)}
+          />
         )}
 
         {step.tip && (
           <aside className="cook-tip">
-            <h2>Let op</h2>
+            <h2>
+              <Icon icon={icons.tip} size={14} />
+              Let op
+            </h2>
             <p>{step.tip}</p>
           </aside>
         )}
@@ -258,6 +243,7 @@ export function CookMode({
           disabled={current === 0}
           onClick={() => setCurrent((index) => Math.max(0, index - 1))}
         >
+          <Icon icon={icons.back} size={18} />
           Vorige
         </button>
         {isLast ? (
@@ -270,10 +256,89 @@ export function CookMode({
             onClick={() => setCurrent((index) => Math.min(recipe.steps.length - 1, index + 1))}
           >
             Volgende stap
+            <Icon icon={icons.next} size={18} />
           </button>
         )}
       </nav>
     </div>
+  );
+}
+
+/**
+ * Het timerblok bij een stap.
+ *
+ * Eén blok met drie standen: nog niet gestart, lopend (of gepauzeerd) en
+ * afgegaan. De tijd is het grootste element, de knoppen zijn ronde iconen
+ * ernaast, en zodra hij loopt zakt er een balkje leeg zodat je van een meter
+ * afstand ziet hoe ver hij is.
+ */
+function Timer({
+  minutes,
+  timer,
+  remainingSeconds,
+  onStart,
+  onPause,
+  onClear,
+}: {
+  minutes: number;
+  timer: TimerState | undefined;
+  remainingSeconds: number;
+  onStart: () => void;
+  onPause: () => void;
+  onClear: () => void;
+}) {
+  const running = timer?.endsAt != null;
+  const done = timer?.done ?? false;
+  const total = minutes * 60;
+  // Van vol naar leeg; buiten [0,1] houden voor het geval de klok verspringt.
+  const left = timer && !done ? Math.min(1, Math.max(0, remainingSeconds / total)) : done ? 0 : 1;
+
+  return (
+    <section className={`timer ${done ? "ringing" : ""}`}>
+      <div className="timer-top">
+        <div>
+          <span className="timer-label">
+            {done ? "Tijd is om" : running ? "Loopt" : "Tijd voor deze stap"}
+          </span>
+          <strong className="timer-clock">
+            {timer ? formatClock(remainingSeconds) : formatClock(total)}
+          </strong>
+        </div>
+
+        <div className="timer-buttons">
+          {running ? (
+            <button type="button" className="round" onClick={onPause} aria-label="Pauzeren">
+              <Icon icon={icons.pause} size={20} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="round primary"
+              onClick={onStart}
+              aria-label={done ? "Opnieuw starten" : "Timer starten"}
+            >
+              <Icon icon={done ? icons.reset : icons.play} size={20} />
+            </button>
+          )}
+          {timer && !done && (
+            <button type="button" className="round" onClick={onClear} aria-label="Timer wissen">
+              <Icon icon={icons.close} size={18} />
+            </button>
+          )}
+          {done && (
+            <button type="button" className="round" onClick={onClear} aria-label="Timer sluiten">
+              <Icon icon={icons.done} size={20} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {timer && (
+        <div className="timer-track" aria-hidden>
+          <span style={{ transform: `scaleX(${left})` }} />
+        </div>
+      )}
+    </section>
   );
 }
 

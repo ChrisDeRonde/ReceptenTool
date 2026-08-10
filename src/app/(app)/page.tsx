@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Icon } from "@/components/Icon";
 import { prisma } from "@/lib/db";
+import { icons } from "@/lib/icons";
 import {
   MEAL_TYPES,
   MEAL_TYPE_LABELS,
@@ -137,15 +139,18 @@ export default async function HomePage({
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={recipe.imageUrl} alt="" loading="lazy" />
                   ) : (
-                    <PlateIcon />
+                    <Icon icon={icons.plate} size={34} strokeWidth={1.2} />
                   )}
                   {recipe.favorite && (
-                    <span className="fav" aria-label="Favoriet">
-                      ★
+                    <span className="fav" title="Favoriet">
+                      <Icon icon={icons.favorite} size={14} />
                     </span>
                   )}
                   {recipe.totalMinutes && (
-                    <span className="clock">{recipe.totalMinutes} min</span>
+                    <span className="clock">
+                      <Icon icon={icons.clock} size={13} />
+                      {recipe.totalMinutes} min
+                    </span>
                   )}
                 </div>
                 <div className="tile-body">
@@ -158,16 +163,6 @@ export default async function HomePage({
         </div>
       )}
     </main>
-  );
-}
-
-/** Bordje met bestek, voor recepten zonder foto. */
-function PlateIcon() {
-  return (
-    <svg viewBox="0 0 48 48" aria-hidden focusable="false">
-      <circle cx="24" cy="24" r="14" />
-      <circle cx="24" cy="24" r="9" />
-    </svg>
   );
 }
 

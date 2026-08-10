@@ -43,18 +43,24 @@ handig om te zien waarom iets niet lukt zonder tokens te verbranden.
 
 ## Uiterlijk
 
-Rustig en zakelijk: wit als drager, haarlijnen in plaats van gevulde vlakken,
-één groen accent en verder geen kleur. Tekst is klein en licht van gewicht;
-witruimte doet het werk dat randen en schaduwen anders zouden doen.
+Zacht en zakelijk: warm papier in plaats van wit, pastelvlakken in plaats van
+verzadigde kleur, haarlijnen in plaats van randen. Eén salie-accent voor alles
+wat een actie is; zand en oudroze voor tips en alarm.
 
-Navigeren gaat via de tabbalk onderaan, met een teller als er iets in de inbox
-wacht. Het overzicht is een raster met foto's; heeft een recept er geen, dan
-staat er een dun bordje in plaats van een grijs gat. Filters zijn horizontaal
-scrollende chips, zodat tien maaltijdmomenten naast elkaar passen.
+Titels staan in **Newsreader** (schreef, met een optische as, dus grote koppen
+worden fijner getekend dan kleine), de rest in **Inter**. Beide staan als
+variabel woff2-bestand in `public/fonts` — latin-subset, samen ±180 kB, en er
+gaat bij het laden niets naar een externe server.
 
-Alle kleuren en maten zijn variabelen bovenin `src/app/globals.css`, in twee
-sets: licht en donker. Wil je een ander accent, dan verander je daar één regel.
-Er komen geen fonts of andere bestanden van buiten bij; het is de systeemletter.
+Iconen komen uit **Hugeicons**. Het pakket `@hugeicons/core-free-icons` levert
+ze als data (`[tag, attributen][]`); `src/components/Icon.tsx` tekent die zelf.
+Dat is bewust geen `@hugeicons/react`: die component gebruikt `forwardRef` en
+werkt daarmee niet in een server component, en zo staat er ook geen JavaScript
+voor iconen in de bundel. Welke icoon waarvoor dient staat in `src/lib/icons.ts`
+— heb je de Pro-set, dan wissel je daar de import en verandert er verder niets.
+
+Alle kleuren en maten zijn variabelen bovenin `src/app/globals.css`, in een
+lichte en een donkere set.
 
 ## Categorieën
 
@@ -107,10 +113,12 @@ dát moment nodig hebt, met dezelfde hoeveelheden als de hoofdlijst — de stap
 verwijst ernaar in plaats van ze te kopiëren, zodat er niets uit de pas kan
 lopen.
 
-Heeft een stap een wachttijd, dan zit er een timer bij. Die blijft doorlopen als
-je naar een volgende stap gaat: bovenin verschijnt een knopje met de resterende
-tijd waarmee je terugspringt. Als hij afgaat piept en trilt de telefoon en
-kleurt de timer rood. Het scherm blijft aan zolang je in kookmodus zit.
+Heeft een stap een wachttijd, dan zit er een timer bij: de tijd groot, twee
+ronde knoppen ernaast en een balkje dat leegloopt zodat je van een meter afstand
+ziet hoe ver hij is. Hij blijft doorlopen als je naar een volgende stap gaat —
+bovenin verschijnt dan een knopje met de resterende tijd waarmee je terugspringt.
+Als hij afgaat piept en trilt de telefoon en kleurt het blok oudroze. Het scherm
+blijft aan zolang je in kookmodus zit.
 
 Deze modus leunt op drie velden per stap (`ingredientRefs`, `timerMinutes`,
 `tip`) die het model invult. Recepten van vóór deze functie missen die en
@@ -151,6 +159,8 @@ op dezelfde endpoint worden aangesloten.
 | `src/app/recepten/[id]/koken/` | Kookmodus. Valt buiten `(app)` zodat er geen chrome boven staat. |
 | `src/components/CookMode.tsx` | Stapnavigatie, timers, wake lock.                         |
 | `src/components/TabBar.tsx`  | De tabbalk onderaan; weet welke pagina actief is.           |
+| `src/components/Icon.tsx`    | Tekent één Hugeicon; werkt in server components.            |
+| `src/lib/icons.ts`           | Welk icoon waarvoor. Eén plek om ze te wisselen.            |
 | `src/app/globals.css`        | **Het uiterlijk.** Kleuren en maten staan bovenin.          |
 | `src/lib/recipe/scale.ts`    | Porties omrekenen en afronden op kookbare hoeveelheden.    |
 | `src/lib/recipe/categories.ts` | Maaltijdmomenten en keukens: vocabulaire en normalisatie. |

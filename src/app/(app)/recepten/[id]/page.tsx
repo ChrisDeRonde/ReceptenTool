@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { toggleFavorite } from "@/app/actions";
 import { CategoryEditor } from "@/components/CategoryEditor";
+import { Icon } from "@/components/Icon";
 import { prisma } from "@/lib/db";
+import { icons } from "@/lib/icons";
 import { MEAL_TYPE_LABELS, unpackMealTypes } from "@/lib/recipe/categories";
 import { formatAmount } from "@/lib/recipe/format";
 import {
@@ -61,7 +63,8 @@ export default async function RecipePage({
       {/* De tabbalk brengt je ook terug, maar niet naar de filter waar je
           vandaan kwam; deze link houdt de weg terug kort. */}
       <Link href="/" className="back">
-        ← Alle recepten
+        <Icon icon={icons.back} size={16} />
+        Alle recepten
       </Link>
 
       <article className="hero">
@@ -104,7 +107,7 @@ export default async function RecipePage({
               aria-label={row.favorite ? "Uit favorieten halen" : "Favoriet maken"}
               title={row.favorite ? "Uit favorieten halen" : "Favoriet maken"}
             >
-              {row.favorite ? "★" : "☆"}
+              <Icon icon={icons.favorite} size={19} />
             </button>
           </form>
           {row.sourceUrl && (
@@ -116,7 +119,7 @@ export default async function RecipePage({
               aria-label={`Bron${row.sourceName ? `: ${row.sourceName}` : ""}`}
               title={row.sourceName ?? row.sourceUrl}
             >
-              ↗
+              <Icon icon={icons.source} size={19} />
             </a>
           )}
         </div>
@@ -136,7 +139,7 @@ export default async function RecipePage({
                 className={servings <= MIN_SERVINGS ? "off" : ""}
                 aria-label="Eén persoon minder"
               >
-                −
+                <Icon icon={icons.minus} size={16} />
               </Link>
               <strong>{servings}</strong>
               <Link
@@ -145,7 +148,7 @@ export default async function RecipePage({
                 className={servings >= MAX_SERVINGS ? "off" : ""}
                 aria-label="Eén persoon meer"
               >
-                +
+                <Icon icon={icons.plus} size={16} />
               </Link>
             </div>
           </div>

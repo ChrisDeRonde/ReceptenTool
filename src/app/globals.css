@@ -1,53 +1,85 @@
 /* ==========================================================================
    Huisstijl
    --------------------------------------------------------------------------
-   Rustig en zakelijk. Wit als drager, haarlijnen in plaats van vlakken, één
-   groen accent en verder geen kleur. Tekst is licht van gewicht en klein van
-   maat; ruimte doet het werk dat randen en schaduwen anders zouden doen.
+   Zacht en zakelijk. Warm papier als drager, pastelvlakken in plaats van
+   verzadigde kleur, haarlijnen in plaats van randen. Titels in Newsreader
+   (schreef, met optische maat), de rest in Inter. Beide staan lokaal in
+   public/fonts — er gaat niets naar buiten.
    Wat je aantikt blijft minstens 44px hoog, ook als het er licht uitziet.
    ========================================================================== */
 
-:root {
-  --bg: #f8faf9;
-  --surface: #ffffff;
-  --sunken: #f0f4f2;
-  --line: #e4e9e7;
-  --ink: #1c2320;
-  --muted: #79847f;
-  --accent: #12795f;
-  --accent-ink: #ffffff;
-  --accent-soft: #dcede6;
-  --danger: #a6342b;
-  --danger-soft: #f7ecea;
+/* Variabele fonts, latin-subset. `swap` zodat tekst nooit onzichtbaar wacht. */
+@font-face {
+  font-family: "Newsreader";
+  src: url("/fonts/newsreader-latin.woff2") format("woff2-variations");
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
 
-  --r-sm: 6px;
-  --r-md: 10px;
-  --r-lg: 14px;
-  --shadow: 0 1px 2px rgb(28 35 32 / 5%);
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/inter-latin.woff2") format("woff2-variations");
+  font-weight: 300 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Warm papier, geen wit. Het scheelt de hardheid van #fff tegen zwart. */
+  --bg: #faf7f2;
+  --surface: #fffdfa;
+  --sunken: #f2ede4;
+  --line: #e9e2d6;
+  --ink: #33302b;
+  --muted: #8a8378;
+
+  /* Salie: donker genoeg voor tekst op papier, met een pastelvlak ernaast. */
+  --accent: #4f7a68;
+  --accent-ink: #fffdfa;
+  --accent-soft: #e2ece5;
+
+  /* Twee pasteltinten voor accenten die geen actie zijn. */
+  --sand: #f4e9d7;
+  --blush: #f6e2da;
+
+  --danger: #a3564a;
+  --danger-soft: #f6e2da;
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --shadow: 0 1px 2px rgb(51 48 43 / 5%);
 
   --maxw: 44rem;
   --gutter: 1.35rem;
   --dock: 3.9rem;
 
-  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto,
-    system-ui, sans-serif;
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+    sans-serif;
+  --font-display: "Newsreader", ui-serif, Georgia, "Times New Roman", serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #101413;
-    --surface: #161b19;
-    --sunken: #1b2220;
-    --line: #262e2b;
-    --ink: #e7ecea;
-    --muted: #8b9793;
-    --accent: #47a888;
-    --accent-ink: #06231b;
-    --accent-soft: #17302a;
-    --danger: #e08b82;
-    --danger-soft: #2a1a18;
+    --bg: #1a1917;
+    --surface: #211f1c;
+    --sunken: #282520;
+    --line: #332f29;
+    --ink: #ece7df;
+    --muted: #9c948a;
 
-    --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+    --accent: #8fb9a3;
+    --accent-ink: #17241e;
+    --accent-soft: #26332c;
+
+    --sand: #322c22;
+    --blush: #33241f;
+
+    --danger: #d9917f;
+    --danger-soft: #33241f;
+
+    --shadow: 0 1px 2px rgb(0 0 0 / 35%);
   }
 }
 
@@ -68,6 +100,7 @@ body {
   font-size: 16px;
   font-weight: 400;
   line-height: 1.6;
+  font-optical-sizing: auto;
   -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
 }
@@ -77,13 +110,16 @@ a {
   text-underline-offset: 0.2em;
 }
 
+/* Koppen in de schreefletter; die geeft het geheel zijn rust en gezicht.
+   Newsreader heeft een optische as, dus grote koppen worden vanzelf fijner
+   getekend dan kleine. */
 h1,
 h2,
 h3 {
-  /* Halfvet is genoeg. Het onderscheid komt uit maat en witruimte. */
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.25;
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.2;
   margin: 0;
 }
 
@@ -143,10 +179,6 @@ h3 {
 
 .dock svg {
   display: block;
-  /* Dunne lijnen; de vorm mag niet schreeuwen. */
-  stroke-width: 1.4;
-  fill: none;
-  stroke: currentcolor;
 }
 
 .dock .count {
@@ -172,8 +204,8 @@ h3 {
 }
 
 .page-head h1 {
-  font-size: 1.55rem;
-  font-weight: 600;
+  /* Schreefletter draagt wat meer maat dan de schreefloze. */
+  font-size: 1.95rem;
 }
 
 .page-head p {
@@ -265,7 +297,7 @@ h3 {
   color: var(--muted);
 }
 
-.thumb.blank svg {
+.thumb.blank > svg {
   width: 2.5rem;
   height: 2.5rem;
   stroke: currentcolor;
@@ -277,9 +309,12 @@ h3 {
 .thumb .fav,
 .thumb .clock {
   position: absolute;
-  color: #fff;
   font-size: 0.72rem;
   line-height: 1;
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
 }
 
 .thumb .fav {
@@ -287,22 +322,20 @@ h3 {
   right: 0.5rem;
   display: grid;
   place-items: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: var(--r-sm);
-  background: var(--surface);
+  width: 1.6rem;
+  height: 1.6rem;
   color: var(--accent);
-  font-size: 0.8rem;
 }
 
 .thumb .clock {
-  left: 0.6rem;
-  bottom: 0.6rem;
-  padding: 0.2rem 0.45rem;
-  border-radius: var(--r-sm);
-  background: rgb(20 26 24 / 55%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  padding: 0.25rem 0.55rem;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
-  backdrop-filter: blur(3px);
 }
 
 .tile-body {
@@ -310,9 +343,8 @@ h3 {
 }
 
 .tile-body h2 {
-  font-size: 0.92rem;
-  font-weight: 500;
-  line-height: 1.35;
+  font-size: 1.05rem;
+  line-height: 1.3;
 }
 
 .tile-body .sub {
@@ -326,6 +358,7 @@ h3 {
 .back {
   display: inline-flex;
   align-items: center;
+  gap: 0.35rem;
   min-height: 2.2rem;
   margin-bottom: 0.75rem;
   color: var(--muted);
@@ -343,8 +376,7 @@ h3 {
 }
 
 .hero h1 {
-  font-size: 1.55rem;
-  font-weight: 600;
+  font-size: 2rem;
 }
 
 .hero .lede {
@@ -447,12 +479,12 @@ h3 {
 }
 
 h2.section {
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1.3rem;
   margin: 2.25rem 0 0.85rem;
 }
 
 h3.group {
+  font-family: var(--font);
   font-size: 0.7rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -512,6 +544,7 @@ ol.steps li::before {
 ol.steps li strong {
   display: block;
   font-weight: 600;
+  letter-spacing: -0.005em;
 }
 
 .step-time {
@@ -537,6 +570,7 @@ ol.steps li strong {
 }
 
 .callout h3 {
+  font-family: var(--font);
   margin: 0 0 0.4rem;
   font-size: 0.7rem;
   font-weight: 500;
@@ -642,8 +676,15 @@ button.icon,
 }
 
 button.icon.on {
+  background: var(--accent-soft);
+  border-color: transparent;
   color: var(--accent);
-  border-color: var(--accent);
+}
+
+/* Aan = gevuld. De set tekent met lijnen, dus vullen doen we hier. */
+button.icon.on svg *,
+.thumb .fav svg * {
+  fill: currentcolor;
 }
 
 form.stack {
@@ -727,10 +768,18 @@ form.stack {
 }
 
 .category-editor summary {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   cursor: pointer;
   color: var(--muted);
   font-size: 0.85rem;
   padding: 0.6rem 0;
+  list-style: none;
+}
+
+.category-editor summary::-webkit-details-marker {
+  display: none;
 }
 
 .category-editor form {
@@ -819,6 +868,7 @@ form.stack {
 .cook-exit {
   display: inline-flex;
   align-items: center;
+  gap: 0.35rem;
   min-height: 2.4rem;
   text-decoration: none;
   color: var(--muted);
@@ -859,9 +909,9 @@ form.stack {
 }
 
 .cook-elsewhere .chip.ringing {
-  background: var(--danger);
-  border-color: var(--danger);
-  color: #fff;
+  background: var(--blush);
+  border-color: var(--blush);
+  color: var(--danger);
 }
 
 .cook-step {
@@ -869,8 +919,7 @@ form.stack {
 }
 
 .cook-step h1 {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.75rem;
   margin-bottom: 1.1rem;
 }
 
@@ -889,6 +938,7 @@ form.stack {
 
 .cook-ingredients h2,
 .cook-tip h2 {
+  font-family: var(--font);
   margin: 0 0 0.5rem;
   font-size: 0.68rem;
   font-weight: 500;
@@ -916,20 +966,23 @@ form.stack {
   font-variant-numeric: tabular-nums;
 }
 
-.cook-timer {
+/* Het timerblok: één pastelvlak, de tijd als grootste element, ronde
+   icoonknoppen ernaast en een balkje dat leegloopt. */
+.timer {
+  background: var(--accent-soft);
+  border-radius: var(--r-lg);
+  padding: 1rem 1.15rem 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.timer-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  flex-wrap: wrap;
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  background: var(--surface);
-  padding: 1rem 1.15rem;
-  margin-bottom: 1.5rem;
 }
 
-.cook-timer-face span {
+.timer-label {
   display: block;
   font-size: 0.68rem;
   text-transform: uppercase;
@@ -937,39 +990,86 @@ form.stack {
   color: var(--muted);
 }
 
-.cook-timer-face strong {
-  font-size: 2.1rem;
-  font-weight: 400;
+.timer-clock {
+  display: block;
+  font-size: 2.6rem;
+  font-weight: 300;
   letter-spacing: -0.02em;
+  line-height: 1.15;
   font-variant-numeric: tabular-nums;
-  line-height: 1.2;
 }
 
-/* Knoppen rechts uitlijnen, ook als ze onder de klok omvallen. */
-.cook-timer .row {
-  margin-left: auto;
+.timer-buttons {
+  display: flex;
+  gap: 0.5rem;
 }
 
-.cook-timer.ringing {
-  border-color: var(--danger);
+button.round {
+  width: 2.9rem;
+  height: 2.9rem;
+  min-height: 0;
+  padding: 0;
+  border-radius: 999px;
+  background: var(--surface);
+  border-color: transparent;
+  color: var(--ink);
 }
 
-.cook-timer.ringing .cook-timer-face span,
-.cook-timer.ringing .cook-timer-face strong {
+button.round.primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.timer-track {
+  height: 3px;
+  border-radius: 999px;
+  background: rgb(51 48 43 / 10%);
+  margin-top: 0.9rem;
+  overflow: hidden;
+}
+
+.timer-track span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transform-origin: left;
+  transition: transform 0.3s linear;
+}
+
+.timer.ringing {
+  background: var(--blush);
+  animation: breathe 1.6s ease-in-out infinite;
+}
+
+.timer.ringing .timer-label,
+.timer.ringing .timer-clock {
   color: var(--danger);
 }
 
-.cook-timer.ringing button {
-  background: var(--danger);
-  border-color: var(--danger);
-  color: #fff;
+@keyframes breathe {
+  50% {
+    opacity: 0.75;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timer.ringing {
+    animation: none;
+  }
 }
 
 .cook-tip {
-  background: var(--accent-soft);
-  border-radius: var(--r-md);
+  background: var(--sand);
+  border-radius: var(--r-lg);
   padding: 0.9rem 1.15rem;
   margin-bottom: 1.5rem;
+}
+
+.cook-tip h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .cook-tip p {

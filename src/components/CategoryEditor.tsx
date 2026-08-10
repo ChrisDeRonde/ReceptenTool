@@ -1,4 +1,6 @@
 import { updateCategories } from "@/app/actions";
+import { Icon } from "@/components/Icon";
+import { icons } from "@/lib/icons";
 import {
   CUISINE_SUGGESTIONS,
   MEAL_TYPES,
@@ -24,7 +26,10 @@ export function CategoryEditor({
 }) {
   return (
     <details className="category-editor">
-      <summary>Indeling aanpassen</summary>
+      <summary>
+        <Icon icon={icons.settings} size={16} />
+        Indeling aanpassen
+      </summary>
 
       <form action={updateCategories}>
         <input type="hidden" name="id" value={recipeId} />

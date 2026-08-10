@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { addSource, deleteItem, retryItem } from "@/app/actions";
+import { Icon } from "@/components/Icon";
 import { prisma } from "@/lib/db";
+import { icons } from "@/lib/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -110,7 +112,10 @@ export default async function InboxPage() {
                     />
                   )}
                   <div className="row">
-                    <button type="submit">Opnieuw proberen</button>
+                    <button type="submit" className="secondary">
+                      <Icon icon={icons.reset} size={16} />
+                      Opnieuw proberen
+                    </button>
                   </div>
                 </form>
               )}
@@ -118,6 +123,7 @@ export default async function InboxPage() {
               <form action={deleteItem} style={{ marginTop: "0.5rem" }}>
                 <input type="hidden" name="id" value={item.id} />
                 <button type="submit" className="quiet">
+                  <Icon icon={icons.delete} size={15} />
                   Verwijderen
                 </button>
               </form>
