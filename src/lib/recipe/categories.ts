@@ -36,6 +36,23 @@ export const MEAL_TYPE_LABELS: Record<MealType, string> = {
   basis: "Basis",
 };
 
+/**
+ * Eén emoji per moment. Puur voor de UI: op een rij filterchips scheelt een
+ * icoontje meer dan kleur, en het geeft een recept zonder foto toch een gezicht.
+ */
+export const MEAL_TYPE_EMOJI: Record<MealType, string> = {
+  ontbijt: "🍳",
+  lunch: "🥪",
+  diner: "🍝",
+  bijgerecht: "🥗",
+  snack: "🍿",
+  borrelhapje: "🫒",
+  dessert: "🍰",
+  bakken: "🥐",
+  drank: "🥤",
+  basis: "🧂",
+};
+
 /** Korte uitleg bij de minder vanzelfsprekende momenten, voor de prompt. */
 export const MEAL_TYPE_HINTS: Partial<Record<MealType, string>> = {
   bakken: "brood, taart, koek — het bakwerk zelf, ook als het geen nagerecht is",

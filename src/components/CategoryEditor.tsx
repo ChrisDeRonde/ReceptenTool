@@ -2,6 +2,7 @@ import { updateCategories } from "@/app/actions";
 import {
   CUISINE_SUGGESTIONS,
   MEAL_TYPES,
+  MEAL_TYPE_EMOJI,
   MEAL_TYPE_LABELS,
   type MealType,
 } from "@/lib/recipe/categories";
@@ -24,30 +25,35 @@ export function CategoryEditor({
 }) {
   return (
     <details className="category-editor">
-      <summary className="sans">Indeling aanpassen</summary>
+      <summary>Indeling aanpassen</summary>
 
       <form action={updateCategories}>
         <input type="hidden" name="id" value={recipeId} />
 
         <fieldset>
-          <legend className="sans">Wanneer eet je dit?</legend>
+          <legend className="eyebrow">Wanneer eet je dit?</legend>
           <div className="checks">
+            {/* Vinkjes vermomd als chips: dezelfde vorm als de filters op het
+                overzicht, en groot genoeg voor een duim. */}
             {MEAL_TYPES.map((type) => (
-              <label key={type} className="check sans">
+              <label key={type} className="check">
                 <input
                   type="checkbox"
                   name="mealTypes"
                   value={type}
                   defaultChecked={mealTypes.includes(type)}
                 />
-                {MEAL_TYPE_LABELS[type]}
+                <span>
+                  <span aria-hidden>{MEAL_TYPE_EMOJI[type]}</span>
+                  {MEAL_TYPE_LABELS[type]}
+                </span>
               </label>
             ))}
           </div>
         </fieldset>
 
         <fieldset>
-          <legend className="sans">Keuken</legend>
+          <legend className="eyebrow">Keuken</legend>
           {/* Een datalist in plaats van een select: suggesties waar je uit kunt
               kiezen, maar je kunt ook zelf iets typen dat er niet bij staat. */}
           <input
@@ -65,7 +71,9 @@ export function CategoryEditor({
           </datalist>
         </fieldset>
 
-        <button type="submit">Indeling opslaan</button>
+        <div className="row">
+          <button type="submit">Indeling opslaan</button>
+        </div>
       </form>
     </details>
   );

@@ -12,8 +12,8 @@ export const viewport: Viewport = {
   // Kookmodus staat tot in de hoeken; de veilige zones regelen we in CSS.
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fbfaf8" },
-    { media: "(prefers-color-scheme: dark)", color: "#16140f" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f3ee" },
+    { media: "(prefers-color-scheme: dark)", color: "#13110e" },
   ],
 };
 

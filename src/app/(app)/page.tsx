@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import {
   MEAL_TYPES,
+  MEAL_TYPE_EMOJI,
   MEAL_TYPE_LABELS,
   normalizeMealType,
   unpackMealTypes,
@@ -19,22 +20,17 @@ export default async function HomePage({
   const mealFilter = readMealFilter(query.maaltijd);
   const cuisineFilter = readOne(query.keuken);
 
-  const [allRecipes, openItems] = await Promise.all([
-    prisma.recipe.findMany({
-      // Keuken is één waarde, dus die filtert exact in SQL. Maaltijdmomenten
-      // staan komma-gescheiden in één kolom; `contains` narrowt, waarna we
-      // hieronder op hele waarden filteren zodat een deelwoord nooit meetelt.
-      where: {
-        ...(cuisineFilter ? { cuisine: cuisineFilter } : {}),
-        ...(mealFilter ? { mealTypes: { contains: mealFilter } } : {}),
-      },
-      orderBy: [{ favorite: "desc" }, { createdAt: "desc" }],
-      take: 200,
-    }),
-    prisma.shareItem.count({
-      where: { status: { in: ["pending", "processing", "needs_input", "failed"] } },
-    }),
-  ]);
+  const allRecipes = await prisma.recipe.findMany({
+    // Keuken is één waarde, dus die filtert exact in SQL. Maaltijdmomenten
+    // staan komma-gescheiden in één kolom; `contains` narrowt, waarna we
+    // hieronder op hele waarden filteren zodat een deelwoord nooit meetelt.
+    where: {
+      ...(cuisineFilter ? { cuisine: cuisineFilter } : {}),
+      ...(mealFilter ? { mealTypes: { contains: mealFilter } } : {}),
+    },
+    orderBy: [{ favorite: "desc" }, { createdAt: "desc" }],
+    take: 200,
+  });
 
   const recipes = mealFilter
     ? allRecipes.filter((recipe) =>
@@ -63,48 +59,45 @@ export default async function HomePage({
 
   return (
     <main>
-      {openItems > 0 && (
-        <p className="sans" style={{ marginTop: 0 }}>
-          <Link href="/inbox">
-            {openItems} {openItems === 1 ? "item wacht" : "items wachten"} in de
-            inbox →
-          </Link>
+      <div className="page-head">
+        <h1>Wat eten we?</h1>
+        <p>
+          {recipes.length} {recipes.length === 1 ? "recept" : "recepten"}
+          {filtering && " in deze selectie"}
         </p>
-      )}
+      </div>
 
-      {(usedMealTypes.length > 0 || usedCuisines.length > 0) && (
-        <div className="filters sans">
-          {usedMealTypes.length > 0 && (
-            <div className="filter-row">
-              {usedMealTypes.map((type) => (
-                <Link
-                  key={type}
-                  href={href({ maaltijd: mealFilter === type ? null : type })}
-                  className={`chip-link ${mealFilter === type ? "on" : ""}`}
-                >
-                  {MEAL_TYPE_LABELS[type]}
-                </Link>
-              ))}
-            </div>
-          )}
-          {usedCuisines.length > 0 && (
-            <div className="filter-row">
-              {usedCuisines.map((cuisine) => (
-                <Link
-                  key={cuisine}
-                  href={href({ keuken: cuisineFilter === cuisine ? null : cuisine })}
-                  className={`chip-link ${cuisineFilter === cuisine ? "on" : ""}`}
-                >
-                  {cuisine}
-                </Link>
-              ))}
-            </div>
-          )}
+      {usedMealTypes.length > 0 && (
+        <div className="rail">
           {filtering && (
-            <Link href="/" className="clear-filter">
-              Filter wissen
+            <Link href="/" className="chip ghost">
+              Alles
             </Link>
           )}
+          {usedMealTypes.map((type) => (
+            <Link
+              key={type}
+              href={href({ maaltijd: mealFilter === type ? null : type })}
+              className={`chip ${mealFilter === type ? "on" : ""}`}
+            >
+              <span aria-hidden>{MEAL_TYPE_EMOJI[type]}</span>
+              {MEAL_TYPE_LABELS[type]}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {usedCuisines.length > 0 && (
+        <div className="rail">
+          {usedCuisines.map((cuisine) => (
+            <Link
+              key={cuisine}
+              href={href({ keuken: cuisineFilter === cuisine ? null : cuisine })}
+              className={`chip ${cuisineFilter === cuisine ? "on" : ""}`}
+            >
+              {cuisine}
+            </Link>
+          ))}
         </div>
       )}
 
@@ -112,15 +105,21 @@ export default async function HomePage({
         <div className="empty">
           {filtering ? (
             <>
-              <p>Geen recepten in deze categorie.</p>
-              <p className="sans">
+              <span className="big" aria-hidden>
+                🤷
+              </span>
+              <p>Niks in deze categorie.</p>
+              <p>
                 <Link href="/">Toon alles</Link>
               </p>
             </>
           ) : (
             <>
+              <span className="big" aria-hidden>
+                🍳
+              </span>
               <p>Nog geen recepten.</p>
-              <p className="sans">
+              <p>
                 Deel een link vanuit Instagram, de AH-app of Safari, of{" "}
                 <Link href="/inbox">voeg er handmatig een toe</Link>.
               </p>
@@ -128,31 +127,47 @@ export default async function HomePage({
           )}
         </div>
       ) : (
-        recipes.map((recipe) => (
-          <Link
-            key={recipe.id}
-            href={`/recepten/${recipe.id}`}
-            className="card"
-          >
-            <h2>
-              {recipe.favorite && "★ "}
-              {recipe.title}
-            </h2>
-            {recipe.description && <p>{recipe.description}</p>}
-            <div className="meta">
-              {recipe.cuisine && <span>{recipe.cuisine}</span>}
-              {unpackMealTypes(recipe.mealTypes).length > 0 && (
-                <span>
-                  {unpackMealTypes(recipe.mealTypes)
-                    .map((type) => MEAL_TYPE_LABELS[type])
-                    .join(" · ")}
-                </span>
-              )}
-              {recipe.servings && <span>{recipe.servings} personen</span>}
-              {recipe.totalMinutes && <span>{recipe.totalMinutes} min</span>}
-            </div>
-          </Link>
-        ))
+        <div className="grid">
+          {recipes.map((recipe) => {
+            const mealTypes = unpackMealTypes(recipe.mealTypes);
+            const sub = [recipe.cuisine, ...mealTypes.map((t) => MEAL_TYPE_LABELS[t])]
+              .filter(Boolean)
+              .join(" · ");
+
+            return (
+              <Link
+                key={recipe.id}
+                href={`/recepten/${recipe.id}`}
+                className="tile"
+              >
+                <div className={`thumb ${recipe.imageUrl ? "" : "blank"}`}>
+                  {recipe.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={recipe.imageUrl} alt="" loading="lazy" />
+                  ) : (
+                    // Zonder foto geeft de emoji van het maaltijdmoment het
+                    // kaartje toch iets herkenbaars.
+                    <span aria-hidden>
+                      {mealTypes[0] ? MEAL_TYPE_EMOJI[mealTypes[0]] : "🍽️"}
+                    </span>
+                  )}
+                  {recipe.favorite && (
+                    <span className="fav" aria-label="Favoriet">
+                      ★
+                    </span>
+                  )}
+                  {recipe.totalMinutes && (
+                    <span className="clock">{recipe.totalMinutes} min</span>
+                  )}
+                </div>
+                <div className="tile-body">
+                  <h2>{recipe.title}</h2>
+                  {sub && <p className="sub">{sub}</p>}
+                </div>
+              </Link>
+            );
+          })}
+        </div>
       )}
     </main>
   );

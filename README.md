@@ -41,6 +41,22 @@ en waarop ze afketsten. Details en uitbreiden: **[docs/scraper.md](docs/scraper.
 Met `/api/extract-preview` test je een bron zonder een modelaanroep te doen —
 handig om te zien waarom iets niet lukt zonder tokens te verbranden.
 
+## Uiterlijk
+
+Telefoon-eerst, één schreefloze familie, hiërarchie uit gewicht in plaats van
+uit lijntjes. Navigeren doe je met het zwevende blokje onderaan — op een
+telefoon zit dat waar je duim al is — met een teller erop als er iets in de
+inbox wacht.
+
+Het overzicht is een raster met foto's; heeft een recept er geen, dan krijgt
+het de emoji van zijn maaltijdmoment in plaats van een grijs gat. De filters
+zijn horizontaal scrollende chips, zodat tien maaltijdmomenten naast elkaar
+passen zonder de pagina uit elkaar te trekken.
+
+Alle kleuren zijn variabelen bovenin `src/app/globals.css`, in twee sets: licht
+en donker. Eén warm accent voor alles wat je aantikt, één gele tegenkleur voor
+tijden en tips. Wil je een andere kleur, dan verander je daar twee regels.
+
 ## Categorieën
 
 Elk recept krijgt bij het importeren een **maaltijdmoment** (ontbijt, lunch,
@@ -132,9 +148,11 @@ op dezelfde endpoint worden aangesloten.
 | `src/app/api/share/`         | Ingest-endpoint voor iOS. Slaat op, verwerkt via `after()`. |
 | `src/app/api/items/[id]/`    | Statuscheck voor de Shortcut.                              |
 | `src/app/api/extract-preview/` | Alleen de scraper draaien, zonder modelaanroep.           |
-| `src/app/(app)/`             | De gewone app: koptekst met navigatie eromheen.            |
+| `src/app/(app)/`             | De gewone app: wordmerk boven, tabblok onder.               |
 | `src/app/recepten/[id]/koken/` | Kookmodus. Valt buiten `(app)` zodat er geen chrome boven staat. |
 | `src/components/CookMode.tsx` | Stapnavigatie, timers, wake lock.                         |
+| `src/components/TabBar.tsx`  | Het zwevende tabblok; weet welke pagina actief is.          |
+| `src/app/globals.css`        | **Het uiterlijk.** Kleuren en maten staan bovenin.          |
 | `src/lib/recipe/scale.ts`    | Porties omrekenen en afronden op kookbare hoeveelheden.    |
 | `src/lib/recipe/categories.ts` | Maaltijdmomenten en keukens: vocabulaire en normalisatie. |
 | `src/app/actions.ts`         | Server actions voor de web-UI (toevoegen, opnieuw, wissen). |

@@ -4,6 +4,7 @@ import { toggleFavorite } from "@/app/actions";
 import { CategoryEditor } from "@/components/CategoryEditor";
 import { prisma } from "@/lib/db";
 import {
+  MEAL_TYPE_EMOJI,
   MEAL_TYPE_LABELS,
   unpackMealTypes,
 } from "@/lib/recipe/categories";
@@ -61,63 +62,70 @@ export default async function RecipePage({
 
   return (
     <main>
-      <article className="recipe-hero">
+      <article className="hero">
         {row.imageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={row.imageUrl} alt="" />
         )}
         <h1>{recipe.title}</h1>
-        {recipe.description && <p className="muted">{recipe.description}</p>}
+        {recipe.description && <p className="lede">{recipe.description}</p>}
 
-        <div className="row" style={{ marginTop: "0.75rem" }}>
+        {(mealTypes.length > 0 || row.cuisine) && (
+          <div className="pills">
+            {mealTypes.map((type) => (
+              <Link key={type} href={`/?maaltijd=${type}`} className="pill">
+                <span aria-hidden>{MEAL_TYPE_EMOJI[type]}</span>
+                {MEAL_TYPE_LABELS[type]}
+              </Link>
+            ))}
+            {row.cuisine && (
+              <Link
+                href={`/?keuken=${encodeURIComponent(row.cuisine)}`}
+                className="pill outline"
+              >
+                {row.cuisine}
+              </Link>
+            )}
+          </div>
+        )}
+
+        <div className="actions">
           {recipe.steps.length > 0 && (
-            <Link href={cookHref} className="button-link sans">
+            <Link href={cookHref} className="button grow">
               Kookmodus starten
             </Link>
           )}
           <form action={toggleFavorite}>
             <input type="hidden" name="id" value={row.id} />
-            <button type="submit" className="secondary">
-              {row.favorite ? "★ Favoriet" : "☆ Favoriet maken"}
+            <button
+              type="submit"
+              className={`icon secondary ${row.favorite ? "on" : ""}`}
+              aria-label={row.favorite ? "Uit favorieten halen" : "Favoriet maken"}
+              title={row.favorite ? "Uit favorieten halen" : "Favoriet maken"}
+            >
+              {row.favorite ? "★" : "☆"}
             </button>
           </form>
           {row.sourceUrl && (
-            <a className="sans" href={row.sourceUrl} target="_blank" rel="noreferrer">
-              Bron{row.sourceName ? `: ${row.sourceName}` : ""} ↗
+            <a
+              className="button secondary icon"
+              href={row.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Bron${row.sourceName ? `: ${row.sourceName}` : ""}`}
+              title={row.sourceName ?? row.sourceUrl}
+            >
+              ↗
             </a>
           )}
         </div>
       </article>
 
-      {(mealTypes.length > 0 || row.cuisine) && (
-        <div className="categories">
-          {mealTypes.map((type) => (
-            <Link
-              key={type}
-              href={`/?maaltijd=${type}`}
-              className="badge"
-              title={`Alle ${MEAL_TYPE_LABELS[type].toLowerCase()}-recepten`}
-            >
-              {MEAL_TYPE_LABELS[type]}
-            </Link>
-          ))}
-          {row.cuisine && (
-            <Link
-              href={`/?keuken=${encodeURIComponent(row.cuisine)}`}
-              className="badge cuisine"
-              title={`Alle ${row.cuisine.toLowerCase()}e recepten`}
-            >
-              {row.cuisine}
-            </Link>
-          )}
-        </div>
-      )}
-
       <div className="facts">
         {servings !== null && (
-          <div className="servings">
+          <div className="fact people">
             <span>Personen</span>
-            <div className="stepper sans">
+            <div className="stepper">
               {/* Links in plaats van knoppen: werkt zonder JavaScript en de
                   gekozen hoeveelheid staat in de URL, dus je kunt hem delen
                   en hij overleeft een refresh. */}
@@ -142,27 +150,27 @@ export default async function RecipePage({
           </div>
         )}
         {servings === null && recipe.servings !== null && (
-          <div>
+          <div className="fact">
             <span>Porties</span>
-            {recipe.servings}
+            <strong>{recipe.servings}</strong>
           </div>
         )}
         {recipe.prepMinutes !== null && (
-          <div>
+          <div className="fact">
             <span>Voorbereiden</span>
-            {recipe.prepMinutes} min
+            <strong>{recipe.prepMinutes} min</strong>
           </div>
         )}
         {recipe.cookMinutes !== null && (
-          <div>
+          <div className="fact">
             <span>Bereiden</span>
-            {recipe.cookMinutes} min
+            <strong>{recipe.cookMinutes} min</strong>
           </div>
         )}
         {recipe.totalMinutes !== null && (
-          <div>
+          <div className="fact">
             <span>Totaal</span>
-            {recipe.totalMinutes} min
+            <strong>{recipe.totalMinutes} min</strong>
           </div>
         )}
       </div>
@@ -175,7 +183,7 @@ export default async function RecipePage({
             // staptekst herschrijven is tekstmanipulatie waarbij je meer
             // stukmaakt dan je oplost, dus die blijven staan zoals de bron ze
             // gaf. Hier staat waar je op moet letten.
-            <p className="notice sans">
+            <p className="notice">
               Omgerekend van {base.servings} naar {servings} personen. Tijden en
               getallen in de staptekst zijn niet meegeschaald — houd deze lijst
               aan.
@@ -211,7 +219,7 @@ export default async function RecipePage({
                 {step.title && <strong>{step.title}</strong>}
                 {step.text}
                 {step.timerMinutes !== null && (
-                  <span className="step-time sans">{step.timerMinutes} min</span>
+                  <span className="step-time">{step.timerMinutes} min</span>
                 )}
                 {step.tip && <span className="step-tip">{step.tip}</span>}
               </li>
@@ -251,7 +259,7 @@ export default async function RecipePage({
       {recipe.tags.length > 0 && (
         <div className="tags">
           {recipe.tags.map((tag) => (
-            <span key={tag} className="badge">
+            <span key={tag} className="tag">
               {tag}
             </span>
           ))}
@@ -260,4 +268,3 @@ export default async function RecipePage({
     </main>
   );
 }
-

@@ -124,10 +124,10 @@ export function CookMode({
   return (
     <div className="cook">
       <header className="cook-bar">
-        <Link href={backHref} className="cook-exit sans">
+        <Link href={backHref} className="cook-exit">
           ✕ Stoppen
         </Link>
-        <span className="sans muted">
+        <span className="cook-count">
           Stap {current + 1} van {recipe.steps.length}
           {recipe.servings !== null && ` · ${recipe.servings} pers.`}
         </span>
@@ -140,7 +140,7 @@ export function CookMode({
       </div>
 
       {elsewhere.length > 0 && (
-        <div className="cook-elsewhere sans">
+        <div className="cook-elsewhere">
           {elsewhere.map((entry) => (
             <button
               key={entry.index}
@@ -159,7 +159,7 @@ export function CookMode({
 
       <main className="cook-step">
         {scaled && current === 0 && (
-          <p className="notice sans">
+          <p className="notice">
             Omgerekend van {baseServings} naar {recipe.servings} personen. De
             hoeveelheden hieronder kloppen; getallen in de staptekst zijn niet
             meegeschaald.
@@ -170,7 +170,7 @@ export function CookMode({
 
         {stepIngredients.length > 0 && (
           <section className="cook-ingredients">
-            <h2 className="sans">Nodig voor deze stap</h2>
+            <h2>Nodig voor deze stap</h2>
             <ul>
               {stepIngredients.map((item, index) => (
                 <li key={index}>
@@ -190,9 +190,7 @@ export function CookMode({
         {step.timerMinutes !== null && (
           <section className={`cook-timer ${timer?.done ? "ringing" : ""}`}>
             <div className="cook-timer-face">
-              <span className="sans muted">
-                {timer?.done ? "Tijd is om" : "Tijd voor deze stap"}
-              </span>
+              <span>{timer?.done ? "Tijd is om" : "Tijd voor deze stap"}</span>
               <strong>
                 {timer ? formatClock(remainingSeconds) : `${step.timerMinutes} min`}
               </strong>
@@ -223,7 +221,7 @@ export function CookMode({
 
         {step.tip && (
           <aside className="cook-tip">
-            <h2 className="sans">Let op</h2>
+            <h2>Let op</h2>
             <p>{step.tip}</p>
           </aside>
         )}
@@ -233,7 +231,7 @@ export function CookMode({
           open={showAll}
           onToggle={(event) => setShowAll(event.currentTarget.open)}
         >
-          <summary className="sans">Alle ingrediënten</summary>
+          <summary>Alle ingrediënten</summary>
           {recipe.ingredientGroups.map((group, groupIndex) => (
             <div key={groupIndex}>
               {group.name && <h3 className="group">{group.name}</h3>}
@@ -263,7 +261,7 @@ export function CookMode({
           Vorige
         </button>
         {isLast ? (
-          <Link href={backHref} className="cook-done sans">
+          <Link href={backHref} className="button">
             Klaar — eet smakelijk
           </Link>
         ) : (
