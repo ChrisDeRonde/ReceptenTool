@@ -67,6 +67,37 @@ maakt levert iOS zelf als JPEG aan. En **een foto van alleen een gerecht levert
 geen recept op**: de prompt verbiedt raden, dus dan krijg je een titel met een
 lege ingrediëntenlijst in plaats van een verzonnen recept.
 
+## Boodschappenlijst
+
+Op een recept staat een mandje-knop: die zet alle ingrediënten op één gedeelde
+lijst, in de hoeveelheid die op dat moment op je scherm staat — heb je naar zes
+personen omgerekend, dan koop je voor zes.
+
+Hoeveelheden worden opgeteld in plaats van herhaald. Twee recepten die allebei
+eieren willen worden één regel van 7 stuks, en 500 g plus 1 kg wordt 1½ kg.
+Dat kan alleen omdat ingrediënten als losse velden zijn opgeslagen; bij vrije
+tekst zou hier niets van kloppen. Wat níét optelbaar is blijft gescheiden:
+200 g bloem en 2 el bloem zijn twee regels, want dat is in de winkel ook zo.
+
+Herkennen dat twee dingen hetzelfde zijn gebeurt met een vaste tabel
+(`uien` → `ui`, `eieren` → `ei`) en niet met een slimme meervoudsregel:
+Nederlands is daar te grillig voor, en een verkeerde gok voegt twee dingen
+samen die niet samenhoren. Mis je er een, dan zet je hem erbij in
+`src/lib/shopping/units.ts`.
+
+De lijst is gegroepeerd per schap en de volgorde volgt de winkel die je kiest:
+Albert Heijn, Jumbo, PLUS, Lidl of Aldi. Die routes zijn een benadering van de
+gebruikelijke indeling — filialen verschillen, dus zie het als een startpunt dat
+je in `src/lib/shopping/aisles.ts` bijstelt. Welk product in welk schap ligt komt
+uit een woordenlijst in datzelfde bestand: geen productdatabase, geen API, maar
+iets wat je kunt lezen en corrigeren. Nederlandse samenstellingen worden op hun
+kern beoordeeld, want slagroom is room en boerenkool is kool. Wat nergens op
+past gaat naar *Overig*, onderaan de lijst maar wel op de lijst.
+
+Afvinken loopt vooruit op de server: in een supermarkt met slecht bereik moet
+een vinkje meteen omgaan. Na de kassa haal je met één knop weg wat in het
+karretje lag; de rest blijft staan.
+
 ## Uiterlijk
 
 Zacht en zakelijk: warm papier in plaats van wit, pastelvlakken in plaats van
@@ -193,6 +224,8 @@ op dezelfde endpoint worden aangesloten.
 | `src/app/actions.ts`         | Server actions voor de web-UI (toevoegen, opnieuw, wissen). |
 | `src/lib/extract/`           | De ophaalketen. `providers/` bevat de bronspecifieke strategieën. |
 | `src/lib/photos.ts`          | Gefotografeerde bronnen: opslaan, teruglezen, opruimen.     |
+| `src/lib/shopping/units.ts`  | Hoeveelheden optellen en namen gelijktrekken.               |
+| `src/lib/shopping/aisles.ts` | Schappen, winkels en de looproute per keten.                |
 | `src/components/PhotoForm.tsx` | Camera en bibliotheek, met miniaturen en een wachtstand.   |
 | `src/lib/recipe/prompt.ts`   | **De huisstijl van een recept.** Hier sleutel je aan toon.  |
 | `src/lib/recipe/schema.ts`   | Vorm van een recept — Zod plus JSON Schema, samen bijhouden. |

@@ -10,6 +10,11 @@ import {
 } from "@/lib/recipe/categories";
 import { processShareItem } from "@/lib/pipeline";
 import { deletePhotos, parsePhotos, savePhotos } from "@/lib/photos";
+import { aisleFor, isStore } from "@/lib/shopping/aisles";
+import { addIngredients, setStore } from "@/lib/shopping/list";
+import { canonicalName } from "@/lib/shopping/units";
+import { parseServings, scaleRecipe } from "@/lib/recipe/scale";
+import { flattenIngredients, recipeSchema } from "@/lib/recipe/schema";
 
 /**
  * Server actions voor de web-UI. De iOS-kant praat met /api/share; dit is voor
@@ -164,4 +169,79 @@ function readField(formData: FormData, key: string): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
+}
+
+/* --- Boodschappenlijst ---------------------------------------------------- */
+
+/**
+ * Alle ingrediënten van een recept op de lijst zetten, in de hoeveelheid die
+ * op dat moment op het scherm staat: kook je voor zes, dan koop je voor zes.
+ */
+export async function addRecipeToList(formData: FormData): Promise<void> {
+  const id = readField(formData, "id");
+  if (!id) return;
+
+  const row = await prisma.recipe.findUnique({ where: { id } });
+  if (!row) return;
+
+  const parsed = recipeSchema.safeParse(JSON.parse(row.data));
+  if (!parsed.success) return;
+
+  const servings = parseServings(
+    readField(formData, "porties") ?? undefined,
+    parsed.data.servings,
+  );
+  const recipe =
+    servings === null ? parsed.data : scaleRecipe(parsed.data, servings);
+
+  await addIngredients(flattenIngredients(recipe), recipe.title);
+
+  revalidatePath("/lijst");
+  revalidatePath(`/recepten/${id}`);
+}
+
+/** Zelf iets toevoegen dat bij geen recept hoort: wc-papier, een fles wijn. */
+export async function addListItem(formData: FormData): Promise<void> {
+  const name = readField(formData, "name");
+  if (!name) return;
+
+  await prisma.shoppingItem.create({
+    data: {
+      name,
+      key: canonicalName(name),
+      quantity: null,
+      unit: null,
+      aisle: aisleFor(canonicalName(name)),
+      fromRecipe: null,
+    },
+  });
+  revalidatePath("/lijst");
+}
+
+export async function toggleListItem(id: string, checked: boolean): Promise<void> {
+  await prisma.shoppingItem.update({ where: { id }, data: { checked } });
+  revalidatePath("/lijst");
+}
+
+export async function removeListItem(id: string): Promise<void> {
+  await prisma.shoppingItem.delete({ where: { id } });
+  revalidatePath("/lijst");
+}
+
+/** Na de kassa: weg met wat in het karretje lag, de rest blijft staan. */
+export async function clearCheckedItems(): Promise<void> {
+  await prisma.shoppingItem.deleteMany({ where: { checked: true } });
+  revalidatePath("/lijst");
+}
+
+export async function clearList(): Promise<void> {
+  await prisma.shoppingItem.deleteMany({});
+  revalidatePath("/lijst");
+}
+
+export async function chooseStore(formData: FormData): Promise<void> {
+  const store = readField(formData, "store");
+  if (!isStore(store)) return;
+  await setStore(store);
+  revalidatePath("/lijst");
 }

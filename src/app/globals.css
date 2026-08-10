@@ -763,6 +763,135 @@ form.stack {
   word-break: break-word;
 }
 
+/* --- Boodschappenlijst --------------------------------------------------- */
+
+.list-count {
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.aisle {
+  margin-bottom: 1.5rem;
+}
+
+.aisle h2 {
+  margin-bottom: 0.35rem;
+}
+
+.aisle ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.aisle li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.aisle li:last-child {
+  border-bottom: 0;
+}
+
+/* Het hele label is het raakvlak; in een winkel tik je niet op een vinkje van
+   twaalf pixels. */
+.aisle label {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex: 1;
+  min-height: 2.9rem;
+  cursor: pointer;
+}
+
+.aisle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tick {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  color: transparent;
+}
+
+.aisle input:checked + .tick {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.aisle input:focus-visible + .tick {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.what {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+
+.what .name {
+  font-size: 0.95rem;
+}
+
+/* Waar het vandaan komt, klein eronder: in de winkel wil je soms weten of die
+   pecorino voor de carbonara of de salade is. */
+.what .from {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.aisle .amount {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.aisle li.done .name,
+.aisle li.done .amount {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.aisle li button {
+  flex: 0 0 auto;
+  width: 2rem;
+  padding: 0;
+  opacity: 0.5;
+}
+
+.add-item {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1.75rem 0 1rem;
+}
+
+.add-item input {
+  flex: 1;
+}
+
+.add-item button {
+  flex: 0 0 auto;
+}
+
+.list-actions {
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+}
+
 /* --- Recept fotograferen ------------------------------------------------- */
 
 .photo-form {

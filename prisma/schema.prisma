@@ -82,3 +82,38 @@ model Recipe {
 
   @@index([createdAt])
 }
+
+/// Eén gedeelde boodschappenlijst. Twee mensen, één huishouden, één lijst —
+/// een aparte lijst per persoon zou alleen maar betekenen dat je allebei
+/// dezelfde uien koopt.
+model ShoppingItem {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  /// Zoals het op de lijst staat: "ui", "pecorino romano".
+  name String
+  /// Voor het samenvoegen: kleine letters, enkelvoud waar we het zeker weten.
+  key  String
+
+  /// null bij "naar smaak" of "een snufje".
+  quantity Float?
+  unit     String?
+
+  /// Schap uit AISLES; bepaalt onder welk kopje het staat.
+  aisle String
+
+  checked Boolean @default(false)
+
+  /// Waar het vandaan kwam, zodat je in de winkel kunt zien waarvoor het is.
+  /// Vrije tekst en geen relatie: het recept mag weg zonder je lijst te slopen.
+  fromRecipe String?
+
+  @@index([checked, aisle])
+}
+
+/// Kleine sleutel-waardetabel voor voorkeuren die niet bij één recept horen,
+/// zoals de gekozen supermarkt. Gedeeld, net als de lijst zelf.
+model Setting {
+  key   String @id
+  value String
+}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { toggleFavorite } from "@/app/actions";
+import { addRecipeToList, toggleFavorite } from "@/app/actions";
 import { CategoryEditor } from "@/components/CategoryEditor";
 import { Icon } from "@/components/Icon";
 import { prisma } from "@/lib/db";
@@ -98,6 +98,24 @@ export default async function RecipePage({
             <Link href={cookHref} className="button grow">
               Kookmodus starten
             </Link>
+          )}
+          {recipe.ingredientGroups.length > 0 && (
+            <form action={addRecipeToList}>
+              <input type="hidden" name="id" value={row.id} />
+              {/* De hoeveelheid van dít moment gaat mee: kook je voor zes,
+                  dan koop je voor zes. */}
+              {servings !== null && (
+                <input type="hidden" name="porties" value={servings} />
+              )}
+              <button
+                type="submit"
+                className="icon secondary"
+                aria-label="Ingrediënten op de boodschappenlijst"
+                title="Op de boodschappenlijst"
+              >
+                <Icon icon={icons.basket} size={19} />
+              </button>
+            </form>
           )}
           <form action={toggleFavorite}>
             <input type="hidden" name="id" value={row.id} />
