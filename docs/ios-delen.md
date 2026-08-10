@@ -46,14 +46,14 @@ veld weg.
 
 ### Instagram
 
-Instagram geeft bij delen alleen een link mee, en die link levert bots meestal
-een loginmuur. Voor openbare posts pikt de app het bijschrift nog op uit de
-`og:description`-metadata; lukt dat niet, dan komt het item als **Tekst nodig**
-in de inbox te staan. Kopieer dan het bijschrift uit de app, plak het in het
-tekstvak bij dat item en druk op *Opnieuw proberen*.
+Instagram geeft bij delen alleen een link mee. De app haalt het bijschrift op
+via de publieke embed-pagina, die geen login vraagt — voor openbare posts is de
+link dus genoeg. Zie [docs/scraper.md](scraper.md) voor hoe dat werkt en
+wanneer het niet lukt (privé-accounts, of een geblokkeerd server-IP).
 
-Wil je die stap voor zijn: selecteer het bijschrift in Instagram, deel de
-*tekst* in plaats van de link. Dan komt het recept in één keer binnen.
+Lukt het niet, dan komt het item als **Tekst nodig** in de inbox. Kopieer dan
+het bijschrift uit de app, plak het in het tekstvak bij dat item en druk op
+*Opnieuw proberen*.
 
 ---
 

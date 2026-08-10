@@ -14,15 +14,32 @@ iOS share sheet
       │
       │  achtergrondverwerking
       ▼
-  1. Bron ophalen        schema.org/Recipe als die er is, anders paginatekst
+  1. Bron ophalen        keten van strategieën, per bron een eigen aanpak
   2. Recept eruit halen  Claude met een vast JSON-schema
   3. Opslaan             Recipe-rij, zichtbaar in de web-app
 ```
 
 Alles wat binnenkomt landt eerst als `ShareItem` in de database, ook als de
-verwerking daarna misgaat. In de inbox zie je per item wat er gebeurde en kun
-je het opnieuw proberen — bijvoorbeeld door zelf de tekst te plakken bij een
-Instagram-post achter een loginmuur.
+verwerking daarna misgaat. In de inbox zie je per item welke strategie het
+ophaalde en kun je het opnieuw proberen — desnoods met tekst die je zelf plakt.
+
+## Wat de scraper aankan
+
+| Bron                        | Hoe                                                    |
+| --------------------------- | ------------------------------------------------------ |
+| AH Allerhande, receptenblogs | schema.org/Recipe uit JSON-LD of microdata             |
+| Willekeurige webpagina's    | Leesbare paginatekst, ontdaan van navigatie en scripts |
+| Instagram                   | De publieke embed-pagina, zonder API-key of login      |
+| TikTok                      | De publieke oEmbed-endpoint                            |
+| YouTube                     | De videobeschrijving uit de watch-pagina               |
+| JS-only sites               | Optioneel gerenderd in een echte browser               |
+| Geplakte tekst              | Direct, zonder link                                    |
+
+Lukt het niet, dan zie je in de inbox precies welke strategieën zijn geprobeerd
+en waarop ze afketsten. Details en uitbreiden: **[docs/scraper.md](docs/scraper.md)**.
+
+Met `/api/extract-preview` test je een bron zonder een modelaanroep te doen —
+handig om te zien waarom iets niet lukt zonder tokens te verbranden.
 
 ## Aan de praat krijgen
 
@@ -53,8 +70,9 @@ op dezelfde endpoint worden aangesloten.
 | ---------------------------- | --------------------------------------------------------- |
 | `src/app/api/share/`         | Ingest-endpoint voor iOS. Slaat op, verwerkt via `after()`. |
 | `src/app/api/items/[id]/`    | Statuscheck voor de Shortcut.                              |
+| `src/app/api/extract-preview/` | Alleen de scraper draaien, zonder modelaanroep.           |
 | `src/app/actions.ts`         | Server actions voor de web-UI (toevoegen, opnieuw, wissen). |
-| `src/lib/extract/`           | Pagina ophalen, JSON-LD zoeken, leesbare tekst maken.       |
+| `src/lib/extract/`           | De ophaalketen. `providers/` bevat de bronspecifieke strategieën. |
 | `src/lib/recipe/prompt.ts`   | **De huisstijl van een recept.** Hier sleutel je aan toon.  |
 | `src/lib/recipe/schema.ts`   | Vorm van een recept — Zod plus JSON Schema, samen bijhouden. |
 | `src/lib/pipeline.ts`        | Rijgt extractie en parsing aan elkaar, bewaakt de status.   |

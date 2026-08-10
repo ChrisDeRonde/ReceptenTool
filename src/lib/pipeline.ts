@@ -25,6 +25,8 @@ export async function processShareItem(itemId: string): Promise<void> {
       text: item.sharedText,
     });
 
+    const attempts = JSON.stringify(extracted.attempts);
+
     if (extracted.status === "needs_input") {
       await prisma.shareItem.update({
         where: { id: itemId },
@@ -32,19 +34,23 @@ export async function processShareItem(itemId: string): Promise<void> {
           status: "needs_input",
           error: extracted.reason,
           sourceUrl: extracted.canonicalUrl ?? item.sourceUrl,
+          strategy: null,
+          attempts,
         },
       });
       return;
     }
 
     // Vóór de modelaanroep opslaan: als het parsen faalt wil je in de inbox
-    // kunnen zien wélke tekst het model kreeg.
+    // kunnen zien wélke tekst het model kreeg en hoe die is opgehaald.
     await prisma.shareItem.update({
       where: { id: itemId },
       data: {
         rawText: extracted.text,
         sourceUrl: extracted.canonicalUrl ?? item.sourceUrl,
         sourceType: extracted.sourceType,
+        strategy: extracted.strategy,
+        attempts,
       },
     });
 

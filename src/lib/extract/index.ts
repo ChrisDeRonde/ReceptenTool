@@ -1,8 +1,15 @@
-import { fetchPage } from "./fetchPage";
-import { parseHtml, readMeta, readableText, type PageMeta } from "./html";
-import { compactRecipeJsonLd, findRecipeJsonLd } from "./jsonld";
+import { genericWebProvider } from "./providers/genericWeb";
+import { instagramProvider } from "./providers/instagram";
+import { tiktokProvider, youtubeProvider } from "./providers/video";
+import {
+  MIN_USEFUL_CHARS,
+  emptyMeta,
+  type Attempt,
+  type Provider,
+  type SourceDocument,
+} from "./types";
 
-export type SourceType = "instagram" | "ah" | "website" | "text";
+export type SourceType = "instagram" | "tiktok" | "youtube" | "ah" | "website" | "text";
 
 export type ExtractInput = {
   url?: string | null;
@@ -10,22 +17,27 @@ export type ExtractInput = {
 };
 
 export type ExtractResult =
-  | {
-      status: "ok";
-      sourceType: SourceType;
-      /** De tekst die naar het model gaat. */
-      text: string;
-      meta: PageMeta;
-      canonicalUrl: string | null;
-    }
+  | ({ status: "ok"; sourceType: SourceType; attempts: Attempt[] } & SourceDocument)
   | {
       status: "needs_input";
       sourceType: SourceType;
       /** Uitleg voor de gebruiker: wat moet die zelf aanleveren? */
       reason: string;
-      meta: PageMeta;
+      attempts: Attempt[];
       canonicalUrl: string | null;
     };
+
+/**
+ * Volgorde is betekenisvol: de eerste provider die de URL herkent én iets
+ * bruikbaars oplevert, wint. `genericWebProvider` staat achteraan en accepteert
+ * alles, dus hij vangt de rest op.
+ */
+const PROVIDERS: Provider[] = [
+  instagramProvider,
+  tiktokProvider,
+  youtubeProvider,
+  genericWebProvider,
+];
 
 export function detectSourceType(url: string | null | undefined): SourceType {
   if (!url) return "text";
@@ -35,21 +47,21 @@ export function detectSourceType(url: string | null | undefined): SourceType {
   } catch {
     return "text";
   }
-  if (host === "instagram.com" || host.endsWith(".instagram.com")) {
-    return "instagram";
-  }
-  if (host === "ah.nl" || host.endsWith(".ah.nl")) return "ah";
+  const is = (domain: string) => host === domain || host.endsWith(`.${domain}`);
+
+  if (is("instagram.com")) return "instagram";
+  if (is("tiktok.com")) return "tiktok";
+  if (is("youtube.com") || is("youtu.be")) return "youtube";
+  if (is("ah.nl")) return "ah";
   return "website";
 }
-
-/** Genoeg tekst om er plausibel een recept in te vinden. */
-const MIN_USEFUL_CHARS = 200;
 
 export async function extractSource(
   input: ExtractInput,
 ): Promise<ExtractResult> {
   const url = normalizeUrl(input.url);
   const sourceType = detectSourceType(url);
+  const attempts: Attempt[] = [];
 
   let sharedText = input.text?.trim() ?? "";
   // De simpelste iOS-Shortcut zet de gedeelde waarde in zowel `url` als `text`,
@@ -59,13 +71,6 @@ export async function extractSource(
     sharedText = "";
   }
 
-  const emptyMeta: PageMeta = {
-    title: null,
-    description: null,
-    imageUrl: null,
-    siteName: null,
-  };
-
   // Geen URL: de gedeelde tekst ís de bron (recept uit Notities, WhatsApp, …).
   if (!url) {
     if (sharedText.length < MIN_USEFUL_CHARS) {
@@ -73,91 +78,109 @@ export async function extractSource(
         status: "needs_input",
         sourceType: "text",
         reason: "Er is geen link en te weinig tekst om een recept van te maken.",
-        meta: emptyMeta,
+        attempts,
         canonicalUrl: null,
       };
     }
     return {
       status: "ok",
       sourceType: "text",
+      strategy: "geplakte-tekst",
       text: sharedText,
       meta: emptyMeta,
       canonicalUrl: null,
+      attempts,
     };
   }
 
-  let html: string;
-  let finalUrl = url;
-  try {
-    const page = await fetchPage(url);
-    html = page.html;
-    finalUrl = page.url;
-  } catch (error) {
-    // De pagina ophalen kan mislukken (loginmuur, timeout, blokkade). Als er
-    // meegedeelde tekst is, is dat alsnog genoeg om mee te werken.
-    if (sharedText.length >= MIN_USEFUL_CHARS) {
+  const parsedUrl = new URL(url);
+
+  for (const provider of PROVIDERS) {
+    if (!provider.canHandle(parsedUrl)) continue;
+    try {
+      const document = await provider.run(parsedUrl, sharedText, (attempt) =>
+        attempts.push(attempt),
+      );
+      if (!document) {
+        attempts.push({
+          strategy: provider.name,
+          ok: false,
+          detail: "geen bruikbare tekst gevonden",
+        });
+        continue;
+      }
+      attempts.push({
+        strategy: document.strategy,
+        ok: true,
+        detail: `${document.text.length} tekens`,
+      });
       return {
         status: "ok",
         sourceType,
-        text: sharedText,
-        meta: emptyMeta,
-        canonicalUrl: url,
+        attempts,
+        ...withSharedText(document, sharedText),
       };
+    } catch (error) {
+      attempts.push({
+        strategy: provider.name,
+        ok: false,
+        detail: errorMessage(error),
+      });
     }
+  }
+
+  // Alle strategieën uitgeput. Meegedeelde tekst is dan alsnog genoeg.
+  if (sharedText.length >= MIN_USEFUL_CHARS) {
+    attempts.push({
+      strategy: "geplakte-tekst",
+      ok: true,
+      detail: `${sharedText.length} tekens`,
+    });
     return {
-      status: "needs_input",
+      status: "ok",
       sourceType,
-      reason: `De pagina kon niet worden opgehaald (${errorMessage(error)}). Plak de recepttekst erbij.`,
+      strategy: "geplakte-tekst",
+      text: sharedText,
       meta: emptyMeta,
       canonicalUrl: url,
+      attempts,
     };
   }
 
-  const $ = parseHtml(html);
-  const meta = readMeta($);
+  return {
+    status: "needs_input",
+    sourceType,
+    reason: explainFailure(sourceType, attempts),
+    attempts,
+    canonicalUrl: url,
+  };
+}
 
-  const parts: string[] = [];
-  if (sharedText) {
-    parts.push(`# Meegedeelde tekst\n${sharedText}`);
-  }
+/** Handmatig geplakte tekst gaat mee bovenop wat de scraper vond. */
+function withSharedText(
+  document: SourceDocument,
+  sharedText: string,
+): SourceDocument {
+  if (!sharedText) return document;
+  return {
+    ...document,
+    text: `# Meegedeelde tekst\n${sharedText}\n\n---\n\n${document.text}`,
+  };
+}
 
-  const jsonLd = findRecipeJsonLd($);
-  if (jsonLd) {
-    parts.push(
-      `# schema.org/Recipe uit de bron (betrouwbaarste data)\n${compactRecipeJsonLd(jsonLd)}`,
-    );
-  }
+function explainFailure(sourceType: SourceType, attempts: Attempt[]): string {
+  const trail = attempts
+    .map((attempt) => `${attempt.strategy}: ${attempt.detail}`)
+    .join(" · ");
 
-  if (sourceType === "instagram") {
-    // Instagram serveert bots meestal een loginmuur. Wat er wél doorheen komt
-    // is de og:description-meta, en daar staat op openbare posts het bijschrift
-    // in. Meer dan dat gaan we niet forceren.
-    if (meta.description) {
-      parts.push(`# Instagram-bijschrift\n${meta.description}`);
-    }
-  } else {
-    const body = readableText($);
-    if (body) {
-      parts.push(`# Paginatekst\n${body}`);
-    }
-  }
+  const advice =
+    sourceType === "instagram"
+      ? "Instagram gaf het bijschrift niet vrij — dat gebeurt bij privé-accounts, of als Instagram het serverIP blokkeert. Kopieer het bijschrift uit de app en plak het hieronder."
+      : sourceType === "tiktok" || sourceType === "youtube"
+        ? "Er kwam geen bruikbare beschrijving uit deze video. Staat het recept alleen in de video zelf, plak het dan hieronder."
+        : "Er kwam te weinig bruikbare tekst uit deze pagina. Plak de recepttekst hieronder.";
 
-  const text = parts.join("\n\n---\n\n").trim();
-
-  if (text.length < MIN_USEFUL_CHARS) {
-    return {
-      status: "needs_input",
-      sourceType,
-      reason:
-        sourceType === "instagram"
-          ? "Instagram gaf alleen een loginmuur terug. Kopieer het bijschrift van de post en plak het hieronder."
-          : "Er kwam te weinig bruikbare tekst uit deze pagina. Plak de recepttekst hieronder.",
-      meta,
-      canonicalUrl: finalUrl,
-    };
-  }
-
-  return { status: "ok", sourceType, text, meta, canonicalUrl: finalUrl };
+  return trail ? `${advice} (geprobeerd — ${trail})` : advice;
 }
 
 function normalizeUrl(value: string | null | undefined): string | null {
@@ -184,3 +207,5 @@ export function errorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   return String(error);
 }
+
+export type { Attempt, SourceDocument } from "./types";

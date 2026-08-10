@@ -75,6 +75,12 @@ export default async function InboxPage() {
               </div>
             )}
 
+            {item.strategy && (
+              <div className="meta">
+                <span>opgehaald via {item.strategy}</span>
+              </div>
+            )}
+
             {item.error && (
               <p className="muted sans" style={{ fontSize: "0.85rem", marginTop: "0.5rem" }}>
                 {item.error}
