@@ -2,7 +2,6 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import {
   MEAL_TYPES,
-  MEAL_TYPE_EMOJI,
   MEAL_TYPE_LABELS,
   normalizeMealType,
   unpackMealTypes,
@@ -60,7 +59,7 @@ export default async function HomePage({
   return (
     <main>
       <div className="page-head">
-        <h1>Wat eten we?</h1>
+        <h1>Recepten</h1>
         <p>
           {recipes.length} {recipes.length === 1 ? "recept" : "recepten"}
           {filtering && " in deze selectie"}
@@ -80,7 +79,6 @@ export default async function HomePage({
               href={href({ maaltijd: mealFilter === type ? null : type })}
               className={`chip ${mealFilter === type ? "on" : ""}`}
             >
-              <span aria-hidden>{MEAL_TYPE_EMOJI[type]}</span>
               {MEAL_TYPE_LABELS[type]}
             </Link>
           ))}
@@ -105,9 +103,6 @@ export default async function HomePage({
         <div className="empty">
           {filtering ? (
             <>
-              <span className="big" aria-hidden>
-                🤷
-              </span>
               <p>Niks in deze categorie.</p>
               <p>
                 <Link href="/">Toon alles</Link>
@@ -115,9 +110,6 @@ export default async function HomePage({
             </>
           ) : (
             <>
-              <span className="big" aria-hidden>
-                🍳
-              </span>
               <p>Nog geen recepten.</p>
               <p>
                 Deel een link vanuit Instagram, de AH-app of Safari, of{" "}
@@ -145,11 +137,7 @@ export default async function HomePage({
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={recipe.imageUrl} alt="" loading="lazy" />
                   ) : (
-                    // Zonder foto geeft de emoji van het maaltijdmoment het
-                    // kaartje toch iets herkenbaars.
-                    <span aria-hidden>
-                      {mealTypes[0] ? MEAL_TYPE_EMOJI[mealTypes[0]] : "🍽️"}
-                    </span>
+                    <PlateIcon />
                   )}
                   {recipe.favorite && (
                     <span className="fav" aria-label="Favoriet">
@@ -170,6 +158,16 @@ export default async function HomePage({
         </div>
       )}
     </main>
+  );
+}
+
+/** Bordje met bestek, voor recepten zonder foto. */
+function PlateIcon() {
+  return (
+    <svg viewBox="0 0 48 48" aria-hidden focusable="false">
+      <circle cx="24" cy="24" r="14" />
+      <circle cx="24" cy="24" r="9" />
+    </svg>
   );
 }
 

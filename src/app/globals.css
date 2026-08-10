@@ -1,34 +1,33 @@
 /* ==========================================================================
    Huisstijl
    --------------------------------------------------------------------------
-   Telefoon-eerst. Eén schreefloze familie, hiërarchie uit gewicht en grootte
-   in plaats van uit lijntjes. Ruime radii, zachte schaduw, één warm accent en
-   één speelse tegenkleur. Alles wat je aantikt is minstens 44px hoog.
+   Rustig en zakelijk. Wit als drager, haarlijnen in plaats van vlakken, één
+   groen accent en verder geen kleur. Tekst is licht van gewicht en klein van
+   maat; ruimte doet het werk dat randen en schaduwen anders zouden doen.
+   Wat je aantikt blijft minstens 44px hoog, ook als het er licht uitziet.
    ========================================================================== */
 
 :root {
-  --bg: #f6f3ee;
+  --bg: #f8faf9;
   --surface: #ffffff;
-  --sunken: #ece7de;
-  --line: #e0d9cd;
-  --ink: #17130f;
-  --muted: #6d6459;
-  --accent: #d43f1f;
+  --sunken: #f0f4f2;
+  --line: #e4e9e7;
+  --ink: #1c2320;
+  --muted: #79847f;
+  --accent: #12795f;
   --accent-ink: #ffffff;
-  --accent-soft: #fceee8;
-  --pop: #f7c948;
-  --pop-ink: #3a2a00;
-  --danger: #b3261e;
-  --danger-soft: #fdeceb;
+  --accent-soft: #dcede6;
+  --danger: #a6342b;
+  --danger-soft: #f7ecea;
 
-  --r-sm: 12px;
-  --r-md: 18px;
-  --r-lg: 28px;
-  --shadow: 0 1px 2px rgb(23 19 15 / 4%), 0 10px 24px -14px rgb(23 19 15 / 22%);
-  --shadow-lift: 0 2px 4px rgb(23 19 15 / 5%), 0 18px 36px -18px rgb(23 19 15 / 30%);
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --shadow: 0 1px 2px rgb(28 35 32 / 5%);
 
-  --maxw: 46rem;
-  --dock: 4.75rem;
+  --maxw: 44rem;
+  --gutter: 1.35rem;
+  --dock: 3.9rem;
 
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto,
     system-ui, sans-serif;
@@ -36,22 +35,19 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #13110e;
-    --surface: #1c1915;
-    --sunken: #26221c;
-    --line: #322c24;
-    --ink: #f5f1ea;
-    --muted: #a49a8d;
-    --accent: #ff7a55;
-    --accent-ink: #2b0c02;
-    --accent-soft: #2d1d16;
-    --pop: #ffcf5c;
-    --pop-ink: #2a1e00;
-    --danger: #ff8a80;
-    --danger-soft: #2e1614;
+    --bg: #101413;
+    --surface: #161b19;
+    --sunken: #1b2220;
+    --line: #262e2b;
+    --ink: #e7ecea;
+    --muted: #8b9793;
+    --accent: #47a888;
+    --accent-ink: #06231b;
+    --accent-soft: #17302a;
+    --danger: #e08b82;
+    --danger-soft: #2a1a18;
 
-    --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 12px 28px -16px rgb(0 0 0 / 80%);
-    --shadow-lift: 0 2px 6px rgb(0 0 0 / 45%), 0 20px 40px -18px rgb(0 0 0 / 90%);
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%);
   }
 }
 
@@ -69,8 +65,9 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font);
-  font-size: 17px;
-  line-height: 1.55;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
   -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
 }
@@ -83,10 +80,10 @@ a {
 h1,
 h2,
 h3 {
-  /* Zwaar en strak: dat geeft de koppen hun toon. */
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  line-height: 1.12;
+  /* Halfvet is genoeg. Het onderscheid komt uit maat en witruimte. */
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
   margin: 0;
 }
 
@@ -94,12 +91,12 @@ h3 {
   color: var(--muted);
 }
 
-/* Kleine bovenkastjeslabels: boven feiten, in legenda's, boven panelen. */
+/* Klein label boven een blok. */
 .eyebrow {
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.11em;
   color: var(--muted);
 }
 
@@ -108,99 +105,81 @@ h3 {
 .shell {
   max-width: var(--maxw);
   margin: 0 auto;
-  /* Onderin ruimte voor het zwevende dock. */
-  padding: 1rem 1.15rem calc(var(--dock) + env(safe-area-inset-bottom) + 1.5rem);
+  padding: 2.25rem var(--gutter)
+    calc(var(--dock) + env(safe-area-inset-bottom) + 2rem);
 }
 
-.topbar {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.6rem 0 1.4rem;
-}
-
-.wordmark {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  text-decoration: none;
-  color: inherit;
-  font-weight: 800;
-  font-size: 1.25rem;
-  letter-spacing: -0.03em;
-}
-
-.wordmark svg {
-  display: block;
-}
-
-/* Zwevend tabblok onderaan; op een telefoon met je duim bereikbaar. */
+/* Onderbalk over de volle breedte; geen zwevend blok, geen vulling. */
 .dock {
   position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  inset: auto 0 0;
   z-index: 20;
   display: flex;
-  gap: 0.25rem;
-  padding: 0.35rem;
-  border-radius: 999px;
+  justify-content: center;
+  gap: 2.5rem;
+  padding: 0.4rem 1rem calc(0.4rem + env(safe-area-inset-bottom));
   background: var(--surface);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow-lift);
+  border-top: 1px solid var(--line);
 }
 
 .dock a {
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.45rem;
-  min-height: 2.9rem;
-  padding: 0 1.1rem;
-  border-radius: 999px;
+  justify-content: center;
+  gap: 0.15rem;
+  min-width: 4.5rem;
+  min-height: 3rem;
   text-decoration: none;
   color: var(--muted);
-  font-size: 0.92rem;
-  font-weight: 600;
-  white-space: nowrap;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
 }
 
 .dock a.on {
-  background: var(--ink);
-  color: var(--bg);
+  color: var(--accent);
+}
+
+.dock svg {
+  display: block;
+  /* Dunne lijnen; de vorm mag niet schreeuwen. */
+  stroke-width: 1.4;
+  fill: none;
+  stroke: currentcolor;
 }
 
 .dock .count {
-  display: grid;
-  place-items: center;
-  min-width: 1.35rem;
-  height: 1.35rem;
-  padding: 0 0.35rem;
+  position: absolute;
+  top: 0.15rem;
+  left: 55%;
+  min-width: 1.05rem;
+  height: 1.05rem;
+  padding: 0 0.25rem;
   border-radius: 999px;
   background: var(--accent);
   color: var(--accent-ink);
-  font-size: 0.75rem;
+  font-size: 0.65rem;
+  line-height: 1.05rem;
+  text-align: center;
   font-variant-numeric: tabular-nums;
-}
-
-.dock a.on .count {
-  background: var(--pop);
-  color: var(--pop-ink);
 }
 
 /* --- Paginakop ----------------------------------------------------------- */
 
 .page-head {
-  margin-bottom: 1.1rem;
+  margin-bottom: 1.5rem;
 }
 
 .page-head h1 {
-  font-size: clamp(2rem, 9vw, 2.6rem);
+  font-size: 1.55rem;
+  font-weight: 600;
 }
 
 .page-head p {
-  margin: 0.35rem 0 0;
+  margin: 0.3rem 0 0;
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 /* --- Filterrails --------------------------------------------------------- */
@@ -212,9 +191,9 @@ h3 {
   gap: 0.4rem;
   overflow-x: auto;
   scrollbar-width: none;
-  padding: 0.15rem 1.15rem 0.15rem;
-  margin: 0 -1.15rem 0.5rem;
-  scroll-padding: 1.15rem;
+  padding: 0.1rem var(--gutter);
+  margin: 0 calc(var(--gutter) * -1) 0.5rem;
+  scroll-padding: var(--gutter);
 }
 
 .rail::-webkit-scrollbar {
@@ -224,31 +203,28 @@ h3 {
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
   flex: 0 0 auto;
-  min-height: 2.4rem;
-  padding: 0 0.9rem;
-  border-radius: 999px;
+  min-height: 2.2rem;
+  padding: 0 0.85rem;
+  border-radius: var(--r-sm);
   border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
-  font-size: 0.9rem;
-  font-weight: 600;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.82rem;
   text-decoration: none;
   cursor: pointer;
 }
 
 .chip.on {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
 }
 
 .chip.ghost {
-  background: transparent;
-  border-style: dashed;
-  color: var(--muted);
-  font-weight: 500;
+  border-color: transparent;
+  text-decoration: underline;
 }
 
 /* --- Receptenraster ------------------------------------------------------ */
@@ -256,32 +232,22 @@ h3 {
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
-  gap: 0.85rem;
+  gap: 1.5rem 1rem;
+  margin-top: 1.5rem;
 }
 
+/* Geen kaders om de tegels: de foto is het kader. */
 .tile {
-  display: flex;
-  flex-direction: column;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  overflow: hidden;
+  display: block;
   text-decoration: none;
   color: inherit;
-  box-shadow: var(--shadow);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-@media (hover: hover) {
-  .tile:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lift);
-  }
 }
 
 .thumb {
   position: relative;
   aspect-ratio: 4 / 3;
+  border-radius: var(--r-md);
+  overflow: hidden;
   background: var(--sunken);
 }
 
@@ -292,219 +258,207 @@ h3 {
   display: block;
 }
 
-/* Geen foto? Dan een kleurvlak met de emoji van het maaltijdmoment. Beter dan
-   een grijs gat, en je herkent de rij in één oogopslag. */
+/* Zonder foto een vlak met een dun bordje erin, in plaats van een grijs gat. */
 .thumb.blank {
   display: grid;
   place-items: center;
-  font-size: 2.6rem;
-  background:
-    radial-gradient(120% 120% at 20% 0%, var(--accent-soft), transparent 60%),
-    var(--sunken);
+  color: var(--muted);
+}
+
+.thumb.blank svg {
+  width: 2.5rem;
+  height: 2.5rem;
+  stroke: currentcolor;
+  stroke-width: 1;
+  fill: none;
+  opacity: 0.35;
+}
+
+.thumb .fav,
+.thumb .clock {
+  position: absolute;
+  color: #fff;
+  font-size: 0.72rem;
+  line-height: 1;
 }
 
 .thumb .fav {
-  position: absolute;
   top: 0.5rem;
   right: 0.5rem;
   display: grid;
   place-items: center;
-  width: 1.9rem;
-  height: 1.9rem;
-  border-radius: 999px;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--r-sm);
   background: var(--surface);
   color: var(--accent);
-  font-size: 0.9rem;
-  box-shadow: var(--shadow);
+  font-size: 0.8rem;
 }
 
 .thumb .clock {
-  position: absolute;
-  left: 0.5rem;
-  bottom: 0.5rem;
-  padding: 0.1rem 0.5rem;
-  border-radius: 999px;
-  background: rgb(23 19 15 / 72%);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 600;
+  left: 0.6rem;
+  bottom: 0.6rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--r-sm);
+  background: rgb(20 26 24 / 55%);
   font-variant-numeric: tabular-nums;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(3px);
 }
 
 .tile-body {
-  padding: 0.7rem 0.8rem 0.85rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
+  padding-top: 0.6rem;
 }
 
 .tile-body h2 {
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  line-height: 1.25;
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.35;
 }
 
 .tile-body .sub {
-  font-size: 0.8rem;
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
   color: var(--muted);
-  margin: 0;
 }
 
 /* --- Receptpagina -------------------------------------------------------- */
 
-.hero {
-  margin-bottom: 1.1rem;
+.back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.2rem;
+  margin-bottom: 0.75rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-decoration: none;
 }
 
 .hero img {
   width: 100%;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 3 / 2;
   object-fit: cover;
-  border-radius: var(--r-lg);
+  border-radius: var(--r-md);
   display: block;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .hero h1 {
-  font-size: clamp(1.9rem, 8vw, 2.5rem);
+  font-size: 1.55rem;
+  font-weight: 600;
 }
 
 .hero .lede {
-  margin: 0.6rem 0 0;
+  margin: 0.5rem 0 0;
   color: var(--muted);
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .pills {
   display: flex;
-  gap: 0.4rem;
+  gap: 1rem;
   flex-wrap: wrap;
   margin: 0.9rem 0 0;
 }
 
+/* Categorieën als tekstlinks, niet als gekleurde blokjes. */
 .pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.25rem 0.7rem;
-  border-radius: 999px;
-  background: var(--accent-soft);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--accent);
-  border: 1px solid transparent;
-  font-size: 0.82rem;
-  font-weight: 600;
   text-decoration: none;
 }
 
 .pill.outline {
-  background: transparent;
-  border-color: var(--line);
   color: var(--muted);
 }
 
 .actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.6rem;
   align-items: center;
-  margin-top: 1.1rem;
+  margin-top: 1.5rem;
 }
 
 .actions .grow {
   flex: 1;
 }
 
-/* Kaartjes met de harde feiten. De porties-teller zit hier ook in. */
+/* Feiten in een raster met haarlijnen ertussen. */
 .facts {
   display: flex;
-  gap: 0.5rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding: 0.15rem 1.15rem;
-  margin: 1.4rem -1.15rem;
-}
-
-.facts::-webkit-scrollbar {
-  display: none;
-}
-
-.fact {
-  flex: 0 0 auto;
-  min-width: 5.5rem;
-  padding: 0.6rem 0.85rem;
-  border-radius: var(--r-md);
-  background: var(--sunken);
+  flex-wrap: wrap;
+  gap: 1rem 2.25rem;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 0.9rem 0;
+  margin: 1.75rem 0;
 }
 
 .fact span {
   display: block;
   font-size: 0.68rem;
-  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.11em;
   color: var(--muted);
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.2rem;
 }
 
 .fact strong {
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
-}
-
-.fact.people {
-  background: var(--accent-soft);
 }
 
 .stepper {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.6rem;
+  margin-left: -0.35rem;
 }
 
 .stepper a {
   display: grid;
   place-items: center;
-  width: 1.9rem;
-  height: 1.9rem;
-  border-radius: 999px;
-  background: var(--surface);
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: var(--r-sm);
   color: var(--accent);
   text-decoration: none;
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1rem;
   line-height: 1;
-  box-shadow: var(--shadow);
+}
+
+.stepper a:hover {
+  background: var(--sunken);
 }
 
 .stepper a.off {
-  color: var(--muted);
-  opacity: 0.35;
+  color: var(--line);
   pointer-events: none;
-  box-shadow: none;
 }
 
 .stepper strong {
-  min-width: 1.6rem;
+  min-width: 1rem;
   text-align: center;
   font-size: 1.05rem;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
 h2.section {
-  font-size: 1.35rem;
-  margin: 2rem 0 0.9rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 2.25rem 0 0.85rem;
 }
 
 h3.group {
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-size: 0.7rem;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.11em;
   color: var(--muted);
-  margin: 1.2rem 0 0.4rem;
+  margin: 1.4rem 0 0.5rem;
 }
 
 ul.ingredients {
@@ -515,8 +469,9 @@ ul.ingredients {
 
 ul.ingredients li {
   display: flex;
-  gap: 0.7rem;
-  padding: 0.55rem 0;
+  gap: 0.9rem;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
   border-bottom: 1px solid var(--line);
 }
 
@@ -525,8 +480,8 @@ ul.ingredients li:last-child {
 }
 
 ul.ingredients .amount {
-  flex: 0 0 5rem;
-  font-weight: 700;
+  flex: 0 0 4.75rem;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -535,79 +490,58 @@ ol.steps {
   counter-reset: step;
   padding: 0;
   margin: 0;
-  display: grid;
-  gap: 0.7rem;
 }
 
 ol.steps li {
   counter-increment: step;
   position: relative;
-  padding: 0.9rem 1rem 0.9rem 3.2rem;
-  border-radius: var(--r-md);
-  background: var(--surface);
-  border: 1px solid var(--line);
+  padding: 0 0 1.15rem 2.1rem;
+  font-size: 0.95rem;
 }
 
 ol.steps li::before {
   content: counter(step);
   position: absolute;
-  left: 0.9rem;
-  top: 0.85rem;
-  display: grid;
-  place-items: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 999px;
-  background: var(--accent);
-  color: var(--accent-ink);
+  left: 0;
+  top: 0;
+  color: var(--accent);
   font-size: 0.85rem;
-  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 ol.steps li strong {
   display: block;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-weight: 600;
 }
 
 .step-time {
-  display: inline-flex;
-  align-items: center;
-  margin-left: 0.4rem;
-  padding: 0.05rem 0.5rem;
-  border-radius: 999px;
-  background: var(--pop);
-  color: var(--pop-ink);
-  font-size: 0.72rem;
-  font-weight: 700;
-  vertical-align: 0.1rem;
+  display: inline-block;
+  margin-left: 0.5rem;
+  color: var(--muted);
+  font-size: 0.8rem;
   font-variant-numeric: tabular-nums;
 }
 
 .step-tip {
   display: block;
-  margin-top: 0.5rem;
-  padding-left: 0.7rem;
-  border-left: 3px solid var(--pop);
-  font-size: 0.9rem;
+  margin-top: 0.4rem;
   color: var(--muted);
+  font-size: 0.87rem;
 }
 
 .callout {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  padding: 0.9rem 1.1rem;
-  margin: 1.25rem 0;
-  font-size: 0.95rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+  margin: 1.75rem 0;
+  font-size: 0.92rem;
 }
 
 .callout h3 {
   margin: 0 0 0.4rem;
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.11em;
   color: var(--muted);
 }
 
@@ -618,28 +552,24 @@ ol.steps li strong {
 
 .tags {
   display: flex;
-  gap: 0.35rem;
+  gap: 0.9rem;
   flex-wrap: wrap;
-  margin-top: 1.5rem;
+  margin-top: 1.75rem;
 }
 
 .tag {
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  background: var(--sunken);
   color: var(--muted);
   font-size: 0.78rem;
 }
 
 /* Melding over wat er niet meeschaalt. */
 .notice {
-  margin: 0 0 0.9rem;
-  padding: 0.65rem 0.85rem;
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.9rem;
   border-radius: var(--r-sm);
-  background: var(--pop);
-  color: var(--pop-ink);
+  background: var(--accent-soft);
+  color: var(--ink);
   font-size: 0.85rem;
-  font-weight: 500;
 }
 
 /* --- Formulieren en knoppen ---------------------------------------------- */
@@ -649,8 +579,8 @@ input[type="url"],
 textarea {
   width: 100%;
   font: inherit;
-  font-size: 0.95rem;
-  padding: 0.75rem 0.9rem;
+  font-size: 0.92rem;
+  padding: 0.7rem 0.85rem;
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   background: var(--surface);
@@ -659,12 +589,13 @@ textarea {
 
 input:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+  outline: 1px solid var(--accent);
+  outline-offset: 0;
+  border-color: var(--accent);
 }
 
 textarea {
-  min-height: 6rem;
+  min-height: 5.5rem;
   resize: vertical;
 }
 
@@ -675,21 +606,21 @@ button,
   justify-content: center;
   gap: 0.4rem;
   min-height: 2.9rem;
-  padding: 0 1.15rem;
-  border-radius: 999px;
+  padding: 0 1.4rem;
+  border-radius: var(--r-sm);
   border: 1px solid var(--accent);
   background: var(--accent);
   color: var(--accent-ink);
   font: inherit;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 500;
   text-decoration: none;
   cursor: pointer;
 }
 
 button.secondary,
 .button.secondary {
-  background: var(--surface);
+  background: transparent;
   border-color: var(--line);
   color: var(--ink);
 }
@@ -698,21 +629,21 @@ button.quiet {
   background: transparent;
   border-color: transparent;
   color: var(--muted);
-  font-weight: 500;
-  padding: 0 0.5rem;
+  font-size: 0.82rem;
+  padding: 0 0.2rem;
   min-height: 2.4rem;
 }
 
-button.icon {
+button.icon,
+.button.icon {
   width: 2.9rem;
   padding: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 button.icon.on {
-  background: var(--pop);
-  border-color: var(--pop);
-  color: var(--pop-ink);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 form.stack {
@@ -722,7 +653,7 @@ form.stack {
 
 .row {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.6rem;
   align-items: center;
   flex-wrap: wrap;
 }
@@ -730,100 +661,82 @@ form.stack {
 .empty {
   text-align: center;
   color: var(--muted);
-  padding: 3rem 1rem;
+  font-size: 0.92rem;
+  padding: 4rem 1rem;
 }
 
-.empty .big {
-  font-size: 2.5rem;
-  display: block;
-  margin-bottom: 0.5rem;
+.empty p {
+  margin: 0.3rem 0;
 }
 
 /* --- Inbox --------------------------------------------------------------- */
 
+/* Geen kaartjes met schaduw: een lijst met haarlijnen ertussen. */
 .panel {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  padding: 1rem 1.1rem;
-  margin-bottom: 0.85rem;
-  box-shadow: var(--shadow);
+  border-top: 1px solid var(--line);
+  padding: 1.1rem 0;
+}
+
+.panel:first-of-type {
+  border-top: 0;
 }
 
 .status {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.2rem 0.6rem 0.2rem 0.45rem;
-  border-radius: 999px;
-  background: var(--sunken);
-  font-size: 0.78rem;
-  font-weight: 600;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .status::before {
   content: "";
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.4rem;
+  height: 0.4rem;
   border-radius: 999px;
-  background: var(--muted);
+  background: currentcolor;
 }
 
-.status.busy::before {
-  background: var(--pop);
+.status.busy {
+  color: var(--muted);
 }
 
-.status.ok::before {
-  background: #2e7d32;
+.status.ok {
+  color: var(--accent);
 }
 
 .status.bad {
-  background: var(--danger-soft);
   color: var(--danger);
-}
-
-.status.bad::before {
-  background: var(--danger);
 }
 
 .trail {
   font-size: 0.8rem;
   color: var(--muted);
-  margin-top: 0.5rem;
+  margin: 0.4rem 0 0;
   word-break: break-word;
 }
 
 /* --- Indeling aanpassen -------------------------------------------------- */
 
 .category-editor {
-  margin-top: 2rem;
+  margin-top: 2.25rem;
+  border-top: 1px solid var(--line);
+  padding-top: 0.5rem;
 }
 
 .category-editor summary {
   cursor: pointer;
   color: var(--muted);
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 0.5rem 0;
-  list-style: none;
-}
-
-.category-editor summary::-webkit-details-marker {
-  display: none;
-}
-
-.category-editor summary::before {
-  content: "⚙ ";
+  font-size: 0.85rem;
+  padding: 0.6rem 0;
 }
 
 .category-editor form {
   display: grid;
-  gap: 1rem;
-  margin-top: 0.5rem;
-  padding: 1rem 1.1rem;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
+  gap: 1.25rem;
+  margin: 0.5rem 0 1rem;
 }
 
 .category-editor fieldset {
@@ -833,7 +746,7 @@ form.stack {
 }
 
 .category-editor legend {
-  padding: 0 0 0.5rem;
+  padding: 0 0 0.6rem;
 }
 
 .checks {
@@ -842,7 +755,8 @@ form.stack {
   flex-wrap: wrap;
 }
 
-/* Aanvinken zonder vinkje: het label is de knop. */
+/* Aanvinken zonder vinkje: het label is de knop, in dezelfde vorm als de
+   filters op het overzicht. */
 .check {
   cursor: pointer;
 }
@@ -856,24 +770,22 @@ form.stack {
 .check span {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  min-height: 2.4rem;
+  min-height: 2.2rem;
   padding: 0 0.85rem;
-  border-radius: 999px;
+  border-radius: var(--r-sm);
   border: 1px solid var(--line);
-  background: var(--surface);
-  font-size: 0.9rem;
-  font-weight: 600;
+  color: var(--muted);
+  font-size: 0.82rem;
 }
 
 .check input:checked + span {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
 }
 
 .check input:focus-visible + span {
-  outline: 2px solid var(--accent);
+  outline: 1px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -881,7 +793,8 @@ form.stack {
    Kookmodus
    --------------------------------------------------------------------------
    Alles hier is een maat groter dan de rest van de app: je leest dit vanaf een
-   aanrecht, op armlengte, met natte handen.
+   aanrecht, op armlengte, met natte handen. Dezelfde ingetogen stijl, alleen
+   groter gezet.
    ========================================================================== */
 
 .cook {
@@ -890,7 +803,7 @@ form.stack {
   min-height: 100svh;
   max-width: var(--maxw);
   margin: 0 auto;
-  padding: max(0.75rem, env(safe-area-inset-top)) 1.15rem
+  padding: max(0.75rem, env(safe-area-inset-top)) var(--gutter)
     calc(0.75rem + env(safe-area-inset-bottom));
   background: var(--bg);
 }
@@ -900,7 +813,7 @@ form.stack {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  font-size: 0.9rem;
+  font-size: 0.82rem;
 }
 
 .cook-exit {
@@ -909,26 +822,24 @@ form.stack {
   min-height: 2.4rem;
   text-decoration: none;
   color: var(--muted);
-  font-weight: 600;
 }
 
 .cook-count {
   color: var(--muted);
-  font-weight: 600;
+  letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
 }
 
 .cook-progress {
   display: flex;
-  gap: 4px;
-  margin: 0.6rem 0 1.1rem;
+  gap: 3px;
+  margin: 0.5rem 0 1.5rem;
 }
 
 .cook-progress span {
   flex: 1;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--sunken);
+  height: 2px;
+  background: var(--line);
 }
 
 .cook-progress span.on {
@@ -940,7 +851,7 @@ form.stack {
   display: flex;
   gap: 0.4rem;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .cook-elsewhere .chip {
@@ -958,37 +869,31 @@ form.stack {
 }
 
 .cook-step h1 {
-  font-size: 1.75rem;
-  margin-bottom: 0.9rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.1rem;
 }
 
 .cook-text {
-  font-size: 1.3rem;
-  line-height: 1.5;
-  margin: 0 0 1.1rem;
-}
-
-.cook-ingredients,
-.cook-timer,
-.cook-tip {
-  border-radius: var(--r-lg);
-  padding: 0.95rem 1.1rem;
-  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  line-height: 1.55;
+  margin: 0 0 1.5rem;
 }
 
 .cook-ingredients {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 0.85rem 0;
+  margin-bottom: 1.5rem;
 }
 
 .cook-ingredients h2,
 .cook-tip h2 {
   margin: 0 0 0.5rem;
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.68rem;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.11em;
   color: var(--muted);
 }
 
@@ -1000,18 +905,14 @@ form.stack {
 
 .cook-ingredients li {
   display: flex;
-  gap: 0.7rem;
-  padding: 0.4rem 0;
-  font-size: 1.05rem;
-}
-
-.cook-ingredients li:not(:last-child) {
-  border-bottom: 1px solid var(--line);
+  gap: 0.9rem;
+  padding: 0.3rem 0;
+  font-size: 1.02rem;
 }
 
 .cook-ingredients .amount {
-  flex: 0 0 5.5rem;
-  font-weight: 700;
+  flex: 0 0 5rem;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1021,25 +922,27 @@ form.stack {
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  background: var(--ink);
-  color: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  padding: 1rem 1.15rem;
+  margin-bottom: 1.5rem;
 }
 
 .cook-timer-face span {
   display: block;
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.68rem;
   text-transform: uppercase;
-  letter-spacing: 0.09em;
-  opacity: 0.7;
+  letter-spacing: 0.11em;
+  color: var(--muted);
 }
 
 .cook-timer-face strong {
-  font-size: 2.4rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-size: 2.1rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  line-height: 1.1;
+  line-height: 1.2;
 }
 
 /* Knoppen rechts uitlijnen, ook als ze onder de klok omvallen. */
@@ -1047,67 +950,43 @@ form.stack {
   margin-left: auto;
 }
 
-.cook-timer button {
-  background: var(--bg);
-  border-color: var(--bg);
-  color: var(--ink);
-}
-
-.cook-timer button.secondary {
-  background: transparent;
-  border-color: currentcolor;
-  color: inherit;
-  opacity: 0.75;
-}
-
 .cook-timer.ringing {
-  background: var(--danger);
-  color: #fff;
-  animation: pulse 1s ease-in-out infinite;
+  border-color: var(--danger);
 }
 
-@keyframes pulse {
-  50% {
-    transform: scale(1.015);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cook-timer.ringing {
-    animation: none;
-  }
-}
-
-.cook-timer.ringing button {
-  background: #fff;
-  border-color: #fff;
+.cook-timer.ringing .cook-timer-face span,
+.cook-timer.ringing .cook-timer-face strong {
   color: var(--danger);
 }
 
-.cook-tip {
-  background: var(--pop);
-  color: var(--pop-ink);
+.cook-timer.ringing button {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
 }
 
-.cook-tip h2 {
-  color: inherit;
-  opacity: 0.7;
+.cook-tip {
+  background: var(--accent-soft);
+  border-radius: var(--r-md);
+  padding: 0.9rem 1.15rem;
+  margin-bottom: 1.5rem;
 }
 
 .cook-tip p {
   margin: 0;
-  font-size: 1.02rem;
+  font-size: 0.98rem;
 }
 
 .cook-all {
-  margin-top: 1.25rem;
+  margin: 1.5rem 0 0.5rem;
+  border-top: 1px solid var(--line);
+  padding-top: 0.5rem;
 }
 
 .cook-all summary {
   cursor: pointer;
   color: var(--muted);
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.88rem;
   padding: 0.5rem 0;
 }
 
@@ -1116,16 +995,16 @@ form.stack {
   bottom: 0;
   display: flex;
   gap: 0.6rem;
-  padding: 0.85rem 0 calc(0.35rem + env(safe-area-inset-bottom));
-  background: linear-gradient(to bottom, transparent, var(--bg) 40%);
+  padding: 1.25rem 0 calc(0.4rem + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, transparent, var(--bg) 60%);
 }
 
 .cook-nav button,
 .cook-nav .button {
   flex: 1;
   /* Ruime raakvlakken: dit bedien je met een duim, niet met een muis. */
-  min-height: 3.4rem;
-  font-size: 1.05rem;
+  min-height: 3.2rem;
+  font-size: 1rem;
 }
 
 .cook-nav button.secondary {

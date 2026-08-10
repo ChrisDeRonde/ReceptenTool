@@ -3,11 +3,7 @@ import { notFound } from "next/navigation";
 import { toggleFavorite } from "@/app/actions";
 import { CategoryEditor } from "@/components/CategoryEditor";
 import { prisma } from "@/lib/db";
-import {
-  MEAL_TYPE_EMOJI,
-  MEAL_TYPE_LABELS,
-  unpackMealTypes,
-} from "@/lib/recipe/categories";
+import { MEAL_TYPE_LABELS, unpackMealTypes } from "@/lib/recipe/categories";
 import { formatAmount } from "@/lib/recipe/format";
 import {
   MAX_SERVINGS,
@@ -62,6 +58,12 @@ export default async function RecipePage({
 
   return (
     <main>
+      {/* De tabbalk brengt je ook terug, maar niet naar de filter waar je
+          vandaan kwam; deze link houdt de weg terug kort. */}
+      <Link href="/" className="back">
+        ← Alle recepten
+      </Link>
+
       <article className="hero">
         {row.imageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -74,7 +76,6 @@ export default async function RecipePage({
           <div className="pills">
             {mealTypes.map((type) => (
               <Link key={type} href={`/?maaltijd=${type}`} className="pill">
-                <span aria-hidden>{MEAL_TYPE_EMOJI[type]}</span>
                 {MEAL_TYPE_LABELS[type]}
               </Link>
             ))}

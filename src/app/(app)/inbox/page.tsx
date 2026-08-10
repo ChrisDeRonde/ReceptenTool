@@ -26,10 +26,10 @@ export default async function InboxPage() {
         <p>Alles wat je deelt komt hier binnen — ook als het misgaat.</p>
       </div>
 
-      <section className="panel">
-        <p className="eyebrow" style={{ marginTop: 0 }}>
+      <section>
+        <h2 className="section" style={{ marginTop: 0 }}>
           Handmatig toevoegen
-        </p>
+        </h2>
         <form action={addSource} className="stack">
           <input type="url" name="url" placeholder="https://…" />
           <textarea
@@ -48,9 +48,6 @@ export default async function InboxPage() {
       <h2 className="section">Binnengekomen</h2>
       {items.length === 0 ? (
         <div className="empty">
-          <span className="big" aria-hidden>
-            📥
-          </span>
           <p>Nog niets gedeeld.</p>
         </div>
       ) : (
@@ -73,7 +70,7 @@ export default async function InboxPage() {
                 {item.recipe ? (
                   <Link
                     href={`/recepten/${item.recipe.id}`}
-                    style={{ fontWeight: 700 }}
+                    style={{ fontWeight: 500 }}
                   >
                     {item.recipe.title}
                   </Link>

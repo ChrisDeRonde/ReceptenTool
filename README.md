@@ -43,25 +43,24 @@ handig om te zien waarom iets niet lukt zonder tokens te verbranden.
 
 ## Uiterlijk
 
-Telefoon-eerst, één schreefloze familie, hiërarchie uit gewicht in plaats van
-uit lijntjes. Navigeren doe je met het zwevende blokje onderaan — op een
-telefoon zit dat waar je duim al is — met een teller erop als er iets in de
-inbox wacht.
+Rustig en zakelijk: wit als drager, haarlijnen in plaats van gevulde vlakken,
+één groen accent en verder geen kleur. Tekst is klein en licht van gewicht;
+witruimte doet het werk dat randen en schaduwen anders zouden doen.
 
-Het overzicht is een raster met foto's; heeft een recept er geen, dan krijgt
-het de emoji van zijn maaltijdmoment in plaats van een grijs gat. De filters
-zijn horizontaal scrollende chips, zodat tien maaltijdmomenten naast elkaar
-passen zonder de pagina uit elkaar te trekken.
+Navigeren gaat via de tabbalk onderaan, met een teller als er iets in de inbox
+wacht. Het overzicht is een raster met foto's; heeft een recept er geen, dan
+staat er een dun bordje in plaats van een grijs gat. Filters zijn horizontaal
+scrollende chips, zodat tien maaltijdmomenten naast elkaar passen.
 
-Alle kleuren zijn variabelen bovenin `src/app/globals.css`, in twee sets: licht
-en donker. Eén warm accent voor alles wat je aantikt, één gele tegenkleur voor
-tijden en tips. Wil je een andere kleur, dan verander je daar twee regels.
+Alle kleuren en maten zijn variabelen bovenin `src/app/globals.css`, in twee
+sets: licht en donker. Wil je een ander accent, dan verander je daar één regel.
+Er komen geen fonts of andere bestanden van buiten bij; het is de systeemletter.
 
 ## Categorieën
 
 Elk recept krijgt bij het importeren een **maaltijdmoment** (ontbijt, lunch,
 diner, bijgerecht, snack, borrelhapje, dessert, bakken, drank, basis) en een
-**keuken** (Italiaans, Frans, …). Op de receptpagina staan ze als badges, en
+**keuken** (Italiaans, Frans, …). Op de receptpagina staan ze onder de titel, en
 onder *Indeling aanpassen* verander je ze zelf — wat het model koos is een
 voorstel, geen eindoordeel.
 
@@ -148,10 +147,10 @@ op dezelfde endpoint worden aangesloten.
 | `src/app/api/share/`         | Ingest-endpoint voor iOS. Slaat op, verwerkt via `after()`. |
 | `src/app/api/items/[id]/`    | Statuscheck voor de Shortcut.                              |
 | `src/app/api/extract-preview/` | Alleen de scraper draaien, zonder modelaanroep.           |
-| `src/app/(app)/`             | De gewone app: wordmerk boven, tabblok onder.               |
+| `src/app/(app)/`             | De gewone app: leeskolom met de tabbalk eronder.            |
 | `src/app/recepten/[id]/koken/` | Kookmodus. Valt buiten `(app)` zodat er geen chrome boven staat. |
 | `src/components/CookMode.tsx` | Stapnavigatie, timers, wake lock.                         |
-| `src/components/TabBar.tsx`  | Het zwevende tabblok; weet welke pagina actief is.          |
+| `src/components/TabBar.tsx`  | De tabbalk onderaan; weet welke pagina actief is.           |
 | `src/app/globals.css`        | **Het uiterlijk.** Kleuren en maten staan bovenin.          |
 | `src/lib/recipe/scale.ts`    | Porties omrekenen en afronden op kookbare hoeveelheden.    |
 | `src/lib/recipe/categories.ts` | Maaltijdmomenten en keukens: vocabulaire en normalisatie. |

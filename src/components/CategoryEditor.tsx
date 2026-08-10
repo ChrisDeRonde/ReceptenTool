@@ -2,7 +2,6 @@ import { updateCategories } from "@/app/actions";
 import {
   CUISINE_SUGGESTIONS,
   MEAL_TYPES,
-  MEAL_TYPE_EMOJI,
   MEAL_TYPE_LABELS,
   type MealType,
 } from "@/lib/recipe/categories";
@@ -43,10 +42,7 @@ export function CategoryEditor({
                   value={type}
                   defaultChecked={mealTypes.includes(type)}
                 />
-                <span>
-                  <span aria-hidden>{MEAL_TYPE_EMOJI[type]}</span>
-                  {MEAL_TYPE_LABELS[type]}
-                </span>
+                <span>{MEAL_TYPE_LABELS[type]}</span>
               </label>
             ))}
           </div>
