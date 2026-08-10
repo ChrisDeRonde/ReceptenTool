@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { toggleFavorite } from "@/app/actions";
 import { prisma } from "@/lib/db";
-import { recipeSchema, type Ingredient } from "@/lib/recipe/schema";
+import { formatAmount } from "@/lib/recipe/format";
+import { recipeSchema } from "@/lib/recipe/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,11 @@ export default async function RecipePage({
         {recipe.description && <p className="muted">{recipe.description}</p>}
 
         <div className="row" style={{ marginTop: "0.75rem" }}>
+          {recipe.steps.length > 0 && (
+            <Link href={`/recepten/${row.id}/koken`} className="button-link sans">
+              Kookmodus starten
+            </Link>
+          )}
           <form action={toggleFavorite}>
             <input type="hidden" name="id" value={row.id} />
             <button type="submit" className="secondary">
@@ -115,6 +121,10 @@ export default async function RecipePage({
               <li key={index}>
                 {step.title && <strong>{step.title}</strong>}
                 {step.text}
+                {step.timerMinutes !== null && (
+                  <span className="step-time sans">{step.timerMinutes} min</span>
+                )}
+                {step.tip && <span className="step-tip">{step.tip}</span>}
               </li>
             ))}
           </ol>
@@ -156,25 +166,3 @@ export default async function RecipePage({
   );
 }
 
-function formatAmount(item: Ingredient): string {
-  const quantity =
-    item.quantity === null ? "" : formatNumber(item.quantity);
-  return [quantity, item.unit].filter(Boolean).join(" ");
-}
-
-function formatNumber(value: number): string {
-  if (Number.isInteger(value)) return String(value);
-  // Half, kwart en derde lezen prettiger als breuk dan als 0,33.
-  const fractions: Array<[number, string]> = [
-    [0.25, "¼"],
-    [0.33, "⅓"],
-    [0.5, "½"],
-    [0.67, "⅔"],
-    [0.75, "¾"],
-  ];
-  const whole = Math.floor(value);
-  const rest = value - whole;
-  const match = fractions.find(([fraction]) => Math.abs(rest - fraction) < 0.02);
-  if (match) return whole > 0 ? `${whole}${match[1]}` : match[1];
-  return value.toFixed(2).replace(/\.?0+$/, "").replace(".", ",");
-}

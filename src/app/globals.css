@@ -328,3 +328,271 @@ button.secondary {
   color: var(--muted);
   padding: 3rem 1rem;
 }
+
+/* --- Kookmodus ---------------------------------------------------------- */
+
+/* Alles hier is een maat groter dan de rest van de app: je leest dit vanaf
+   een aanrecht, op armlengte, met natte handen. */
+
+.cook {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: max(1rem, env(safe-area-inset-top)) 1.25rem
+    calc(1rem + env(safe-area-inset-bottom));
+  background: var(--bg);
+}
+
+.cook-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.cook-exit {
+  text-decoration: none;
+  color: var(--muted);
+  padding: 0.4rem 0;
+}
+
+.cook-progress {
+  display: flex;
+  gap: 4px;
+  margin: 0.75rem 0 1.25rem;
+}
+
+.cook-progress span {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+}
+
+.cook-progress span.on {
+  background: var(--accent);
+}
+
+/* Timers die op een andere stap lopen; tikken door en zijn aanklikbaar. */
+.cook-elsewhere {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.chip {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.chip.ringing {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+.cook-step {
+  flex: 1;
+}
+
+.cook-step h1 {
+  font-size: 1.6rem;
+  line-height: 1.25;
+  margin: 0 0 1rem;
+  letter-spacing: -0.01em;
+}
+
+.cook-text {
+  font-size: 1.3rem;
+  line-height: 1.55;
+  margin: 0 0 1.25rem;
+}
+
+.cook-ingredients {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.25rem;
+}
+
+.cook-ingredients h2,
+.cook-tip h2 {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.cook-ingredients ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cook-ingredients li {
+  display: flex;
+  gap: 0.7rem;
+  padding: 0.35rem 0;
+  font-size: 1.05rem;
+}
+
+.cook-ingredients li:not(:last-child) {
+  border-bottom: 1px dashed var(--border);
+}
+
+.cook-ingredients .amount {
+  flex: 0 0 5.5rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.cook-timer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.25rem;
+  background: var(--surface);
+}
+
+.cook-timer-face span {
+  display: block;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.cook-timer-face strong {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 2rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.cook-timer.ringing {
+  border-color: var(--danger);
+  background: var(--danger);
+}
+
+.cook-timer.ringing .cook-timer-face span,
+.cook-timer.ringing .cook-timer-face strong {
+  color: #fff;
+}
+
+.cook-timer.ringing button {
+  background: #fff;
+  color: var(--danger);
+  border-color: #fff;
+}
+
+.cook-tip {
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.25rem;
+}
+
+.cook-tip p {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.cook-all {
+  margin: 1.5rem 0 0;
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+}
+
+.cook-all summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 0.35rem 0;
+}
+
+.cook-nav {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.85rem 0 calc(0.35rem + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, transparent, var(--bg) 35%);
+}
+
+.cook-nav button,
+.cook-done {
+  flex: 1;
+  /* Ruime raakvlakken: dit bedien je met een duim, niet met een muis. */
+  min-height: 3.25rem;
+  font-size: 1.05rem;
+}
+
+.cook-nav button.secondary {
+  flex: 0 0 32%;
+}
+
+.cook-nav button:disabled {
+  opacity: 0.35;
+}
+
+.cook-done {
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+/* Knop-vormige link, voor "Kookmodus starten" op de receptpagina. */
+.button-link {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 0.5rem 0.95rem;
+  font-size: 0.9rem;
+}
+
+/* Per-stap tijd en tip op de gewone receptpagina. */
+.step-time {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+  vertical-align: 0.1rem;
+}
+
+.step-tip {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.92rem;
+  color: var(--muted);
+  border-left: 2px solid var(--border);
+  padding-left: 0.7rem;
+}

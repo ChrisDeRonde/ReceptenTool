@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -10,12 +9,19 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // Kookmodus staat tot in de hoeken; de veilige zones regelen we in CSS.
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#fbfaf8" },
     { media: "(prefers-color-scheme: dark)", color: "#16140f" },
   ],
 };
 
+/**
+ * Alleen het document. De koptekst met navigatie zit in `(app)/layout.tsx`,
+ * zodat de kookmodus — die daarbuiten valt — een leeg scherm krijgt zonder
+ * app-chrome erboven.
+ */
 export default function RootLayout({
   children,
 }: {
@@ -23,22 +29,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="nl">
-      <body>
-        <div className="shell">
-          <header className="topbar">
-            <h1>
-              <Link href="/" style={{ color: "inherit", textDecoration: "none" }}>
-                Recepten
-              </Link>
-            </h1>
-            <nav>
-              <Link href="/">Alles</Link>
-              <Link href="/inbox">Inbox</Link>
-            </nav>
-          </header>
-          {children}
-        </div>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

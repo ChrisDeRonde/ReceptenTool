@@ -1,6 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { RECIPE_SYSTEM_PROMPT, buildUserMessage } from "./prompt";
-import { recipeJsonSchema, recipeSchema, type Recipe } from "./schema";
+import {
+  flattenIngredients,
+  recipeJsonSchema,
+  recipeSchema,
+  type Recipe,
+} from "./schema";
 
 let client: Anthropic | null = null;
 
@@ -85,5 +90,30 @@ export async function parseRecipe(input: ParseInput): Promise<Recipe> {
     );
   }
 
-  return result.data;
+  return normalize(result.data);
+}
+
+/**
+ * Het model telt de posities in de ingrediëntenlijst zelf uit, en dat kan
+ * misgaan. Een index buiten de lijst zou in de kookmodus het verkeerde
+ * ingrediënt tonen of crashen, dus die gooien we weg: liever een stap zonder
+ * ingrediëntenpaneel dan een stap met een verkeerde hoeveelheid.
+ */
+function normalize(recipe: Recipe): Recipe {
+  const ingredientCount = flattenIngredients(recipe).length;
+
+  return {
+    ...recipe,
+    steps: recipe.steps.map((step) => ({
+      ...step,
+      ingredientRefs: [...new Set(step.ingredientRefs)]
+        .filter((index) => Number.isInteger(index) && index >= 0 && index < ingredientCount)
+        .sort((a, b) => a - b),
+      // Een timer van 0 of negatief is geen timer.
+      timerMinutes:
+        step.timerMinutes !== null && step.timerMinutes > 0
+          ? step.timerMinutes
+          : null,
+    })),
+  };
 }

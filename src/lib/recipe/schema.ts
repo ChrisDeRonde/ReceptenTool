@@ -34,6 +34,19 @@ export const stepSchema = z.object({
   /** Optionele kop, bijv. "Pasta koken". */
   title: z.string().nullable(),
   text: z.string(),
+  /**
+   * Welke ingrediënten deze stap nodig heeft, als posities in de afgevlakte
+   * ingrediëntenlijst (groepen achter elkaar, vanaf 0). Verwijzingen in plaats
+   * van een kopie, zodat de kookmodus gegarandeerd dezelfde hoeveelheden toont
+   * als de ingrediëntenlijst.
+   *
+   * Default omdat recepten van vóór de kookmodus dit veld niet hebben.
+   */
+  ingredientRefs: z.array(z.number().int()).default([]),
+  /** Minuten die deze stap duurt, als er iets te klokken valt. */
+  timerMinutes: z.number().int().nullable().default(null),
+  /** Korte extra uitleg bij déze stap; los van de algemene tips. */
+  tip: z.string().nullable().default(null),
 });
 
 export const recipeSchema = z.object({
@@ -65,6 +78,23 @@ export type Ingredient = z.infer<typeof ingredientSchema>;
 export type IngredientGroup = z.infer<typeof ingredientGroupSchema>;
 export type Step = z.infer<typeof stepSchema>;
 export type Recipe = z.infer<typeof recipeSchema>;
+
+/**
+ * De ingrediëntgroepen achter elkaar tot één lijst. Dit is de nummering
+ * waarnaar `Step.ingredientRefs` verwijst — houd beide kanten gelijk.
+ */
+export function flattenIngredients(recipe: Recipe): Ingredient[] {
+  return recipe.ingredientGroups.flatMap((group) => group.items);
+}
+
+/** De ingrediënten die bij één stap horen, in de volgorde van de hoofdlijst. */
+export function ingredientsForStep(recipe: Recipe, step: Step): Ingredient[] {
+  const all = flattenIngredients(recipe);
+  return [...new Set(step.ingredientRefs)]
+    .filter((index) => index >= 0 && index < all.length)
+    .sort((a, b) => a - b)
+    .map((index) => all[index]);
+}
 
 const nullableString = { type: ["string", "null"] } as const;
 const nullableInt = { type: ["integer", "null"] } as const;
@@ -124,10 +154,13 @@ export const recipeJsonSchema = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["title", "text"],
+        required: ["title", "text", "ingredientRefs", "timerMinutes", "tip"],
         properties: {
           title: nullableString,
           text: { type: "string" },
+          ingredientRefs: { type: "array", items: { type: "integer" } },
+          timerMinutes: nullableInt,
+          tip: nullableString,
         },
       },
     },

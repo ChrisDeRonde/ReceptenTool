@@ -41,6 +41,24 @@ en waarop ze afketsten. Details en uitbreiden: **[docs/scraper.md](docs/scraper.
 Met `/api/extract-preview` test je een bron zonder een modelaanroep te doen —
 handig om te zien waarom iets niet lukt zonder tokens te verbranden.
 
+## Kookmodus
+
+Vanaf een recept start je `/recepten/<id>/koken`: één stap tegelijk, groot
+genoeg om vanaf het aanrecht te lezen. Per stap staan de ingrediënten die je op
+dát moment nodig hebt, met dezelfde hoeveelheden als de hoofdlijst — de stap
+verwijst ernaar in plaats van ze te kopiëren, zodat er niets uit de pas kan
+lopen.
+
+Heeft een stap een wachttijd, dan zit er een timer bij. Die blijft doorlopen als
+je naar een volgende stap gaat: bovenin verschijnt een knopje met de resterende
+tijd waarmee je terugspringt. Als hij afgaat piept en trilt de telefoon en
+kleurt de timer rood. Het scherm blijft aan zolang je in kookmodus zit.
+
+Deze modus leunt op drie velden per stap (`ingredientRefs`, `timerMinutes`,
+`tip`) die het model invult. Recepten van vóór deze functie missen die en
+werken gewoon, alleen zonder ingrediëntenpaneel en timer — verwerk de bron
+opnieuw vanuit de inbox om ze alsnog te krijgen.
+
 ## Aan de praat krijgen
 
 ```bash
@@ -71,6 +89,9 @@ op dezelfde endpoint worden aangesloten.
 | `src/app/api/share/`         | Ingest-endpoint voor iOS. Slaat op, verwerkt via `after()`. |
 | `src/app/api/items/[id]/`    | Statuscheck voor de Shortcut.                              |
 | `src/app/api/extract-preview/` | Alleen de scraper draaien, zonder modelaanroep.           |
+| `src/app/(app)/`             | De gewone app: koptekst met navigatie eromheen.            |
+| `src/app/recepten/[id]/koken/` | Kookmodus. Valt buiten `(app)` zodat er geen chrome boven staat. |
+| `src/components/CookMode.tsx` | Stapnavigatie, timers, wake lock.                         |
 | `src/app/actions.ts`         | Server actions voor de web-UI (toevoegen, opnieuw, wissen). |
 | `src/lib/extract/`           | De ophaalketen. `providers/` bevat de bronspecifieke strategieën. |
 | `src/lib/recipe/prompt.ts`   | **De huisstijl van een recept.** Hier sleutel je aan toon.  |
@@ -85,8 +106,11 @@ stap, of juist kortere stappen, dan pas je alleen dat bestand aan.
 
 Verander je de *vorm* (een veld erbij), dan hoort dat op drie plekken:
 `recipeSchema` en `recipeJsonSchema` in `src/lib/recipe/schema.ts`, en de
-weergave in `src/app/recepten/[id]/page.tsx`. TypeScript wijst de laatste twee
-vanzelf aan zodra je de eerste aanpast.
+weergave in `src/app/(app)/recepten/[id]/page.tsx`. TypeScript wijst de laatste
+twee vanzelf aan zodra je de eerste aanpast.
+
+Geef een nieuw veld een `.default()` in `recipeSchema`, anders lopen recepten
+die al in de database staan stuk op de validatie.
 
 ## Keuzes en hun grenzen
 

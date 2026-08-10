@@ -23,6 +23,21 @@ Stappen:
 - Verwerk temperaturen, pantijden en rusttijden in de stap zelf.
 - Verplaats voorbereiding die in de bron door de tekst heen staat naar de plek waar hij hoort.
 
+Per stap horen nog drie velden, die de kookmodus gebruikt om één stap tegelijk te tonen:
+
+- ingredientRefs: welke ingrediënten deze stap nodig heeft, als posities in de ingrediëntenlijst.
+  Tel de groepen achter elkaar door, beginnend bij 0: staat er een groep van 4 ingrediënten en daarna een groep van 3, dan is het eerste ingrediënt van de tweede groep positie 4.
+  Noem alleen wat in déze stap de pan of kom in gaat. Iets dat in stap 2 wordt gebakken en in stap 5 weer wordt toegevoegd, hoort bij allebei.
+  Zout, peper en olie die je overal gebruikt hoef je niet bij elke stap te herhalen — alleen waar de hoeveelheid ertoe doet.
+  Laat de lijst leeg bij een stap zonder ingrediënten, zoals "verwarm de oven voor".
+
+- timerMinutes: het aantal minuten dat deze stap duurt, als er iets te klokken valt — bakken, sudderen, rijzen, rusten, koelen.
+  Noemt de bron een marge ("8 tot 10 minuten"), neem dan de ondergrens: iemand kijkt liever te vroeg dan te laat.
+  Laat het null bij handelingen zonder wachttijd, zoals snijden of mengen, en bij stappen waar je op een waarneming stuurt zonder dat de bron een tijd geeft.
+
+- tip: één korte zin met wat er bij déze stap misgaat of waar je op moet letten, als daar aanleiding voor is.
+  Dit is de plek voor "de pan moet van het vuur af voordat het ei erbij gaat". Laat het null als je niets te melden hebt; verzin geen open deur.
+
 Porties en tijden:
 - Neem het aantal porties over uit de bron. Staat het er niet, schat het dan op basis van de hoeveelheden en zet dat in assumptions.
 - Tijden in hele minuten. Laat een tijd null als je hem niet kunt onderbouwen; verzin geen getallen.
