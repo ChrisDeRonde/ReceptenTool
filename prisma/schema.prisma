@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+/// Alles wat via de share sheet binnenkomt landt hier eerst, ongeacht of we er
+/// een recept van kunnen maken. Zo raakt er nooit iets kwijt en kun je een
+/// mislukte verwerking opnieuw draaien zonder opnieuw te delen.
+model ShareItem {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// pending | processing | done | failed | needs_input
+  status String @default("pending")
+
+  /// instagram | ah | website | text
+  sourceType String
+  sourceUrl  String?
+  /// Tekst die is meegedeeld (Instagram-caption, geplakt recept, notitie).
+  sharedText String?
+  /// Wie het deelde — vrij tekstveld, handig om te zien wie wat opsloeg.
+  sharedBy   String?
+
+  /// De opgehaalde platte tekst waar het model op werkt. Bewaard voor debugging
+  /// en om opnieuw te kunnen parsen zonder de bron nogmaals te bevragen.
+  rawText String?
+  error   String?
+
+  recipe Recipe?
+
+  @@index([status, createdAt])
+}
+
+model Recipe {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title       String
+  description String?
+  sourceUrl   String?
+  sourceName  String?
+  imageUrl    String?
+
+  servings     Int?
+  prepMinutes  Int?
+  cookMinutes  Int?
+  totalMinutes Int?
+
+  /// Volledige gestructureerde inhoud (ingrediëntgroepen, stappen, tips) als
+  /// JSON. Zie src/lib/recipe/schema.ts voor de vorm.
+  data String
+  /// Komma-gescheiden tags; SQLite kent geen array-type.
+  tags String @default("")
+
+  favorite Boolean @default(false)
+
+  shareItemId String?    @unique
+  shareItem   ShareItem? @relation(fields: [shareItemId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+}
