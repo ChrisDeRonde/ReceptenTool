@@ -16,3 +16,6 @@ prisma/migrations/dev.db*
 .DS_Store
 *.log
 src/generated/
+
+# Gefotografeerde recepten; horen bij de database, niet bij de code.
+uploads/

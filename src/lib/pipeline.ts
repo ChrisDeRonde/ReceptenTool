@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { errorMessage, extractSource } from "@/lib/extract";
+import { parsePhotos, readPhotoBase64 } from "@/lib/photos";
 import {
   normalizeCuisine,
   normalizeMealTypes,
@@ -25,6 +26,32 @@ export async function processShareItem(itemId: string): Promise<void> {
   });
 
   try {
+    const photos = parsePhotos(item.photos);
+    if (photos.length > 0) {
+      // Een gefotografeerde bron heeft geen ophaalketen: de foto's zíjn de
+      // bron en gaan rechtstreeks naar het model.
+      const images = await Promise.all(photos.map(readPhotoBase64));
+      const note = item.sharedText ?? "";
+
+      const recipe = await parseRecipe({
+        text: note,
+        sourceUrl: null,
+        sourceType: "foto",
+        images,
+      });
+
+      await saveRecipe({
+        itemId,
+        recipe,
+        sourceUrl: null,
+        sourceType: "foto",
+        fallbackImageUrl: null,
+        fallbackSourceName: null,
+        rawText: describePhotos(photos.length, note),
+      });
+      return;
+    }
+
     const extracted = await extractSource({
       url: item.sourceUrl,
       text: item.sharedText,
@@ -80,6 +107,16 @@ export async function processShareItem(itemId: string): Promise<void> {
       data: { status: "failed", error: errorMessage(error) },
     });
   }
+}
+
+/**
+ * Wat er in `rawText` komt te staan bij een fotobron. Dat veld is bedoeld om
+ * in de inbox te kunnen zien wat het model kreeg; bij foto's is dat geen tekst,
+ * dus zetten we er neer wát het kreeg.
+ */
+function describePhotos(count: number, note: string): string {
+  const head = count === 1 ? "1 foto" : `${count} foto's`;
+  return note.trim() ? `${head} met notitie: ${note.trim()}` : head;
 }
 
 async function saveRecipe(params: {

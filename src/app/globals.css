@@ -752,11 +752,86 @@ form.stack {
   color: var(--danger);
 }
 
+.panel .shots {
+  margin-top: 0.7rem;
+}
+
 .trail {
   font-size: 0.8rem;
   color: var(--muted);
   margin: 0.4rem 0 0;
   word-break: break-word;
+}
+
+/* --- Recept fotograferen ------------------------------------------------- */
+
+.photo-form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+/* De twee keuzeknoppen delen de breedte; naast elkaar past op elke telefoon. */
+.photo-form > .row:first-of-type {
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+}
+
+.photo-form > .row:first-of-type button {
+  flex: 1;
+  padding: 0 0.6rem;
+}
+
+.photo-form textarea {
+  min-height: 0;
+}
+
+/* Strip met wat je zojuist hebt gefotografeerd. */
+.shots {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.shot {
+  position: relative;
+  width: 5.5rem;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--sunken);
+  display: block;
+}
+
+.shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Het kruisje om een foto weer weg te halen. */
+.shot button {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  min-height: 0;
+  padding: 0;
+  border-radius: 999px;
+  background: var(--surface);
+  border-color: transparent;
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.form-error {
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--r-sm);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 0.87rem;
 }
 
 /* --- Indeling aanpassen -------------------------------------------------- */

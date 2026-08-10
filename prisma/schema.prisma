@@ -18,13 +18,17 @@ model ShareItem {
   /// pending | processing | done | failed | needs_input
   status String @default("pending")
 
-  /// instagram | ah | website | text
+  /// instagram | ah | website | text | foto
   sourceType String
   sourceUrl  String?
   /// Tekst die is meegedeeld (Instagram-caption, geplakt recept, notitie).
   sharedText String?
   /// Wie het deelde — vrij tekstveld, handig om te zien wie wat opsloeg.
   sharedBy   String?
+
+  /// Gefotografeerde bron: JSON-array van { name, mime }. De bestanden zelf
+  /// staan op schijf (zie src/lib/photos.ts), hier staat alleen de verwijzing.
+  photos String?
 
   /// De opgehaalde platte tekst waar het model op werkt. Bewaard voor debugging
   /// en om opnieuw te kunnen parsen zonder de bron nogmaals te bevragen.

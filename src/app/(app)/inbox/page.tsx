@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { addSource, deleteItem, retryItem } from "@/app/actions";
 import { Icon } from "@/components/Icon";
+import { PhotoForm } from "@/components/PhotoForm";
 import { prisma } from "@/lib/db";
 import { icons } from "@/lib/icons";
+import { parsePhotos, photoUrl } from "@/lib/photos";
 
 export const dynamic = "force-dynamic";
 
@@ -30,8 +32,17 @@ export default async function InboxPage() {
 
       <section>
         <h2 className="section" style={{ marginTop: 0 }}>
-          Handmatig toevoegen
+          Recept fotograferen
         </h2>
+        <p className="muted" style={{ margin: "-0.4rem 0 0.9rem", fontSize: "0.88rem" }}>
+          Een kookboekpagina, een kaartje, het schoolbord in een restaurant. Twee
+          pagina&apos;s? Maak er twee foto&apos;s van, dan worden het samen één recept.
+        </p>
+        <PhotoForm />
+      </section>
+
+      <section>
+        <h2 className="section">Link of tekst</h2>
         <form action={addSource} className="stack">
           <input type="url" name="url" placeholder="https://…" />
           <textarea
@@ -58,6 +69,7 @@ export default async function InboxPage() {
             label: item.status,
             tone: "",
           };
+          const photos = parsePhotos(item.photos);
 
           return (
             <div key={item.id} className="panel">
@@ -82,6 +94,23 @@ export default async function InboxPage() {
                   </span>
                 )}
               </div>
+
+              {photos.length > 0 && (
+                <div className="shots">
+                  {photos.map((photo) => (
+                    <a
+                      key={photo.name}
+                      href={photoUrl(photo)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="shot"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={photoUrl(photo)} alt="" loading="lazy" />
+                    </a>
+                  ))}
+                </div>
+              )}
 
               {item.sourceUrl && item.recipe && (
                 <p className="trail">

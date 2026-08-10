@@ -23,6 +23,8 @@ export type ParseInput = {
   text: string;
   sourceUrl: string | null;
   sourceType: string;
+  /** Foto's van de bron, in leesvolgorde. Base64, zonder data-URI-prefix. */
+  images?: { mime: string; data: string }[];
 };
 
 /**
@@ -54,7 +56,7 @@ export async function parseRecipe(input: ParseInput): Promise<Recipe> {
     messages: [
       {
         role: "user",
-        content: buildUserMessage(input),
+        content: buildContent(input),
       },
     ],
   });
@@ -91,6 +93,33 @@ export async function parseRecipe(input: ParseInput): Promise<Recipe> {
   }
 
   return normalize(result.data);
+}
+
+/**
+ * De inhoud van het gebruikersbericht: eerst de foto's, dan de opdracht.
+ *
+ * De volgorde is niet vrijblijvend — met de afbeeldingen eerst weet het model
+ * waar de instructie over gaat op het moment dat het die leest.
+ */
+function buildContent(input: ParseInput): Anthropic.ContentBlockParam[] {
+  const images = input.images ?? [];
+  const text = buildUserMessage({ ...input, photoCount: images.length });
+
+  if (images.length === 0) return [{ type: "text", text }];
+
+  return [
+    ...images.map(
+      (image): Anthropic.ContentBlockParam => ({
+        type: "image",
+        source: {
+          type: "base64",
+          media_type: image.mime as "image/jpeg" | "image/png" | "image/webp" | "image/gif",
+          data: image.data,
+        },
+      }),
+    ),
+    { type: "text", text },
+  ];
 }
 
 /**

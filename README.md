@@ -27,6 +27,7 @@ ophaalde en kun je het opnieuw proberen — desnoods met tekst die je zelf plakt
 
 | Bron                        | Hoe                                                    |
 | --------------------------- | ------------------------------------------------------ |
+| Een foto van een kookboek   | Rechtstreeks naar het model, meerdere pagina's tegelijk |
 | AH Allerhande, receptenblogs | schema.org/Recipe uit JSON-LD of microdata             |
 | Willekeurige webpagina's    | Leesbare paginatekst, ontdaan van navigatie en scripts |
 | Instagram                   | De publieke embed-pagina, zonder API-key of login      |
@@ -40,6 +41,31 @@ en waarop ze afketsten. Details en uitbreiden: **[docs/scraper.md](docs/scraper.
 
 Met `/api/extract-preview` test je een bron zonder een modelaanroep te doen —
 handig om te zien waarom iets niet lukt zonder tokens te verbranden.
+
+## Recept fotograferen
+
+In de inbox staat **Recept fotograferen**: één knop opent de camera van je
+telefoon (`capture="environment"`), de andere je fotobibliotheek. Een kookboek
+dat over twee pagina's loopt fotografeer je in twee keer — die gaan als één
+recept naar het model, in de volgorde waarin je ze koos. Maximaal vijf foto's
+van 5 MB per stuk.
+
+De foto's gaan rechtstreeks naar het model; de ophaalketen wordt overgeslagen,
+want de foto *is* de bron. Ze worden eerst opgeslagen en het inbox-item wordt
+aangemaakt vóór de modelaanroep, zodat een mislukte verwerking je foto niet
+kost — in de inbox staan de miniaturen en kun je het opnieuw proberen.
+
+De bestanden staan op schijf in `uploads/` (te verzetten met `UPLOAD_DIR`), niet
+in de database en niet in `public/`: ze horen bij je data, niet bij de code.
+`/api/foto/<naam>` is de enige weg ernaartoe en laat alleen namen door die wij
+zelf geschreven hebben.
+
+Twee dingen om te weten. **HEIC werkt niet** — dat leest het model niet, en
+omzetten vraagt een native afhankelijkheid. Kies je een bestaande HEIC-foto, dan
+krijg je een melding met wat je eraan kunt doen; een foto die je binnen de app
+maakt levert iOS zelf als JPEG aan. En **een foto van alleen een gerecht levert
+geen recept op**: de prompt verbiedt raden, dus dan krijg je een titel met een
+lege ingrediëntenlijst in plaats van een verzonnen recept.
 
 ## Uiterlijk
 
@@ -166,6 +192,8 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/recipe/categories.ts` | Maaltijdmomenten en keukens: vocabulaire en normalisatie. |
 | `src/app/actions.ts`         | Server actions voor de web-UI (toevoegen, opnieuw, wissen). |
 | `src/lib/extract/`           | De ophaalketen. `providers/` bevat de bronspecifieke strategieën. |
+| `src/lib/photos.ts`          | Gefotografeerde bronnen: opslaan, teruglezen, opruimen.     |
+| `src/components/PhotoForm.tsx` | Camera en bibliotheek, met miniaturen en een wachtstand.   |
 | `src/lib/recipe/prompt.ts`   | **De huisstijl van een recept.** Hier sleutel je aan toon.  |
 | `src/lib/recipe/schema.ts`   | Vorm van een recept — Zod plus JSON Schema, samen bijhouden. |
 | `src/lib/pipeline.ts`        | Rijgt extractie en parsing aan elkaar, bewaakt de status.   |
