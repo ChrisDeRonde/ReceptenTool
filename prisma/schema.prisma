@@ -64,6 +64,13 @@ model Recipe {
   /// Komma-gescheiden tags; SQLite kent geen array-type.
   tags String @default("")
 
+  /// Wanneer je dit eet: komma-gescheiden waarden uit MEAL_TYPES. Een gerecht
+  /// mag er meerdere hebben — soep is lunch én diner.
+  mealTypes String @default("")
+  /// Uit welke keuken het komt, bijv. "Italiaans". Kolom in plaats van een
+  /// veld in `data`, omdat er op gefilterd wordt.
+  cuisine String?
+
   favorite Boolean @default(false)
 
   shareItemId String?    @unique

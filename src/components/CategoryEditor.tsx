@@ -1,0 +1,72 @@
+import { updateCategories } from "@/app/actions";
+import {
+  CUISINE_SUGGESTIONS,
+  MEAL_TYPES,
+  MEAL_TYPE_LABELS,
+  type MealType,
+} from "@/lib/recipe/categories";
+
+/**
+ * De indeling van één recept bijstellen.
+ *
+ * Een `<details>` in plaats van een altijd zichtbaar formulier: normaal klopt
+ * wat het model koos en wil je alleen de badges zien. Werkt zonder JavaScript —
+ * het is een gewoon formulier met een server action.
+ */
+export function CategoryEditor({
+  recipeId,
+  mealTypes,
+  cuisine,
+}: {
+  recipeId: string;
+  mealTypes: MealType[];
+  cuisine: string | null;
+}) {
+  return (
+    <details className="category-editor">
+      <summary className="sans">Indeling aanpassen</summary>
+
+      <form action={updateCategories}>
+        <input type="hidden" name="id" value={recipeId} />
+
+        <fieldset>
+          <legend className="sans">Wanneer eet je dit?</legend>
+          <div className="checks">
+            {MEAL_TYPES.map((type) => (
+              <label key={type} className="check sans">
+                <input
+                  type="checkbox"
+                  name="mealTypes"
+                  value={type}
+                  defaultChecked={mealTypes.includes(type)}
+                />
+                {MEAL_TYPE_LABELS[type]}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend className="sans">Keuken</legend>
+          {/* Een datalist in plaats van een select: suggesties waar je uit kunt
+              kiezen, maar je kunt ook zelf iets typen dat er niet bij staat. */}
+          <input
+            type="text"
+            name="cuisine"
+            list="keukens"
+            defaultValue={cuisine ?? ""}
+            placeholder="Italiaans, Marokkaans, …"
+            autoComplete="off"
+          />
+          <datalist id="keukens">
+            {CUISINE_SUGGESTIONS.map((suggestion) => (
+              <option key={suggestion} value={suggestion} />
+            ))}
+          </datalist>
+        </fieldset>
+
+        <button type="submit">Indeling opslaan</button>
+      </form>
+    </details>
+  );
+}

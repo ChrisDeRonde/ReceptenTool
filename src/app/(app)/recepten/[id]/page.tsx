@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { toggleFavorite } from "@/app/actions";
+import { CategoryEditor } from "@/components/CategoryEditor";
 import { prisma } from "@/lib/db";
+import {
+  MEAL_TYPE_LABELS,
+  unpackMealTypes,
+} from "@/lib/recipe/categories";
 import { formatAmount } from "@/lib/recipe/format";
 import {
   MAX_SERVINGS,
@@ -40,6 +45,7 @@ export default async function RecipePage({
     );
   }
   const base = parsed.data;
+  const mealTypes = unpackMealTypes(row.mealTypes);
 
   // Het aantal porties staat in de URL, niet in de database: jij kookt voor
   // zes terwijl iemand anders hetzelfde recept voor twee bekijkt.
@@ -82,6 +88,30 @@ export default async function RecipePage({
           )}
         </div>
       </article>
+
+      {(mealTypes.length > 0 || row.cuisine) && (
+        <div className="categories">
+          {mealTypes.map((type) => (
+            <Link
+              key={type}
+              href={`/?maaltijd=${type}`}
+              className="badge"
+              title={`Alle ${MEAL_TYPE_LABELS[type].toLowerCase()}-recepten`}
+            >
+              {MEAL_TYPE_LABELS[type]}
+            </Link>
+          ))}
+          {row.cuisine && (
+            <Link
+              href={`/?keuken=${encodeURIComponent(row.cuisine)}`}
+              className="badge cuisine"
+              title={`Alle ${row.cuisine.toLowerCase()}e recepten`}
+            >
+              {row.cuisine}
+            </Link>
+          )}
+        </div>
+      )}
 
       <div className="facts">
         {servings !== null && (
@@ -211,6 +241,12 @@ export default async function RecipePage({
           </ul>
         </div>
       )}
+
+      <CategoryEditor
+        recipeId={row.id}
+        mealTypes={mealTypes}
+        cuisine={row.cuisine}
+      />
 
       {recipe.tags.length > 0 && (
         <div className="tags">

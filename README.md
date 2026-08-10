@@ -41,6 +41,31 @@ en waarop ze afketsten. Details en uitbreiden: **[docs/scraper.md](docs/scraper.
 Met `/api/extract-preview` test je een bron zonder een modelaanroep te doen —
 handig om te zien waarom iets niet lukt zonder tokens te verbranden.
 
+## Categorieën
+
+Elk recept krijgt bij het importeren een **maaltijdmoment** (ontbijt, lunch,
+diner, bijgerecht, snack, borrelhapje, dessert, bakken, drank, basis) en een
+**keuken** (Italiaans, Frans, …). Op de receptpagina staan ze als badges, en
+onder *Indeling aanpassen* verander je ze zelf — wat het model koos is een
+voorstel, geen eindoordeel.
+
+Een recept mag meerdere maaltijdmomenten hebben, want soep is lunch én diner.
+De keuken is er één, maar vrije tekst: "Scandinavisch" of "Fusion" kan gewoon,
+ook al staat het niet in de suggestielijst.
+
+Op het overzicht filter je erop via de chips bovenaan; die tonen alleen wat er
+daadwerkelijk in je collectie zit. Filters combineren (`?maaltijd=diner&keuken=Italiaans`)
+en staan in de URL, dus je kunt ze delen.
+
+De vocabulaire staat in `src/lib/recipe/categories.ts`. Maaltijdmomenten zijn
+bewust een gesloten lijst — met vrije tekst heb je binnen een maand "avondeten",
+"Avond" en "diner" naast elkaar en filtert het niet meer. Voor de varianten die
+het model of een oude import oplevert zit daar een synoniementabel.
+
+Categorieën zijn kolommen op `Recipe`, niet velden in de JSON-blob: er wordt op
+gefilterd, en jouw wijziging moet niet overschreven worden door modeloutput.
+Verwerk je een bron opnieuw, dan wordt de indeling wél opnieuw afgeleid.
+
 ## Porties omrekenen
 
 Op de receptpagina staat een teller bij **Personen**. Verhoog of verlaag je die,
@@ -111,6 +136,7 @@ op dezelfde endpoint worden aangesloten.
 | `src/app/recepten/[id]/koken/` | Kookmodus. Valt buiten `(app)` zodat er geen chrome boven staat. |
 | `src/components/CookMode.tsx` | Stapnavigatie, timers, wake lock.                         |
 | `src/lib/recipe/scale.ts`    | Porties omrekenen en afronden op kookbare hoeveelheden.    |
+| `src/lib/recipe/categories.ts` | Maaltijdmomenten en keukens: vocabulaire en normalisatie. |
 | `src/app/actions.ts`         | Server actions voor de web-UI (toevoegen, opnieuw, wissen). |
 | `src/lib/extract/`           | De ophaalketen. `providers/` bevat de bronspecifieke strategieën. |
 | `src/lib/recipe/prompt.ts`   | **De huisstijl van een recept.** Hier sleutel je aan toon.  |

@@ -3,6 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { detectSourceType } from "@/lib/extract";
+import {
+  normalizeCuisine,
+  normalizeMealTypes,
+  packMealTypes,
+} from "@/lib/recipe/categories";
 import { processShareItem } from "@/lib/pipeline";
 
 /**
@@ -63,6 +68,32 @@ export async function deleteItem(formData: FormData): Promise<void> {
   ]);
   revalidatePath("/inbox");
   revalidatePath("/");
+}
+
+/**
+ * De indeling die het model voorstelde bijstellen.
+ *
+ * Schrijft alleen naar de kolommen, niet naar `data`: dat blijft de onbewerkte
+ * modeloutput, zodat je altijd kunt zien wat er oorspronkelijk uit de bron
+ * kwam. Bij opnieuw verwerken wordt de indeling wél overschreven — dan is het
+ * recept immers helemaal opnieuw afgeleid.
+ */
+export async function updateCategories(formData: FormData): Promise<void> {
+  const id = readField(formData, "id");
+  if (!id) return;
+
+  const mealTypes = normalizeMealTypes(
+    formData.getAll("mealTypes").filter((value) => typeof value === "string"),
+  );
+  const cuisine = normalizeCuisine(readField(formData, "cuisine"));
+
+  await prisma.recipe.update({
+    where: { id },
+    data: { mealTypes: packMealTypes(mealTypes), cuisine },
+  });
+
+  revalidatePath("/");
+  revalidatePath(`/recepten/${id}`);
 }
 
 export async function toggleFavorite(formData: FormData): Promise<void> {

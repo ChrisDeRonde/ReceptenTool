@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MEAL_TYPES } from "./categories";
 
 /**
  * De vorm van een verwerkt recept.
@@ -61,8 +62,16 @@ export const recipeSchema = z.object({
   steps: z.array(stepSchema),
   /** Praktische tips, vervangingen, bewaaradvies. */
   tips: z.array(z.string()),
-  /** Kleine kleinletter-tags: "pasta", "italiaans", "vegetarisch", "snel". */
+  /** Kleine kleinletter-tags: "pasta", "vegetarisch", "snel". Geen keuken of
+   *  maaltijdmoment — die staan in cuisine en mealTypes. */
   tags: z.array(z.string()),
+  /**
+   * Wanneer je dit eet. Waarden uit MEAL_TYPES in categories.ts; meerdere mag.
+   * Default omdat recepten van vóór de categorieën dit veld niet hebben.
+   */
+  mealTypes: z.array(z.string()).default([]),
+  /** Uit welke keuken het komt, bijv. "Italiaans". Null als het nergens bij hoort. */
+  cuisine: z.string().nullable().default(null),
   /** Waar dit vandaan komt: "Allerhande", "@pastagrannies", "Leuke Recepten". */
   sourceName: z.string().nullable(),
   /** Directe URL naar een foto van het gerecht, als de bron er een had. */
@@ -113,6 +122,8 @@ export const recipeJsonSchema = {
     "steps",
     "tips",
     "tags",
+    "mealTypes",
+    "cuisine",
     "sourceName",
     "imageUrl",
     "assumptions",
@@ -166,6 +177,8 @@ export const recipeJsonSchema = {
     },
     tips: { type: "array", items: { type: "string" } },
     tags: { type: "array", items: { type: "string" } },
+    mealTypes: { type: "array", items: { type: "string", enum: [...MEAL_TYPES] } },
+    cuisine: nullableString,
     sourceName: nullableString,
     imageUrl: nullableString,
     assumptions: { type: "array", items: { type: "string" } },

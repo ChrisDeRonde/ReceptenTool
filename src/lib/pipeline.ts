@@ -1,5 +1,10 @@
 import { prisma } from "@/lib/db";
 import { errorMessage, extractSource } from "@/lib/extract";
+import {
+  normalizeCuisine,
+  normalizeMealTypes,
+  packMealTypes,
+} from "@/lib/recipe/categories";
 import { parseRecipe } from "@/lib/recipe/parse";
 import type { Recipe } from "@/lib/recipe/schema";
 
@@ -100,6 +105,11 @@ async function saveRecipe(params: {
     totalMinutes: recipe.totalMinutes,
     data: JSON.stringify(recipe),
     tags: recipe.tags.join(","),
+    // Categorieën krijgen een eigen kolom in plaats van alleen in `data` te
+    // staan: er wordt op gefilterd, en de gebruiker mag ze naderhand wijzigen
+    // zonder dat we de modeloutput hoeven te herschrijven.
+    mealTypes: packMealTypes(normalizeMealTypes(recipe.mealTypes)),
+    cuisine: normalizeCuisine(recipe.cuisine),
   };
 
   // Eén transactie: een item mag nooit op `done` staan zonder recept.
