@@ -596,3 +596,56 @@ button.secondary {
   border-left: 2px solid var(--border);
   padding-left: 0.7rem;
 }
+
+/* --- Porties omrekenen -------------------------------------------------- */
+
+.facts .servings {
+  /* Iets meer lucht dan de andere feiten: hier zit een bedienbaar element. */
+  min-width: 8rem;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  margin-top: 0.1rem;
+}
+
+.stepper a {
+  /* Duimformaat: dit wordt op een telefoon aangetikt. */
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.stepper a.off {
+  color: var(--muted);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.stepper strong {
+  min-width: 2rem;
+  text-align: center;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Melding over wat er niet meeschaalt. */
+.notice {
+  margin: 0 0 0.9rem;
+  padding: 0.6rem 0.8rem;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0 8px 8px 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}

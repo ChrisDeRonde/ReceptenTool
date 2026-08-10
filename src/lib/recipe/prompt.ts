@@ -22,6 +22,7 @@ Stappen:
 - Zet de waarneming erbij waarop iemand stuurt: kleur, geur, textuur, tijd. "Bak 8 minuten tot de ui glazig is" — niet alleen "bak de ui".
 - Verwerk temperaturen, pantijden en rusttijden in de stap zelf.
 - Verplaats voorbereiding die in de bron door de tekst heen staat naar de plek waar hij hoort.
+- Hoeveelheden horen in de ingrediëntenlijst, niet in de staptekst. Schrijf "voeg de bloem toe" of "roer de helft van de kaas erdoor", niet "voeg 250 g bloem toe". De lezer kan het aantal personen aanpassen, en dan rekent alleen de ingrediëntenlijst mee. Noem een getal in de staptekst alleen als het geen ingrediënt is — een oventemperatuur, een paneldikte, een aantal minuten.
 
 Per stap horen nog drie velden, die de kookmodus gebruikt om één stap tegelijk te tonen:
 

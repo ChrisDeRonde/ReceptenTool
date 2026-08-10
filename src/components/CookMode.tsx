@@ -13,12 +13,23 @@ type TimerState = {
   done: boolean;
 };
 
-export function CookMode({ recipe, recipeId }: { recipe: Recipe; recipeId: string }) {
+export function CookMode({
+  recipe,
+  baseServings,
+  backHref,
+}: {
+  recipe: Recipe;
+  /** Het aantal personen waar de bron van uitging, vóór omrekenen. */
+  baseServings: number | null;
+  /** Terug naar het recept, met het gekozen aantal personen erin. */
+  backHref: string;
+}) {
   const [current, setCurrent] = useState(0);
   const [timers, setTimers] = useState<Record<number, TimerState>>({});
   const [now, setNow] = useState(() => Date.now());
   const [showAll, setShowAll] = useState(false);
 
+  const scaled = baseServings !== null && recipe.servings !== baseServings;
   const step = recipe.steps[current];
   const stepIngredients = step ? ingredientsForStep(recipe, step) : [];
   const isLast = current === recipe.steps.length - 1;
@@ -93,7 +104,7 @@ export function CookMode({ recipe, recipeId }: { recipe: Recipe; recipeId: strin
     return (
       <div className="cook">
         <p className="empty">Dit recept heeft geen stappen om door te lopen.</p>
-        <Link href={`/recepten/${recipeId}`}>Terug naar het recept</Link>
+        <Link href={backHref}>Terug naar het recept</Link>
       </div>
     );
   }
@@ -113,11 +124,12 @@ export function CookMode({ recipe, recipeId }: { recipe: Recipe; recipeId: strin
   return (
     <div className="cook">
       <header className="cook-bar">
-        <Link href={`/recepten/${recipeId}`} className="cook-exit sans">
+        <Link href={backHref} className="cook-exit sans">
           ✕ Stoppen
         </Link>
         <span className="sans muted">
           Stap {current + 1} van {recipe.steps.length}
+          {recipe.servings !== null && ` · ${recipe.servings} pers.`}
         </span>
       </header>
 
@@ -146,6 +158,14 @@ export function CookMode({ recipe, recipeId }: { recipe: Recipe; recipeId: strin
       )}
 
       <main className="cook-step">
+        {scaled && current === 0 && (
+          <p className="notice sans">
+            Omgerekend van {baseServings} naar {recipe.servings} personen. De
+            hoeveelheden hieronder kloppen; getallen in de staptekst zijn niet
+            meegeschaald.
+          </p>
+        )}
+
         {step.title && <h1>{step.title}</h1>}
 
         {stepIngredients.length > 0 && (
@@ -243,7 +263,7 @@ export function CookMode({ recipe, recipeId }: { recipe: Recipe; recipeId: strin
           Vorige
         </button>
         {isLast ? (
-          <Link href={`/recepten/${recipeId}`} className="cook-done sans">
+          <Link href={backHref} className="cook-done sans">
             Klaar — eet smakelijk
           </Link>
         ) : (

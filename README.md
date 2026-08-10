@@ -41,6 +41,24 @@ en waarop ze afketsten. Details en uitbreiden: **[docs/scraper.md](docs/scraper.
 Met `/api/extract-preview` test je een bron zonder een modelaanroep te doen —
 handig om te zien waarom iets niet lukt zonder tokens te verbranden.
 
+## Porties omrekenen
+
+Op de receptpagina staat een teller bij **Personen**. Verhoog of verlaag je die,
+dan rekenen alle hoeveelheden naar verhouding mee en wordt er afgerond op iets
+waar je mee kunt koken: geen 266,67 g maar 265 g, geen 2,83 el maar 2¾ el.
+Grammen gaan in stappen van 0,5 tot 5 gram naargelang de hoeveelheid, lepels in
+kwarten, en telbare dingen als eieren en teentjes in halven.
+
+Het gekozen aantal staat in de URL (`?porties=6`), niet in de database — jij
+kookt voor zes terwijl je vriendin hetzelfde recept voor twee bekijkt. Het
+reist mee naar de kookmodus en weer terug.
+
+Wat **niet** meeschaalt: tijden (twee keer zoveel pasta kookt niet twee keer zo
+lang) en de staptekst. Getallen in lopende tekst herschrijven maakt meer stuk
+dan het oplost, dus die blijven staan zoals de bron ze gaf; als je omrekent
+verschijnt daarom een melding dat de ingrediëntenlijst leidend is. De prompt
+stuurt er wel op aan dat hoeveelheden in de lijst horen en niet in de stap.
+
 ## Kookmodus
 
 Vanaf een recept start je `/recepten/<id>/koken`: één stap tegelijk, groot
@@ -92,6 +110,7 @@ op dezelfde endpoint worden aangesloten.
 | `src/app/(app)/`             | De gewone app: koptekst met navigatie eromheen.            |
 | `src/app/recepten/[id]/koken/` | Kookmodus. Valt buiten `(app)` zodat er geen chrome boven staat. |
 | `src/components/CookMode.tsx` | Stapnavigatie, timers, wake lock.                         |
+| `src/lib/recipe/scale.ts`    | Porties omrekenen en afronden op kookbare hoeveelheden.    |
 | `src/app/actions.ts`         | Server actions voor de web-UI (toevoegen, opnieuw, wissen). |
 | `src/lib/extract/`           | De ophaalketen. `providers/` bevat de bronspecifieke strategieën. |
 | `src/lib/recipe/prompt.ts`   | **De huisstijl van een recept.** Hier sleutel je aan toon.  |

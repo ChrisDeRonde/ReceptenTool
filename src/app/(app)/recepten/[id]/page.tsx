@@ -3,16 +3,25 @@ import { notFound } from "next/navigation";
 import { toggleFavorite } from "@/app/actions";
 import { prisma } from "@/lib/db";
 import { formatAmount } from "@/lib/recipe/format";
+import {
+  MAX_SERVINGS,
+  MIN_SERVINGS,
+  parseServings,
+  scaleRecipe,
+} from "@/lib/recipe/scale";
 import { recipeSchema } from "@/lib/recipe/schema";
 
 export const dynamic = "force-dynamic";
 
 export default async function RecipePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { id } = await params;
+  const query = await searchParams;
   const row = await prisma.recipe.findUnique({ where: { id } });
   if (!row) notFound();
 
@@ -30,7 +39,19 @@ export default async function RecipePage({
       </main>
     );
   }
-  const recipe = parsed.data;
+  const base = parsed.data;
+
+  // Het aantal porties staat in de URL, niet in de database: jij kookt voor
+  // zes terwijl iemand anders hetzelfde recept voor twee bekijkt.
+  const servings = parseServings(query.porties, base.servings);
+  const recipe = servings === null ? base : scaleRecipe(base, servings);
+  const scaled = servings !== null && servings !== base.servings;
+
+  const cookHref = scaled
+    ? `/recepten/${row.id}/koken?porties=${servings}`
+    : `/recepten/${row.id}/koken`;
+  const servingsHref = (count: number) =>
+    `/recepten/${row.id}?porties=${count}`;
 
   return (
     <main>
@@ -44,7 +65,7 @@ export default async function RecipePage({
 
         <div className="row" style={{ marginTop: "0.75rem" }}>
           {recipe.steps.length > 0 && (
-            <Link href={`/recepten/${row.id}/koken`} className="button-link sans">
+            <Link href={cookHref} className="button-link sans">
               Kookmodus starten
             </Link>
           )}
@@ -63,7 +84,34 @@ export default async function RecipePage({
       </article>
 
       <div className="facts">
-        {recipe.servings !== null && (
+        {servings !== null && (
+          <div className="servings">
+            <span>Personen</span>
+            <div className="stepper sans">
+              {/* Links in plaats van knoppen: werkt zonder JavaScript en de
+                  gekozen hoeveelheid staat in de URL, dus je kunt hem delen
+                  en hij overleeft een refresh. */}
+              <Link
+                href={servingsHref(servings - 1)}
+                aria-disabled={servings <= MIN_SERVINGS}
+                className={servings <= MIN_SERVINGS ? "off" : ""}
+                aria-label="Eén persoon minder"
+              >
+                −
+              </Link>
+              <strong>{servings}</strong>
+              <Link
+                href={servingsHref(servings + 1)}
+                aria-disabled={servings >= MAX_SERVINGS}
+                className={servings >= MAX_SERVINGS ? "off" : ""}
+                aria-label="Eén persoon meer"
+              >
+                +
+              </Link>
+            </div>
+          </div>
+        )}
+        {servings === null && recipe.servings !== null && (
           <div>
             <span>Porties</span>
             {recipe.servings}
@@ -92,6 +140,17 @@ export default async function RecipePage({
       {recipe.ingredientGroups.length > 0 && (
         <section>
           <h2 className="section">Ingrediënten</h2>
+          {scaled && (
+            // Eerlijk zijn over wat er níét meeschaalt. Getallen in de
+            // staptekst herschrijven is tekstmanipulatie waarbij je meer
+            // stukmaakt dan je oplost, dus die blijven staan zoals de bron ze
+            // gaf. Hier staat waar je op moet letten.
+            <p className="notice sans">
+              Omgerekend van {base.servings} naar {servings} personen. Tijden en
+              getallen in de staptekst zijn niet meegeschaald — houd deze lijst
+              aan.
+            </p>
+          )}
           {recipe.ingredientGroups.map((group, groupIndex) => (
             <div key={groupIndex}>
               {group.name && <h3 className="group">{group.name}</h3>}
