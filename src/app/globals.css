@@ -6,7 +6,7 @@
   --muted: #6f6862;
   --accent: #9a4b28;
   --accent-soft: #f4ece6;
-  --danger: #a3342b;
+  --danger: #b3261e;
   --radius: 12px;
   --maxw: 44rem;
 }
@@ -20,7 +20,7 @@
     --muted: #a29a8f;
     --accent: #e0895c;
     --accent-soft: #2a221c;
-    --danger: #e08076;
+    --danger: #ff8a80;
   }
 }
 
@@ -133,6 +133,8 @@ a {
 
 .badge.failed {
   color: var(--danger);
+  border-color: var(--danger);
+  background: transparent;
 }
 
 .recipe-hero {
