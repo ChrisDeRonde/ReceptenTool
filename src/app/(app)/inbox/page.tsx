@@ -12,6 +12,7 @@ import {
   backupAgeDays,
   readBackupStatus,
 } from "@/lib/backup";
+import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
 import { PhotoForm } from "@/components/PhotoForm";
 import { prisma } from "@/lib/db";
@@ -92,8 +93,8 @@ export default async function InboxPage() {
             <div key={item.id} className="panel">
               <div className="row" style={{ justifyContent: "space-between" }}>
                 <span className={`status ${status.tone}`}>{status.label}</span>
-                <span className="muted" style={{ fontSize: "0.8rem" }}>
-                  {item.sharedBy && `${item.sharedBy} · `}
+                <span className="deler">
+                  {item.sharedBy && <Avatar name={item.sharedBy} size={20} />}
                   {item.createdAt.toLocaleString("nl-NL")}
                 </span>
               </div>
@@ -229,7 +230,7 @@ async function WhoLine() {
       <Icon icon={icons.people} size={15} />
       {who ? (
         <>
-          Je noteert als <strong>{who}</strong>.{" "}
+          Je noteert als <Avatar name={who} size={20} withName />.{" "}
           <Link href="/wie?verder=%2Finbox">Wisselen</Link>
         </>
       ) : (

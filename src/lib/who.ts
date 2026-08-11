@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { configuredPeople } from "@/lib/people";
 
 /**
  * Wie zit er achter het scherm?
@@ -16,18 +17,7 @@ export const WHO_COOKIE = "wie";
 /** Een jaar; je wisselt van naam als je dat wilt, niet omdat het verloopt. */
 const MAX_AGE_SECONDS = 365 * 24 * 60 * 60;
 
-/**
- * De namen uit `APP_USERS`, komma-gescheiden. Staat die leeg, dan is de hele
- * functie uit: geen vraag bij het inloggen, geen namen in beeld, en alles
- * werkt zoals het zonder werkte.
- */
-export function configuredPeople(): string[] {
-  return (process.env.APP_USERS ?? "")
-    .split(",")
-    .map((name) => name.trim())
-    .filter((name) => name.length > 0 && name.length <= 24)
-    .slice(0, 8);
-}
+export { configuredPeople };
 
 /**
  * De gekozen naam, of null.

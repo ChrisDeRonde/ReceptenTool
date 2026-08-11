@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
 import { icons } from "@/lib/icons";
 import { configuredPeople, currentPerson } from "@/lib/who";
@@ -54,6 +55,7 @@ export default async function WhoPage({
               value={person}
               className={person === current ? "on" : "secondary"}
             >
+              <Avatar name={person} size={26} />
               {person}
             </button>
           ))}

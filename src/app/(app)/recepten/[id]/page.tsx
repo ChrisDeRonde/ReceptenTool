@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { toggleFavorite } from "@/app/actions";
+import { Avatar } from "@/components/Avatar";
 import { CategoryEditor } from "@/components/CategoryEditor";
 import { CookLog } from "@/components/CookLog";
 import { Icon } from "@/components/Icon";
@@ -103,7 +104,7 @@ export default async function RecipePage({
         <div className="actions">
           {recipe.steps.length > 0 && (
             <Link href={cookHref} className="button grow">
-              Kookmodus starten
+              Kookmodus
             </Link>
           )}
           {/* Het aantal personen van dít moment gaat mee naar het menu:
@@ -298,7 +299,13 @@ export default async function RecipePage({
       {row.editedAt && (
         <p className="edited">
           <Icon icon={icons.edit} size={13} />
-          {row.editedBy ? `Bijgewerkt door ${row.editedBy} op ` : "Zelf bijgewerkt op "}
+          {row.editedBy ? (
+            <>
+              Bijgewerkt door <Avatar name={row.editedBy} size={18} withName /> op{" "}
+            </>
+          ) : (
+            "Zelf bijgewerkt op "
+          )}
           {row.editedAt.toLocaleDateString("nl-NL", {
             day: "numeric",
             month: "long",

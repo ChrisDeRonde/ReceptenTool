@@ -1,4 +1,5 @@
 import { deleteCookLog, logCook } from "@/app/actions";
+import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
 import { icons } from "@/lib/icons";
 import { toParam } from "@/lib/menu/week";
@@ -68,25 +69,30 @@ export function CookLog({
         </p>
       ) : (
         <>
+          {/* Eén regel met de feiten, en de oordelen eronder als losse
+              blokjes. Alles achter elkaar in één zin brak af met een punt aan
+              het begin van de volgende regel. */}
           <p className="cooklog-sum">
             {entries.length === 1 ? "Eén keer gemaakt" : `${entries.length} keer gemaakt`}
-            {perPerson.length > 1 ? (
-              perPerson.map((person) => (
-                <span key={person.name} className="per-person">
-                  {" · "}
-                  {person.name} <Stars value={Math.round(person.average)} />
-                </span>
-              ))
-            ) : average !== null ? (
+            {perPerson.length <= 1 && average !== null && (
               <>
                 {" · "}
-                <Stars value={Math.round(average)} />{" "}
-                {average.toFixed(1).replace(".", ",")}
+                <Stars value={Math.round(average)} /> {average.toFixed(1).replace(".", ",")}
               </>
-            ) : null}
-            {" · "}
-            laatst {when(entries[0].cookedAt)}
+            )}
+            {" · "}laatst {when(entries[0].cookedAt)}
           </p>
+
+          {perPerson.length > 1 && (
+            <div className="oordelen">
+              {perPerson.map((person) => (
+                <span key={person.name} className="per-person">
+                  <Avatar name={person.name} size={20} withName />
+                  <Stars value={Math.round(person.average)} />
+                </span>
+              ))}
+            </div>
+          )}
 
           <ul className="cooklog-list">
             {entries.map((entry) => (
@@ -99,7 +105,7 @@ export function CookLog({
                       year: "numeric",
                     })}
                   </span>
-                  {entry.who && <span className="who">{entry.who}</span>}
+                  {entry.who && <Avatar name={entry.who} size={22} withName />}
                   {entry.rating !== null && <Stars value={entry.rating} />}
                   {entry.again === true && (
                     <span className="again yes">
@@ -130,7 +136,11 @@ export function CookLog({
         <summary>
           <Icon icon={icons.note} size={16} />
           {entries.length === 0 ? "Vastleggen dat je het maakte" : "Nog een keer noteren"}
-          {who && <span className="as-who">als {who}</span>}
+          {who && (
+            <span className="as-who">
+              <Avatar name={who} size={20} withName />
+            </span>
+          )}
         </summary>
 
         <form action={logCook}>

@@ -399,6 +399,12 @@ Alleen namen die in `APP_USERS` staan worden geaccepteerd. Het koekje is aan te
 passen door wie het krijgt en die waarde belandt in de database en op het
 scherm; de lijst is dus de begrenzing.
 
+Elke naam krijgt een rondje met zijn initiaal, in een kleur uit de bestaande
+pastelset. Die kleur volgt de **volgorde van `APP_USERS`** en niet een hash van
+de naam: met vier tinten kregen "Chris" en "Sanne" allebei dezelfde kleur, en
+dan doet het rondje precies niet waar het voor is. Namen die niet in de lijst
+staan — een `sharedBy` van vroeger bijvoorbeeld — vallen terug op een hash.
+
 Laat je `APP_USERS` leeg, dan is de hele functie uit: geen vraag, geen namen,
 en alles werkt zoals het zonder werkte.
 
@@ -512,6 +518,8 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/recipe/duplicate.ts` | Herkennen dat je een recept al hebt: bron-URL en titel.    |
 | `src/components/CookLog.tsx` | Gemaakt: sterren, opmerking, vaker eten.                    |
 | `src/lib/who.ts`             | Het naamkaartje: wie noteert er. Geen tweede slot.          |
+| `src/lib/people.ts`          | Wie er zijn en welke kleur bij wie hoort.                   |
+| `src/components/Avatar.tsx`  | Een naam als rondje met initiaal.                           |
 | `src/app/manifest.ts`        | Naam, kleuren en iconen voor "zet op beginscherm".          |
 | `public/sw.js`               | Service worker: cache en offlinescherm. Hoog `VERSIE` op.   |
 | `scripts/iconen.mjs`         | Alle icoonmaten uit één bron (`npm run iconen`).            |

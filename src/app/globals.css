@@ -5,6 +5,7 @@
    verzadigde kleur, haarlijnen in plaats van randen. Titels in Newsreader
    (schreef, met optische maat), de rest in Inter. Beide staan lokaal in
    public/fonts — er gaat niets naar buiten.
+   Twee inkten: koppen op --ink en zwaar gezet, lopende tekst op --body.
    Wat je aantikt blijft minstens 44px hoog, ook als het er licht uitziet.
    ========================================================================== */
 
@@ -31,7 +32,11 @@
   --surface: #fffdfa;
   --sunken: #f2ede4;
   --line: #e9e2d6;
-  --ink: #33302b;
+  /* Twee inkten in plaats van één: koppen staan een tint donkerder dan de
+     lopende tekst. Samen met het zwaardere schreefletter-gewicht scheelt dat
+     genoeg om een kop te herkennen zonder hem groter te maken. */
+  --ink: #24221e;
+  --body: #423e37;
   --muted: #8a8378;
 
   /* Salie: donker genoeg voor tekst op papier, met een pastelvlak ernaast. */
@@ -42,6 +47,17 @@
   /* Twee pasteltinten voor accenten die geen actie zijn. */
   --sand: #f4e9d7;
   --blush: #f6e2da;
+
+  /* Vier vlak-en-inkt-paren voor de avatars; dezelfde familie, geen
+     nieuwe kleur die verder nergens voorkomt. */
+  --t0: var(--accent-soft);
+  --t0-ink: #3d6152;
+  --t1: var(--sand);
+  --t1-ink: #7d6234;
+  --t2: var(--blush);
+  --t2-ink: #8f4c3f;
+  --t3: #dde3ea;
+  --t3-ink: #4c6178;
 
   --danger: #a3564a;
   --danger-soft: #f6e2da;
@@ -66,7 +82,8 @@
     --surface: #211f1c;
     --sunken: #282520;
     --line: #332f29;
-    --ink: #ece7df;
+    --ink: #f7f2ea;
+    --body: #ded8ce;
     --muted: #9c948a;
 
     --accent: #8fb9a3;
@@ -75,6 +92,15 @@
 
     --sand: #322c22;
     --blush: #33241f;
+
+    --t0: #26332c;
+    --t0-ink: #9cc4ae;
+    --t1: #322c22;
+    --t1-ink: #d7b47c;
+    --t2: #33241f;
+    --t2-ink: #dfa08e;
+    --t3: #232a31;
+    --t3-ink: #a3bcd4;
 
     --danger: #d9917f;
     --danger-soft: #33241f;
@@ -95,7 +121,7 @@ body {
 
 body {
   background: var(--bg);
-  color: var(--ink);
+  color: var(--body);
   font-family: var(--font);
   font-size: 16px;
   font-weight: 400;
@@ -117,8 +143,11 @@ h1,
 h2,
 h3 {
   font-family: var(--font-display);
-  font-weight: 500;
-  letter-spacing: 0;
+  /* Newsreader loopt tot 600; daar aan de bovenkant gaan zitten geeft de kop
+     gewicht zonder dat hij groter hoeft. */
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.005em;
   line-height: 1.2;
   margin: 0;
 }
@@ -308,8 +337,11 @@ h2.section.near {
   padding: 0 0.85rem;
   border-radius: var(--r-sm);
   border: 1px solid var(--line);
-  background: transparent;
-  color: var(--muted);
+  /* Een eigen vlak in plaats van doorzichtig: op het papier verdwenen de
+     filters anders in de achtergrond en zag je niet dat het knoppen waren. */
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--body);
   font: inherit;
   font-size: 0.82rem;
   text-decoration: none;
@@ -324,6 +356,9 @@ h2.section.near {
 
 .chip.ghost {
   border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
   text-decoration: underline;
 }
 
@@ -2000,7 +2035,18 @@ button.add:hover {
   font-size: 0.72rem;
 }
 
+/* De oordelen per persoon, als losse blokjes onder de samenvatting. */
+.oordelen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+  margin: -0.5rem 0 0.9rem;
+}
+
 .per-person {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   white-space: nowrap;
 }
 
@@ -2010,4 +2056,52 @@ button.add:hover {
   padding-left: 0.5rem;
   font-size: 0.78rem;
   color: var(--muted);
+}
+
+/* --- Avatars -------------------------------------------------------------- */
+
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  /* De schreefletter geeft de initiaal hetzelfde karakter als de koppen. */
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1;
+  /* Een letter in een rondje staat optisch iets te hoog. */
+  padding-top: 0.06em;
+  user-select: none;
+}
+
+.avatar.t0 { background: var(--t0); color: var(--t0-ink); }
+.avatar.t1 { background: var(--t1); color: var(--t1-ink); }
+.avatar.t2 { background: var(--t2); color: var(--t2-ink); }
+.avatar.t3 { background: var(--t3); color: var(--t3-ink); }
+
+.avatar-naam {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Wie een item deelde, met het tijdstip erachter. */
+.deler {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* De naam in de kooklog en in "je noteert als" krijgt het gewicht van de
+   lopende tekst, niet van een label. */
+.avatar-naam {
+  color: var(--body);
+  font-size: 0.85rem;
+}
+
+.whoami .avatar-naam,
+.edited .avatar-naam {
+  font-size: inherit;
 }
