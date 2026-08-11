@@ -67,6 +67,31 @@ maakt levert iOS zelf als JPEG aan. En **een foto van alleen een gerecht levert
 geen recept op**: de prompt verbiedt raden, dus dan krijg je een titel met een
 lege ingrediëntenlijst in plaats van een verzonnen recept.
 
+## Foto's bij het recept
+
+De foto die bij een recept hoort wordt bij het importeren **gedownload** en
+naast de gefotografeerde bronnen in de uploadmap gezet. Daarvoor stond in
+`imageUrl` het adres bij de bron en linkten we daar rechtstreeks naartoe; dat
+werkt tot de dag dat die site hem verplaatst of hotlinken blokkeert, en dan is
+je overzicht een raster met lege vakken zonder dat iets je waarschuwt. Het
+scheelt bovendien een verzoek naar buiten elke keer dat je de lijst opent.
+
+- De bestandsnaam is een hash van de bron-URL. Hetzelfde recept nog eens
+  importeren, of twee recepten met dezelfde foto, leveren daardoor één bestand
+  op in plaats van twee.
+- Alleen JPEG, PNG, WebP en GIF, maximaal 8 MB, en na tien seconden geeft hij
+  het op. SVG gaat er bewust niet in: dat is een document dat scripts kan
+  bevatten.
+- Lukt het niet, dan blijft de oorspronkelijke URL staan. Een recept zonder
+  eigen foto is nog steeds een recept; dit mag een import niet laten
+  struikelen.
+- Verwijder je een recept, dan gaat de foto mee — maar alleen als geen ander
+  recept naar hetzelfde bestand wijst.
+
+Recepten die er al stonden linken nog naar buiten. Onderaan de Inbox staat
+hoeveel dat er zijn, met een knop om ze op te halen (vijfentwintig per klik).
+Die regel verdwijnt zodra er niets meer te halen valt.
+
 ## Zoeken
 
 Boven het overzicht staat een zoekveld dat meezoekt terwijl je typt. Het kijkt

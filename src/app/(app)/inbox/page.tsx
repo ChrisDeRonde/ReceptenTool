@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { addSource, deleteItem, retryItem } from "@/app/actions";
+import {
+  addSource,
+  deleteItem,
+  fetchRecipeImages,
+  retryItem,
+} from "@/app/actions";
 import { logout } from "@/app/login/actions";
 import {
   STALE_AFTER_DAYS,
@@ -167,6 +172,7 @@ export default async function InboxPage() {
         })
       )}
 
+      <RemoteImageLine />
       <BackupLine />
 
       {/* De inbox is de servicehoek van de app, dus hier hangt ook de knop om
@@ -178,6 +184,35 @@ export default async function InboxPage() {
         </button>
       </form>
     </main>
+  );
+}
+
+/**
+ * Recepten die hun foto nog bij de bron ophalen.
+ *
+ * Nieuwe imports slaan hem meteen zelf op; dit is voor alles wat er al stond.
+ * De regel verdwijnt zodra er niets meer te halen valt, dus hij staat er niet
+ * voor eeuwig als meubilair.
+ */
+async function RemoteImageLine() {
+  const remaining = await prisma.recipe.count({
+    where: { imageUrl: { startsWith: "http" } },
+  });
+  if (remaining === 0) return null;
+
+  return (
+    <form action={fetchRecipeImages} className="backup">
+      <Icon icon={icons.photo} size={15} />
+      <span>
+        {remaining === 1
+          ? "Eén recept haalt zijn foto nog bij de bron op."
+          : `${remaining} recepten halen hun foto nog bij de bron op.`}{" "}
+        Zolang dat zo is, verdwijnt de foto als die site hem verplaatst.{" "}
+        <button type="submit" className="linky">
+          Nu binnenhalen
+        </button>
+      </span>
+    </form>
   );
 }
 

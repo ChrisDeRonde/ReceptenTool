@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { errorMessage, extractSource } from "@/lib/extract";
+import { storeRemoteImage } from "@/lib/images";
 import { parsePhotos, readPhotoBase64 } from "@/lib/photos";
 import {
   normalizeCuisine,
@@ -130,12 +131,18 @@ async function saveRecipe(params: {
 }): Promise<void> {
   const { recipe } = params;
 
+  // De foto bij het recept naar eigen schijf halen, zodat het overzicht niet
+  // leegloopt als de bron hem ooit verplaatst. Lukt het niet, dan blijft de
+  // oorspronkelijke URL staan — dan werkt het zoals het hiervoor werkte.
+  const remoteImage = recipe.imageUrl ?? params.fallbackImageUrl;
+  const imageUrl = (await storeRemoteImage(remoteImage)) ?? remoteImage;
+
   const data = {
     title: recipe.title,
     description: recipe.description,
     sourceUrl: params.sourceUrl,
     sourceName: recipe.sourceName ?? params.fallbackSourceName,
-    imageUrl: recipe.imageUrl ?? params.fallbackImageUrl,
+    imageUrl,
     servings: recipe.servings,
     prepMinutes: recipe.prepMinutes,
     cookMinutes: recipe.cookMinutes,

@@ -1556,3 +1556,25 @@ button.round.primary {
   padding-top: 0;
   border-top: 0;
 }
+
+/* Een knop die als link in een zin staat. */
+button.linky {
+  display: inline;
+  padding: 0;
+  min-height: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+/* De regel over externe foto's deelt de opmaak met die over de back-up, maar
+   is een formulier en mag geen tweede streep krijgen. */
+.backup + .backup {
+  margin-top: 0.9rem;
+  padding-top: 0;
+  border-top: 0;
+}

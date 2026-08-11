@@ -9,6 +9,7 @@ import {
   normalizeMealTypes,
   packMealTypes,
 } from "@/lib/recipe/categories";
+import { localImageName, storeRemoteImage } from "@/lib/images";
 import { processShareItem } from "@/lib/pipeline";
 import { deletePhotos, parsePhotos, savePhotos } from "@/lib/photos";
 import { fromParam, midnight, startOfWeek, toParam } from "@/lib/menu/week";
@@ -104,7 +105,7 @@ export async function deleteItem(formData: FormData): Promise<void> {
   // dat rommel op schijf. Andersom zou je een item met een dode foto krijgen.
   const item = await prisma.shareItem.findUnique({
     where: { id },
-    select: { photos: true },
+    select: { photos: true, recipe: { select: { imageUrl: true } } },
   });
 
   await prisma.$transaction([
@@ -113,6 +114,7 @@ export async function deleteItem(formData: FormData): Promise<void> {
   ]);
 
   await deletePhotos(parsePhotos(item?.photos));
+  await deleteImageIfUnused(item?.recipe?.imageUrl ?? null);
   revalidatePath("/inbox");
   revalidatePath("/");
 }
@@ -229,4 +231,55 @@ export async function clearWeek(formData: FormData): Promise<void> {
 
   await prisma.menuEntry.deleteMany({ where: { date: { gte: monday, lt: end } } });
   revalidatePath("/weekmenu");
+}
+
+/**
+ * Bestaande recepten die nog naar de bron linken alsnog binnenhalen.
+ *
+ * Nieuwe imports doen dit vanzelf; dit is voor alles wat er al stond. Per klik
+ * een handvol, zodat het antwoord niet minutenlang wegblijft — de knop in de
+ * Inbox laat zien hoeveel er nog over zijn.
+ */
+const BACKFILL_BATCH = 25;
+const BACKFILL_PARALLEL = 5;
+
+export async function fetchRecipeImages(): Promise<void> {
+  const rows = await prisma.recipe.findMany({
+    where: { imageUrl: { startsWith: "http" } },
+    select: { id: true, imageUrl: true },
+    take: BACKFILL_BATCH,
+  });
+
+  // In kleine groepjes tegelijk: één voor één is onnodig traag, en alles
+  // tegelijk is onaardig tegen de site waar het vandaan komt.
+  for (let i = 0; i < rows.length; i += BACKFILL_PARALLEL) {
+    await Promise.all(
+      rows.slice(i, i + BACKFILL_PARALLEL).map(async (row) => {
+        const stored = await storeRemoteImage(row.imageUrl);
+        if (!stored) return;
+        await prisma.recipe.update({
+          where: { id: row.id },
+          data: { imageUrl: stored },
+        });
+      }),
+    );
+  }
+
+  revalidatePath("/inbox");
+  revalidatePath("/");
+}
+
+/**
+ * Een gedownloade afbeelding opruimen zodra geen enkel recept er nog naar
+ * wijst. Twee recepten van dezelfde site kunnen dezelfde foto delen — de naam
+ * is immers een hash van de URL — dus eerst tellen, dan pas weggooien.
+ */
+async function deleteImageIfUnused(imageUrl: string | null): Promise<void> {
+  const name = localImageName(imageUrl);
+  if (!name || !imageUrl) return;
+
+  const others = await prisma.recipe.count({ where: { imageUrl } });
+  if (others > 0) return;
+
+  await deletePhotos([{ name, mime: "" }]);
 }
