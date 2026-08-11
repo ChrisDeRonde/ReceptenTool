@@ -247,6 +247,43 @@ Twee signalen, op twee momenten:
 Opnieuw verwerken van een item is geen duplicaat van zichzelf; het eigen recept
 telt niet mee bij het zoeken.
 
+## Misschien iets?
+
+Onder het weekmenu staan drie voorstellen, met de reden erbij. Een suggestie
+zonder uitleg is een gokautomaat, en die vertrouw je na twee keer niet meer —
+dus er staat *Nog nooit gemaakt*, *Wilden jullie vaker eten*, of *7 weken
+geleden*.
+
+De afweging staat in `src/lib/menu/suggest.ts`, als pure functie zonder
+database ernaast zodat hij te testen is. Drie signalen:
+
+- **Rust** weegt het zwaarst. Een lijst die op waardering sorteert is een lijst
+  van vijf keer hetzelfde; de vraag is wat ligt te verstoffen dat jullie
+  eigenlijk goed vonden. Nooit gemaakt telt als lang geleden, maar begrensd:
+  iets dat je gisteren opsloeg heeft nog geen achterstand.
+- **Waardering**: het gemiddelde uit de kooklog, plus een bonus als iemand
+  *vaker eten* aanvinkte. Zei iedereen die er iets van vond juist "nee, niet
+  vaker", dan valt het recept helemaal af — dat is geen lage score maar een
+  antwoord.
+- **Afwisseling**: staat er al iets uit dezelfde keuken op het menu, dan zakt
+  het fors. Zeven dagen pasta is geen weekmenu.
+
+Wat al gepland staat doet niet mee.
+
+## Recept weggooien
+
+Onderaan het recept, dichtgeklapt. Openklappen laat zien wat er verdwijnt en
+pas dan staat er een knop. Twee stappen omdat een `confirm()` niets doet zonder
+JavaScript, en dit is het enige onomkeerbare op de pagina.
+
+Het bijbehorende inbox-item gaat mee — dat is boekhouding van de import, en een
+item dat op "klaar" staat zonder recept is een raadsel in plaats van een spoor.
+Weekmenu-regels en kooklogregels verdwijnen vanzelf via een cascade, en de
+gedownloade foto wordt opgeruimd tenzij een ander recept ernaar wijst.
+
+Dit kon eerder alleen via de Inbox, en die toont vijftig items: een recept van
+zestig imports geleden was daarmee onbereikbaar geworden.
+
 ## Recept bewerken
 
 Op elk recept staat een potloodje. Daar pas je alles aan wat het model ervan
@@ -519,6 +556,8 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/recipe/search.ts`   | Zoeken op naam en ingrediënt; woordmatching.                |
 | `src/lib/menu/week.ts`       | Weken en dagen; maandag als begin.                          |
 | `src/lib/menu/list.ts`       | Een week aan recepten optellen tot één boodschappenlijst.   |
+| `src/lib/menu/suggest.ts`    | Welke recepten het weekmenu voorstelt, en waarom.           |
+| `tests/`                     | `npm test`; alias-hook plus de tests zelf.                  |
 | `src/lib/shopping/units.ts`  | Hoeveelheden optellen en namen gelijktrekken.               |
 | `src/lib/shopping/aisles.ts` | Onder welk kopje een ingrediënt hoort.                      |
 | `src/components/PhotoForm.tsx` | Camera en bibliotheek, met miniaturen en een wachtstand.   |
@@ -573,6 +612,29 @@ die al in de database staan stuk op de validatie.
   afweging om en heb je echte accounts nodig, met gehashte wachtwoorden, een
   rem per account en een herstelroute.
 
+## Tests
+
+```bash
+npm test
+```
+
+Node's eigen testrunner over de pure functies: zoeken, hoeveelheden lezen en
+schrijven, porties omrekenen, boodschappen samenvoegen en indelen, weken en
+categorieën, het inlogkoekje, duplicaatherkenning en de weekmenu-voorstellen.
+Geen framework, geen bouwstap — `tests/resolve-alias.mjs` vertaalt `@/lib/x`
+naar `src/lib/x` en plakt de ontbrekende `.ts` erachter, en Node 22 streept de
+types zelf af.
+
+De keuze wat er wél in staat: alles wat een oordeel velt over Nederlandse taal
+of over geld. Daar zaten alle bugs die ik met de hand vond, en daar vond deze
+suite er bij het schrijven meteen nog twee: `rode paprika's` werd niet
+samengevoegd met `rode paprika`, en `rundergehakt` belandde onder *Overig*
+terwijl `gehakt` gewoon werkte.
+
+Wat er niet in staat: alles wat een database of een browser nodig heeft. Dat
+test ik met de hand tegen een draaiende app; het zou hier een testomgeving
+optuigen die groter is dan de app zelf.
+
 ## Commando's
 
 | Commando            | Doet                                     |
@@ -584,3 +646,4 @@ die al in de database staan stuk op de validatie.
 | `npm run db:studio` | Database in de browser bekijken          |
 | `npm run db:backup` | Database + foto's naar `backups/`        |
 | `npm run iconen`    | App-iconen opnieuw tekenen               |
+| `npm test`          | De testsuite over de pure functies       |

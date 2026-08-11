@@ -2132,3 +2132,80 @@ button.add:hover {
 .edited .avatar-naam {
   font-size: inherit;
 }
+
+/* --- Recept weggooien ----------------------------------------------------- */
+
+/* Dichtgeklapt, onderaan, en de bevestiging zit erin. Het enige onomkeerbare
+   op deze pagina hoort niet naast de knoppen te staan die je vaak gebruikt. */
+.weggooien {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.weggooien > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.6rem;
+  color: var(--muted);
+  font-size: 0.86rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.weggooien > summary::-webkit-details-marker {
+  display: none;
+}
+
+.weggooien[open] > summary {
+  color: var(--danger);
+}
+
+.weggooien p {
+  margin: 0.2rem 0 0.9rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+button.gevaar {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--bg);
+}
+
+/* --- Voorstellen voor het weekmenu ---------------------------------------- */
+
+.voorstellen ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.voorstellen li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.15rem 0.8rem;
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.voorstel-titel {
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  text-decoration: none;
+}
+
+/* De reden onder de titel, en de knop ernaast over beide regels. */
+.voorstel-reden {
+  grid-column: 1;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.voorstellen li .chip {
+  grid-column: 2;
+  grid-row: 1 / 3;
+}

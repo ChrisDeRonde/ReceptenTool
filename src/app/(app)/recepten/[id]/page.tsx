@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { toggleFavorite } from "@/app/actions";
+import { deleteRecipe, toggleFavorite } from "@/app/actions";
 import { Avatar } from "@/components/Avatar";
 import { CategoryEditor } from "@/components/CategoryEditor";
 import { CookLog } from "@/components/CookLog";
@@ -326,6 +326,27 @@ export default async function RecipePage({
           ))}
         </div>
       )}
+
+      {/* Twee stappen, zonder JavaScript: een `confirm()` doet het niet als er
+          geen scripts draaien, en dit is het enige onomkeerbare op de pagina. */}
+      <details className="weggooien">
+        <summary>
+          <Icon icon={icons.delete} size={15} />
+          Recept verwijderen
+        </summary>
+        <p>
+          Weg is weg. Het gaat ook uit je weekmenu en je kooklog, en het
+          bijbehorende item verdwijnt uit de inbox.
+          {row.sourceUrl && " De bron blijft natuurlijk gewoon bestaan."}
+        </p>
+        <form action={deleteRecipe}>
+          <input type="hidden" name="id" value={row.id} />
+          <button type="submit" className="gevaar">
+            <Icon icon={icons.delete} size={16} />
+            Ja, verwijder {recipe.title}
+          </button>
+        </form>
+      </details>
     </main>
   );
 }

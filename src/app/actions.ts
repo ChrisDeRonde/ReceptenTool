@@ -525,3 +525,45 @@ export async function deleteCookLog(formData: FormData): Promise<void> {
   revalidatePath(`/recepten/${log.recipeId}`);
   revalidatePath("/");
 }
+
+/**
+ * Een recept weggooien, vanaf het recept zelf.
+ *
+ * Dit kon alleen via het bijbehorende item in de Inbox, en die toont er
+ * vijftig — een recept van zestig imports geleden was daarmee onbereikbaar
+ * geworden. Het inbox-item gaat mee: dat is boekhouding van de import, en een
+ * item dat op "klaar" staat zonder recept is een raadsel in plaats van een
+ * spoor.
+ *
+ * Weekmenu-regels en kooklogregels verdwijnen vanzelf; die hangen met een
+ * cascade aan het recept.
+ */
+export async function deleteRecipe(formData: FormData): Promise<void> {
+  const id = readField(formData, "id");
+  if (!id) return;
+
+  const recipe = await prisma.recipe.findUnique({
+    where: { id },
+    select: { imageUrl: true, shareItemId: true, shareItem: { select: { photos: true } } },
+  });
+  if (!recipe) return;
+
+  // Eerst de rijen weg, dan de bestanden: blijft er een bestand achter, dan is
+  // dat rommel op schijf. Andersom houd je een recept met een dode foto over.
+  // Het item gaat als eerste; dat zet `shareItemId` op null en daarna mag het
+  // recept weg zonder dat de volgorde nog uitmaakt.
+  await prisma.$transaction(async (tx) => {
+    if (recipe.shareItemId) {
+      await tx.shareItem.delete({ where: { id: recipe.shareItemId } });
+    }
+    await tx.recipe.delete({ where: { id } });
+  });
+
+  await deletePhotos(parsePhotos(recipe.shareItem?.photos));
+  await deleteImageIfUnused(recipe.imageUrl);
+
+  revalidatePath("/");
+  revalidatePath("/inbox");
+  revalidatePath("/weekmenu");
+  redirect("/");
+}

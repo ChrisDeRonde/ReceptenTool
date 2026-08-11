@@ -140,6 +140,7 @@ const KEYWORDS: Array<[Aisle, string[]]> = [
  * bij, want kipfilet en zalmfilet liggen niet bij elkaar.
  */
 const HEADS: Array<[Aisle, string[]]> = [
+  ["vlees", ["gehakt"]],
   ["groente", ["kool", "sla", "peper", "appel", "peen", "bes", "ui"]],
   ["zuivel", ["room", "melk", "yoghurt", "boter", "kwark", "ei"]],
   ["kaas", ["kaas", "worst", "ham"]],

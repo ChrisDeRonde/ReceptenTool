@@ -14,6 +14,7 @@ import {
   weekLabel,
   weekRange,
 } from "@/lib/menu/week";
+import { suggest } from "@/lib/menu/suggest";
 import { MAX_SERVINGS, MIN_SERVINGS } from "@/lib/recipe/scale";
 
 export const dynamic = "force-dynamic";
@@ -41,7 +42,9 @@ export default async function WeekMenuPage({
   const entries = await prisma.menuEntry.findMany({
     where: { date: weekRange(monday) },
     orderBy: [{ date: "asc" }, { createdAt: "asc" }],
-    include: { recipe: { select: { id: true, title: true, servings: true } } },
+    include: {
+      recipe: { select: { id: true, title: true, servings: true, cuisine: true } },
+    },
   });
 
   const byDay = new Map<string, typeof entries>();
@@ -169,6 +172,11 @@ export default async function WeekMenuPage({
         })}
       </div>
 
+      <Voorstellen
+        gepland={entries.map((e) => ({ id: e.recipe.id, cuisine: e.recipe.cuisine }))}
+        week={weekParam}
+      />
+
       {entries.length > 0 && (
         <div className="row week-actions">
           <Link href={`/weekmenu/boodschappen?week=${weekParam}`} className="button">
@@ -184,6 +192,77 @@ export default async function WeekMenuPage({
         </div>
       )}
     </main>
+  );
+}
+
+/**
+ * Wat zullen we eten?
+ *
+ * Alleen als er iets te suggereren valt: zonder kooklog en zonder recepten is
+ * dit een leeg vak met een belofte. De reden staat erbij — een voorstel zonder
+ * uitleg is een gokautomaat, en die vertrouw je na twee keer niet meer.
+ */
+async function Voorstellen({
+  gepland,
+  week,
+}: {
+  gepland: Array<{ id: string; cuisine: string | null }>;
+  week: string;
+}) {
+  const rows = await prisma.recipe.findMany({
+    select: {
+      id: true,
+      title: true,
+      cuisine: true,
+      favorite: true,
+      createdAt: true,
+      cookLogs: { select: { cookedAt: true, rating: true, again: true } },
+    },
+    take: 500,
+  });
+
+  const voorstellen = suggest(
+    rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      cuisine: row.cuisine,
+      favorite: row.favorite,
+      createdAt: row.createdAt,
+      cookedAt: row.cookLogs.map((log) => log.cookedAt),
+      ratings: row.cookLogs
+        .map((log) => log.rating)
+        .filter((rating): rating is number => rating !== null),
+      again: {
+        yes: row.cookLogs.filter((log) => log.again === true).length,
+        no: row.cookLogs.filter((log) => log.again === false).length,
+      },
+    })),
+    { gepland, vandaag: new Date() },
+  );
+
+  if (voorstellen.length === 0) return null;
+
+  return (
+    <section className="voorstellen">
+      <h2 className="section">Misschien iets?</h2>
+      <ul>
+        {voorstellen.map((voorstel) => (
+          <li key={voorstel.id}>
+            <Link href={`/recepten/${voorstel.id}`} className="voorstel-titel">
+              {voorstel.title}
+            </Link>
+            <span className="voorstel-reden">{voorstel.reason}</span>
+            <Link
+              href={`/weekmenu?week=${week}&kies=${voorstel.id}`}
+              className="chip"
+              aria-label={`${voorstel.title} inplannen`}
+            >
+              Inplannen
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

@@ -203,5 +203,19 @@ export function canonicalName(name: string): string {
     .toLowerCase()
     .replace(/\s+/g, " ")
     .replace(/^(de|het|een)\s+/, "");
-  return SINGULARS.get(clean) ?? clean;
+
+  const heel = SINGULARS.get(clean);
+  if (heel) return heel;
+
+  // Ook als er een bijvoeglijk naamwoord voor staat: "rode paprika's" hoort op
+  // dezelfde regel te belanden als "rode paprika". De tabel blijft de
+  // autoriteit — we passen hem alleen toe op het laatste woord, want daar zit
+  // in het Nederlands de kern.
+  const spatie = clean.lastIndexOf(" ");
+  if (spatie > 0) {
+    const kern = SINGULARS.get(clean.slice(spatie + 1));
+    if (kern) return `${clean.slice(0, spatie)} ${kern}`;
+  }
+
+  return clean;
 }
