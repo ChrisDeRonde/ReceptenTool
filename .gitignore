@@ -19,3 +19,6 @@ src/generated/
 
 # Gefotografeerde recepten; horen bij de database, niet bij de code.
 uploads/
+
+# Back-ups van allebei. Die horen op een andere machine, niet in git.
+backups/

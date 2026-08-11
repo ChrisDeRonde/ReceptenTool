@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { addSource, deleteItem, retryItem } from "@/app/actions";
 import { logout } from "@/app/login/actions";
+import {
+  STALE_AFTER_DAYS,
+  backupAgeDays,
+  readBackupStatus,
+} from "@/lib/backup";
 import { Icon } from "@/components/Icon";
 import { PhotoForm } from "@/components/PhotoForm";
 import { prisma } from "@/lib/db";
@@ -162,6 +167,8 @@ export default async function InboxPage() {
         })
       )}
 
+      <BackupLine />
+
       {/* De inbox is de servicehoek van de app, dus hier hangt ook de knop om
           eruit te gaan. */}
       <form action={logout} className="signout">
@@ -172,6 +179,47 @@ export default async function InboxPage() {
       </form>
     </main>
   );
+}
+
+/**
+ * Draait de back-up nog?
+ *
+ * De klassieke manier waarop een back-up faalt is niet met een foutmelding
+ * maar met stilte: de cron staat uit, de schijf zit vol, en je merkt het pas
+ * op de dag dat je hem nodig hebt. Eén regel hier maakt dat zichtbaar.
+ */
+async function BackupLine() {
+  const status = await readBackupStatus();
+
+  if (!status) {
+    return (
+      <p className="backup none">
+        <Icon icon={icons.settings} size={15} />
+        Nog geen back-up gemaakt. Draai <code>npm run db:backup</code>, of zet
+        hem in de cron.
+      </p>
+    );
+  }
+
+  const days = backupAgeDays(status);
+  const stale = days > STALE_AFTER_DAYS;
+
+  return (
+    <p className={`backup ${stale ? "none" : ""}`}>
+      <Icon icon={stale ? icons.settings : icons.done} size={15} />
+      Laatste back-up {relative(days)}: {status.recipes}{" "}
+      {status.recipes === 1 ? "recept" : "recepten"} en {status.photos}{" "}
+      {status.photos === 1 ? "foto" : "foto's"}.
+      {stale && " Dat is langer geleden dan de bedoeling is."}
+    </p>
+  );
+}
+
+function relative(days: number): string {
+  if (days < 1 / 24) return "zojuist";
+  if (days < 1) return `${Math.round(days * 24)} uur geleden`;
+  const whole = Math.round(days);
+  return whole === 1 ? "gisteren" : `${whole} dagen geleden`;
 }
 
 function truncate(value: string, max: number): string {

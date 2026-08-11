@@ -1515,3 +1515,44 @@ button.round.primary {
   padding-top: 1.25rem;
   border-top: 1px solid var(--line);
 }
+
+/* Staat de back-up nog aan? Eén regel onderaan de inbox. */
+.backup {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  margin: 2.5rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.backup svg {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+  color: var(--accent);
+}
+
+.backup.none {
+  color: var(--danger);
+}
+
+.backup.none svg {
+  color: var(--danger);
+}
+
+.backup code {
+  font-size: 0.95em;
+  padding: 0.05em 0.3em;
+  border-radius: 4px;
+  background: var(--sunken);
+}
+
+/* Dan hoeft de uitlogknop er geen tweede streep bovenop te zetten. */
+.backup + .signout {
+  margin-top: 0.9rem;
+  padding-top: 0;
+  border-top: 0;
+}

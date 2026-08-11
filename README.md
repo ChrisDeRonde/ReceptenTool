@@ -270,6 +270,54 @@ pagina is de variant waar je er één vergeet.
 
 Uitloggen staat onderaan de Inbox.
 
+## Back-up
+
+```bash
+npm run db:backup
+```
+
+Zet hem in de cron — één keer per nacht is genoeg:
+
+```
+15 3 * * * cd /pad/naar/receptentool && /usr/bin/npm run db:backup >> backups/log.txt 2>&1
+```
+
+Elke run maakt één map `backups/2026-08-11_031500/` met daarin `recepten.db`,
+`fotos.tar` en `fotos.lijst`. De database **en** de foto's samen, want los van
+elkaar heb je er niets aan: in de database staat alleen de verwijzing naar een
+foto, dus een database zonder uploadmap is een receptenlijst met lege vakken.
+
+- De database wordt niet gekopieerd maar gedumpt met `VACUUM INTO`. Een
+  draaiende SQLite-database met `cp` kopiëren levert een half bestand op als er
+  net iets geschreven wordt; dit mag gewoon terwijl de app draait.
+- Daarna gaat er meteen een `integrity_check` overheen en wordt het aantal
+  recepten geteld. Zonder die controle weet je alleen dát er een bestand
+  ontstond — niet de zekerheid die je wilt op de dag dat je hem nodig hebt.
+- Foto's krijgen bij het opslaan een nieuwe naam en veranderen daarna nooit
+  meer, dus is er meestal niets nieuws. In dat geval wordt het archief van de
+  vorige run **hard gelinkt** in plaats van opnieuw geschreven: elke map blijft
+  compleet, maar veertien dagen foto's kosten één keer schijfruimte.
+- Veertien runs blijven staan (`BACKUP_KEEP`), oudere worden opgeruimd.
+- Mislukt er iets, dan sluit het script af met een foutcode, zodat cron je
+  mailt in plaats van het stil te laten falen.
+
+Onderaan de Inbox staat wanneer de laatste back-up liep. Is dat langer dan drie
+dagen geleden, dan kleurt die regel rood — een back-up faalt zelden met een
+foutmelding en meestal met stilte.
+
+Terugzetten is met de hand, en dat is met opzet: automatisch terugzetten is
+precies de knop die je op het verkeerde moment indrukt.
+
+```bash
+cp backups/2026-08-11_031500/recepten.db dev.db
+tar -xf backups/2026-08-11_031500/fotos.tar    # zet uploads/ terug
+```
+
+De backupmap staat in `.gitignore` en hoort op een **andere machine** te
+belanden — een schijf in dezelfde behuizing gaat samen met de rest stuk. Wijs
+`BACKUP_DIR` naar een aangekoppelde schijf, of laat rsync of rclone de map
+oppikken.
+
 ## Delen vanaf iOS
 
 Zie **[docs/ios-delen.md](docs/ios-delen.md)**. Kort samengevat: Safari op iOS
