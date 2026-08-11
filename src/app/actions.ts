@@ -1,7 +1,7 @@
 "use server";
 
-import { after } from "next/server";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { detectSourceType } from "@/lib/extract";
 import {
@@ -11,12 +11,7 @@ import {
 } from "@/lib/recipe/categories";
 import { processShareItem } from "@/lib/pipeline";
 import { deletePhotos, parsePhotos, savePhotos } from "@/lib/photos";
-import { aisleFor, isStore } from "@/lib/shopping/aisles";
-import { addIngredients, getStore, setStore } from "@/lib/shopping/list";
-import { fillMatches } from "@/lib/shopping/lookup";
-import { canonicalName } from "@/lib/shopping/units";
-import { parseServings, scaleRecipe } from "@/lib/recipe/scale";
-import { flattenIngredients, recipeSchema } from "@/lib/recipe/schema";
+import { fromParam, midnight, startOfWeek, toParam } from "@/lib/menu/week";
 
 /**
  * Server actions voor de web-UI. De iOS-kant praat met /api/share; dit is voor
@@ -173,92 +168,65 @@ function readField(formData: FormData, key: string): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-/* --- Boodschappenlijst ---------------------------------------------------- */
+/* --- Weekmenu ------------------------------------------------------------- */
 
 /**
- * Alle ingrediënten van een recept op de lijst zetten, in de hoeveelheid die
- * op dat moment op het scherm staat: kook je voor zes, dan koop je voor zes.
+ * Een gerecht op een dag zetten.
+ *
+ * Het aantal personen gaat mee zoals het op dat moment op je scherm stond:
+ * plan je zondag voor zes, dan telt de boodschappenlijst die zondag ook voor
+ * zes mee. Null betekent "zoals het recept het bedoelde".
  */
-export async function addRecipeToList(formData: FormData): Promise<void> {
-  const id = readField(formData, "id");
-  if (!id) return;
+export async function addToMenu(formData: FormData): Promise<void> {
+  const recipeId = readField(formData, "recipeId");
+  const day = readField(formData, "dag");
+  if (!recipeId || !day) return;
 
-  const row = await prisma.recipe.findUnique({ where: { id } });
-  if (!row) return;
+  const date = fromParam(day);
+  const servings = Number(readField(formData, "porties") ?? "");
 
-  const parsed = recipeSchema.safeParse(JSON.parse(row.data));
-  if (!parsed.success) return;
-
-  const servings = parseServings(
-    readField(formData, "porties") ?? undefined,
-    parsed.data.servings,
-  );
-  const recipe =
-    servings === null ? parsed.data : scaleRecipe(parsed.data, servings);
-
-  const ingredients = flattenIngredients(recipe);
-  await addIngredients(ingredients, recipe.title);
-
-  // Prijzen erbij zoeken gebeurt ná het antwoord: de lijst staat er meteen,
-  // de prijzen druppelen erachteraan. Wachten zou de enige trage stap in de
-  // hele app introduceren.
-  const store = await getStore();
-  after(async () => {
-    await fillMatches(store, ingredients.map((item) => item.name));
-  });
-
-  revalidatePath("/lijst");
-  revalidatePath(`/recepten/${id}`);
-}
-
-/** Zelf iets toevoegen dat bij geen recept hoort: wc-papier, een fles wijn. */
-export async function addListItem(formData: FormData): Promise<void> {
-  const name = readField(formData, "name");
-  if (!name) return;
-
-  await prisma.shoppingItem.create({
+  await prisma.menuEntry.create({
     data: {
-      name,
-      key: canonicalName(name),
-      quantity: null,
-      unit: null,
-      aisle: aisleFor(canonicalName(name)),
-      fromRecipe: null,
+      recipeId,
+      date: midnight(date),
+      servings: Number.isInteger(servings) && servings > 0 ? servings : null,
     },
   });
 
-  const store = await getStore();
-  after(async () => {
-    await fillMatches(store, [name]);
+  revalidatePath("/weekmenu");
+  redirect(`/weekmenu?week=${toParam(startOfWeek(date))}`);
+}
+
+export async function removeFromMenu(formData: FormData): Promise<void> {
+  const id = readField(formData, "id");
+  if (!id) return;
+
+  await prisma.menuEntry.delete({ where: { id } });
+  revalidatePath("/weekmenu");
+}
+
+/** Meer of minder personen voor één gerecht op één dag. */
+export async function setMenuServings(formData: FormData): Promise<void> {
+  const id = readField(formData, "id");
+  const value = Number(readField(formData, "porties") ?? "");
+  if (!id || !Number.isInteger(value)) return;
+
+  await prisma.menuEntry.update({
+    where: { id },
+    data: { servings: value > 0 ? Math.min(value, 24) : null },
   });
-
-  revalidatePath("/lijst");
+  revalidatePath("/weekmenu");
 }
 
-export async function toggleListItem(id: string, checked: boolean): Promise<void> {
-  await prisma.shoppingItem.update({ where: { id }, data: { checked } });
-  revalidatePath("/lijst");
-}
+/** Een hele week leegmaken, bijvoorbeeld als je opnieuw begint met plannen. */
+export async function clearWeek(formData: FormData): Promise<void> {
+  const week = readField(formData, "week");
+  if (!week) return;
 
-export async function removeListItem(id: string): Promise<void> {
-  await prisma.shoppingItem.delete({ where: { id } });
-  revalidatePath("/lijst");
-}
+  const monday = startOfWeek(fromParam(week));
+  const end = new Date(monday);
+  end.setDate(end.getDate() + 7);
 
-/** Na de kassa: weg met wat in het karretje lag, de rest blijft staan. */
-export async function clearCheckedItems(): Promise<void> {
-  await prisma.shoppingItem.deleteMany({ where: { checked: true } });
-  revalidatePath("/lijst");
-}
-
-export async function clearList(): Promise<void> {
-  await prisma.shoppingItem.deleteMany({});
-  revalidatePath("/lijst");
-}
-
-export async function chooseStore(formData: FormData): Promise<void> {
-  const store = readField(formData, "store");
-  if (!isStore(store)) return;
-  await setStore(store);
-  revalidatePath("/lijst");
+  await prisma.menuEntry.deleteMany({ where: { date: { gte: monday, lt: end } } });
+  revalidatePath("/weekmenu");
 }

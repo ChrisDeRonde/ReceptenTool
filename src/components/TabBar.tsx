@@ -9,13 +9,7 @@ import { icons } from "@/lib/icons";
  * De tabbalk onderaan. Client component omdat het moet weten waar je bent; de
  * rest van de app-chrome blijft server-side.
  */
-export function TabBar({
-  openItems,
-  listItems,
-}: {
-  openItems: number;
-  listItems: number;
-}) {
+export function TabBar({ openItems }: { openItems: number }) {
   const pathname = usePathname();
   const on = (prefix: string) =>
     prefix === "/" ? pathname === "/" || pathname.startsWith("/recepten") : pathname.startsWith(prefix);
@@ -26,10 +20,9 @@ export function TabBar({
         <Icon icon={icons.recipes} size={22} />
         Recepten
       </Link>
-      <Link href="/lijst" className={on("/lijst") ? "on" : ""}>
-        <Icon icon={icons.basket} size={22} />
-        Lijst
-        {listItems > 0 && <span className="count">{listItems}</span>}
+      <Link href="/weekmenu" className={on("/weekmenu") ? "on" : ""}>
+        <Icon icon={icons.menu} size={22} />
+        Weekmenu
       </Link>
       <Link href="/inbox" className={on("/inbox") ? "on" : ""}>
         <Icon icon={icons.inbox} size={22} />

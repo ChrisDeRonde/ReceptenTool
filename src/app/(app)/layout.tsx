@@ -11,17 +11,14 @@ export default async function AppLayout({
 }) {
   // Het aantal wachtende items staat als teller op de Inbox-tab, zodat je niet
   // hoeft te kijken of er iets is blijven hangen.
-  const [openItems, listItems] = await Promise.all([
-    prisma.shareItem.count({
-      where: { status: { in: ["pending", "processing", "needs_input", "failed"] } },
-    }),
-    prisma.shoppingItem.count({ where: { checked: false } }),
-  ]);
+  const openItems = await prisma.shareItem.count({
+    where: { status: { in: ["pending", "processing", "needs_input", "failed"] } },
+  });
 
   return (
     <div className="shell">
       {children}
-      <TabBar openItems={openItems} listItems={listItems} />
+      <TabBar openItems={openItems} />
     </div>
   );
 }

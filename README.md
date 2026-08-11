@@ -67,87 +67,48 @@ maakt levert iOS zelf als JPEG aan. En **een foto van alleen een gerecht levert
 geen recept op**: de prompt verbiedt raden, dus dan krijg je een titel met een
 lege ingrediëntenlijst in plaats van een verzonnen recept.
 
-## Boodschappenlijst
+## Weekmenu en boodschappen
 
-Op een recept staat een mandje-knop: die zet alle ingrediënten op één gedeelde
-lijst, in de hoeveelheid die op dat moment op je scherm staat — heb je naar zes
-personen omgerekend, dan koop je voor zes.
+Op een recept staat een kalenderknop: die neemt het recept "in de hand" mee naar
+het weekmenu, waar je alleen nog een dag hoeft te kiezen. Het aantal personen
+gaat mee zoals het op dat moment op je scherm stond, en je kunt het per dag nog
+bijstellen — plan je zondag voor zes, dan telt die zondag ook voor zes mee.
 
-Hoeveelheden worden opgeteld in plaats van herhaald. Twee recepten die allebei
-eieren willen worden één regel van 7 stuks, en 500 g plus 1 kg wordt 1½ kg.
-Dat kan alleen omdat ingrediënten als losse velden zijn opgeslagen; bij vrije
-tekst zou hier niets van kloppen. Wat níét optelbaar is blijft gescheiden:
-200 g bloem en 2 el bloem zijn twee regels, want dat is in de winkel ook zo.
+Vanuit het weekmenu maak je met één knop de boodschappen voor die week:
+**alle recepten bij elkaar opgeteld**. Twee gerechten die eieren willen worden
+één regel van 8 stuks; 500 g plus 1 kg wordt 1½ kg. Dat kan alleen omdat
+ingrediënten als losse velden zijn opgeslagen — bij vrije tekst zou hier niets
+van kloppen. Wat níét optelbaar is blijft gescheiden: 200 g bloem en 2 el bloem
+zijn twee regels, want in de winkel zijn dat ook twee dingen.
 
 Herkennen dat twee dingen hetzelfde zijn gebeurt met een vaste tabel
 (`uien` → `ui`, `eieren` → `ei`) en niet met een slimme meervoudsregel:
-Nederlands is daar te grillig voor, en een verkeerde gok voegt twee dingen
-samen die niet samenhoren. Mis je er een, dan zet je hem erbij in
+Nederlands is daar te grillig voor, en een verkeerde gok voegt twee dingen samen
+die niet samenhoren. Mis je er een, dan zet je hem erbij in
 `src/lib/shopping/units.ts`.
 
-De lijst is gegroepeerd per schap en de volgorde volgt de winkel die je kiest:
-Albert Heijn of Jumbo. Die routes zijn een benadering van de gebruikelijke
-indeling — filialen verschillen, dus zie het als een startpunt dat je in
-`src/lib/shopping/aisles.ts` bijstelt. Welk product in welk schap ligt komt
-uit een woordenlijst in datzelfde bestand: geen productdatabase, geen API, maar
-iets wat je kunt lezen en corrigeren. Nederlandse samenstellingen worden op hun
-kern beoordeeld, want slagroom is room en boerenkool is kool. Wat nergens op
-past gaat naar *Overig*, onderaan de lijst maar wel op de lijst.
+De lijst wordt nergens opgeslagen: hij is een afgeleide van je weekmenu en wordt
+bij elke weergave opnieuw berekend. Eén ding minder dat kan verouderen.
 
-Afvinken loopt vooruit op de server: in een supermarkt met slecht bereik moet
-een vinkje meteen omgaan. Na de kassa haal je met één knop weg wat in het
-karretje lag; de rest blijft staan.
+### Naar de Appie
 
-### Prijzen en directe productlinks
+Twee knoppen boven de lijst:
 
-Zodra een recept op de lijst komt, zoekt de app op de achtergrond het bijbehorende
-product op bij de gekozen winkel. Dan staat er een prijs bij de regel, een geschat
-totaal bovenaan, en wijst het mandje naar het exacte product in plaats van naar een
-zoekpagina. Je wacht er nooit op: het toevoegen zelf duurt tientallen milliseconden,
-het opzoeken loopt daarna via `after()`.
+- **Kopieer lijst** — kale regels, één product per regel. Dat is wat de app van
+  de supermarkt aankan als je erin plakt.
+- **Delen** — de iOS-share sheet met de nette versie mét kopjes, voor een appje
+  naar de ander.
 
-Drie dingen houden het snel:
+Bewust géén afvinklijst in deze app. Die draait op een servertje thuis, en in de
+winkel wil je iets dat het altijd doet, ook zonder bereik, ook als beide telefoons
+tegelijk afvinken. Wat deze app toevoegt is het **optellen**; het afvinken laat
+hij aan de app die je toch al bij je hebt.
 
-- **Geen browser.** Een gewone `fetch` plus de `<script>`-blokken uitlezen. De
-  scripts worden met een regex uit de HTML gehaald in plaats van de hele pagina in
-  cheerio te laden: op een zoekpagina van bijna een megabyte scheelt dat 209 ms per
-  opzoeking (gemeten: 209 ms → 1,0 ms). Alleen als beide JSON-routes niets opleveren
-  volgt er een echte DOM-parse, en die kost wél ~220 ms.
-- **De cache.** Een gevonden product blijft in `ProductMatch` staan, per winkel en
-  per genormaliseerde ingrediëntnaam. Uien en olijfolie zoek je één keer op. Ook
-  missers worden bewaard, anders zoek je elke keer opnieuw naar iets dat er niet is.
-  Prijzen verversen na zeven dagen, missers na twee — op de achtergrond, dus de
-  lijst is intussen gewoon zichtbaar.
-- **Drie tegelijk.** Genoeg om tien ingrediënten snel af te werken, bescheiden
-  genoeg tegenover de winkel.
-
-Er zijn drie manieren om aan de producten te komen, en welke het werd staat in de
-kolom `strategy`: `jsonld` (schema.org, stabiel), `embedded` (de datablob van de
-pagina) en `dom` (de HTML zelf — werkt tot de eerste restyling). Meten doe je zo:
-
-```bash
-curl "http://localhost:3000/api/prijs-test?q=melk,ui,spaghetti&winkel=ah"
-```
-
-Dat slaat niets op en geeft per term de tijd voor ophalen en uitlezen terug, plus de
-gebruikte strategie. Komt daar `none` uit, dan levert de winkel zijn producten pas
-met JavaScript en is er zonder browser niets te halen.
-
-### Naar de winkel
-
-Achter elke regel staat een mandje dat dat product opzoekt bij de gekozen
-winkel. Op een telefoon met de AH- of Jumbo-app opent zo'n link de app zelf, dus
-toevoegen is nog één tik in plaats van overtypen.
-
-Let op wat dit **niet** is: het legt niets in je mandje. Daar bestaat geen
-openbare koppeling voor — beide ketens doen dat alleen binnen hun eigen app, met
-jouw account erachter. Er zijn onofficiële, teruggeviste API's voor AH, maar die
-vragen je inloggegevens, staan op gespannen voet met hun voorwaarden en breken
-zodra zij iets wijzigen; daarom staat dat hier niet in.
-
-De zoekadressen staan als twee regels in `src/lib/shopping/aisles.ts`
-(`SEARCH`). Ze zijn niet vanaf een testomgeving te controleren, dus als een van
-de twee ooit verhuist, is dat de enige plek die je aanpast.
+Onder welk kopje iets komt, komt uit een woordenlijst in
+`src/lib/shopping/aisles.ts`: geen productdatabase, geen API, maar iets wat je
+kunt lezen en corrigeren. Nederlandse samenstellingen worden op hun kern
+beoordeeld, want slagroom is room en boerenkool is kool. Wat nergens op past gaat
+naar *Overig*, onderaan maar wel op de lijst.
 
 ## Uiterlijk
 
@@ -275,8 +236,10 @@ op dezelfde endpoint worden aangesloten.
 | `src/app/actions.ts`         | Server actions voor de web-UI (toevoegen, opnieuw, wissen). |
 | `src/lib/extract/`           | De ophaalketen. `providers/` bevat de bronspecifieke strategieën. |
 | `src/lib/photos.ts`          | Gefotografeerde bronnen: opslaan, teruglezen, opruimen.     |
+| `src/lib/menu/week.ts`       | Weken en dagen; maandag als begin.                          |
+| `src/lib/menu/list.ts`       | Een week aan recepten optellen tot één boodschappenlijst.   |
 | `src/lib/shopping/units.ts`  | Hoeveelheden optellen en namen gelijktrekken.               |
-| `src/lib/shopping/aisles.ts` | Schappen, winkels en de looproute per keten.                |
+| `src/lib/shopping/aisles.ts` | Onder welk kopje een ingrediënt hoort.                      |
 | `src/components/PhotoForm.tsx` | Camera en bibliotheek, met miniaturen en een wachtstand.   |
 | `src/lib/recipe/prompt.ts`   | **De huisstijl van een recept.** Hier sleutel je aan toon.  |
 | `src/lib/recipe/schema.ts`   | Vorm van een recept — Zod plus JSON Schema, samen bijhouden. |

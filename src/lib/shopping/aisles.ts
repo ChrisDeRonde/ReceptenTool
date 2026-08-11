@@ -1,57 +1,10 @@
 /**
- * Schappen en winkels.
+ * Schappen: onder welk kopje een ingrediënt op de lijst komt.
  *
- * Het doel is niet een kaart van elke vestiging, maar dat je niet drie keer
- * heen en weer loopt: groente bij de groente, zuivel bij de zuivel, en de
- * volgorde ongeveer zoals je door die winkel loopt.
- *
- * De volgordes hieronder zijn een benadering van de gebruikelijke indeling per
- * keten — filialen verschillen onderling, dus zie het als een startpunt. Klopt
- * het bij jullie winkel net anders, dan versleep je hier een regel.
+ * Geen winkelspecifieke looproutes meer — dat bleek gereedschap voor een
+ * probleem dat deze app niet heeft. Wat overblijft is groeperen, zodat een
+ * lijst van twintig dingen leesbaar is en in één blik te scannen valt.
  */
-
-export const STORES = ["ah", "jumbo"] as const;
-export type Store = (typeof STORES)[number];
-
-export const STORE_LABELS: Record<Store, string> = {
-  ah: "Albert Heijn",
-  jumbo: "Jumbo",
-};
-
-/**
- * Een product opzoeken in de winkel van je keuze.
- *
- * Dit is bewust een zóéklink en geen "leg in mandje": daar bestaat geen
- * openbare koppeling voor. Zowel AH als Jumbo doen dat alleen binnen hun eigen
- * app, met jouw account erachter. Wat dit wél doet: op een telefoon met de app
- * geïnstalleerd opent deze link de app op dat product, zodat toevoegen nog één
- * tik is in plaats van overtypen.
- *
- * Kloppen de adressen ooit niet meer, dan is dit de enige plek om ze te wijzigen.
- */
-const SEARCH: Record<Store, { base: string; param: string }> = {
-  ah: { base: "https://www.ah.nl/zoeken", param: "query" },
-  jumbo: { base: "https://www.jumbo.com/zoeken", param: "searchTerms" },
-};
-
-/**
- * Het adres mag door de omgeving worden overschreven (`AH_SEARCH_BASE`,
- * `JUMBO_SEARCH_BASE`). Dat is hoe de snelheidsmeting tegen een lokale
- * testpagina kan draaien in plaats van tegen de echte winkel — dezelfde truc
- * als bij `INSTAGRAM_EMBED_BASE`.
- */
-export function searchUrl(store: Store, term: string): string {
-  const spec = SEARCH[store];
-  const base =
-    process.env[`${store.toUpperCase()}_SEARCH_BASE`] ?? spec.base;
-  return `${base}?${spec.param}=${encodeURIComponent(term.trim())}`;
-}
-
-export const DEFAULT_STORE: Store = "ah";
-
-export function isStore(value: string | null | undefined): value is Store {
-  return !!value && (STORES as readonly string[]).includes(value);
-}
 
 export const AISLES = [
   "groente",
@@ -88,45 +41,29 @@ export const AISLE_LABELS: Record<Aisle, string> = {
 };
 
 /**
- * De looproute per winkel. Beide beginnen doorgaans bij de groente; daarna
- * verschilt de volgorde van de versafdelingen.
+ * De volgorde van de kopjes: ruwweg vers voorin, houdbaar achterin, en wat
+ * nergens bij hoort onderaan.
  */
-const ROUTES: Record<Store, Aisle[]> = {
-  ah: [
-    "groente",
-    "brood",
-    "kaas",
-    "vlees",
-    "vis",
-    "zuivel",
-    "voorraad",
-    "kruiden",
-    "bakken",
-    "diepvries",
-    "drank",
-    "nonfood",
-    "overig",
-  ],
-  jumbo: [
-    "groente",
-    "brood",
-    "vlees",
-    "vis",
-    "kaas",
-    "zuivel",
-    "voorraad",
-    "kruiden",
-    "bakken",
-    "diepvries",
-    "drank",
-    "nonfood",
-    "overig",
-  ],
-};
+const ORDER: Aisle[] = [
+  "groente",
+  "brood",
+  "kaas",
+  "vlees",
+  "vis",
+  "zuivel",
+  "voorraad",
+  "kruiden",
+  "bakken",
+  "diepvries",
+  "drank",
+  "nonfood",
+  "overig",
+];
 
-export function aisleOrder(store: Store): Aisle[] {
-  return ROUTES[store];
+export function aisleOrder(): Aisle[] {
+  return ORDER;
 }
+
 
 /**
  * Trefwoorden per schap, van specifiek naar algemeen doorzocht.

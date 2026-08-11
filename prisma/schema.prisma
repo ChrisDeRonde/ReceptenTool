@@ -77,74 +77,31 @@ model Recipe {
 
   favorite Boolean @default(false)
 
+  menuEntries MenuEntry[]
+
   shareItemId String?    @unique
   shareItem   ShareItem? @relation(fields: [shareItemId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
 }
 
-/// Eén gedeelde boodschappenlijst. Twee mensen, één huishouden, één lijst —
-/// een aparte lijst per persoon zou alleen maar betekenen dat je allebei
-/// dezelfde uien koopt.
-model ShoppingItem {
+/// Eén gerecht op één dag.
+///
+/// Het weekmenu is niets anders dan een verzameling hiervan; er is geen
+/// "week"-object, want een week is maar een manier van kijken naar dagen.
+model MenuEntry {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  /// Zoals het op de lijst staat: "ui", "pecorino romano".
-  name String
-  /// Voor het samenvoegen: kleine letters, enkelvoud waar we het zeker weten.
-  key  String
+  /// De dag zelf, op middernacht. Geen tijdstip: we plannen geen etenstijd.
+  date DateTime
 
-  /// null bij "naar smaak" of "een snufje".
-  quantity Float?
-  unit     String?
+  recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
-  /// Schap uit AISLES; bepaalt onder welk kopje het staat.
-  aisle String
+  /// Voor hoeveel personen je het die dag maakt. Null betekent: zoals het
+  /// recept het bedoelde.
+  servings Int?
 
-  checked Boolean @default(false)
-
-  /// Waar het vandaan kwam, zodat je in de winkel kunt zien waarvoor het is.
-  /// Vrije tekst en geen relatie: het recept mag weg zonder je lijst te slopen.
-  fromRecipe String?
-
-  @@index([checked, aisle])
-}
-
-/// Kleine sleutel-waardetabel voor voorkeuren die niet bij één recept horen,
-/// zoals de gekozen supermarkt. Gedeeld, net als de lijst zelf.
-model Setting {
-  key   String @id
-  value String
-}
-
-/// Gevonden supermarktproduct bij een ingrediënt.
-///
-/// Dit is de cache die het snel houdt: opzoeken duurt een seconde, teruglezen
-/// een milliseconde, en uien komen in elk tweede recept voor. Ook een misser
-/// wordt bewaard — anders zoek je elke keer opnieuw naar iets dat er niet is.
-model ProductMatch {
-  id    String @id @default(cuid())
-  store String
-  /// Genormaliseerde ingrediëntnaam, dezelfde sleutel als op de lijst.
-  key   String
-
-  found      Boolean @default(true)
-  productId  String?
-  title      String?
-  brand      String?
-  priceCents Int?
-  /// "per stuk", "1 kg" — wat AH naast de prijs zet.
-  unitInfo   String?
-  imageUrl   String?
-  url        String?
-
-  /// Welke aanpak het opleverde: jsonld | embedded | dom | browser | none.
-  strategy String
-  /// Hoe lang het ophalen duurde, in milliseconden. Voor de diagnose.
-  ms       Int      @default(0)
-
-  fetchedAt DateTime @default(now())
-
-  @@unique([store, key])
+  @@index([date])
 }
