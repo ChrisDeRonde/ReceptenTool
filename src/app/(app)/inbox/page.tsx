@@ -18,6 +18,7 @@ import { PhotoForm } from "@/components/PhotoForm";
 import { prisma } from "@/lib/db";
 import { currentPerson } from "@/lib/who";
 import { people } from "@/lib/settings";
+import { momentTekst } from "@/lib/tijd";
 import { icons } from "@/lib/icons";
 import { parsePhotos, photoUrl } from "@/lib/photos";
 
@@ -96,7 +97,7 @@ export default async function InboxPage() {
                 <span className={`status ${status.tone}`}>{status.label}</span>
                 <span className="deler">
                   {item.sharedBy && <Avatar name={item.sharedBy} size={20} />}
-                  {item.createdAt.toLocaleString("nl-NL")}
+                  {momentTekst(item.createdAt, new Date())}
                 </span>
               </div>
 

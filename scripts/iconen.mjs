@@ -16,8 +16,8 @@ import sharp from "sharp";
 const OUT = path.join(process.cwd(), "public", "icoon");
 
 /** Dezelfde salie en hetzelfde papier als in globals.css. */
-const INK = "#faf7f2";
-const BG = "#4f7a68";
+const INK = "#fffefa";
+const BG = "#477060";
 
 /**
  * Het bordje uit de app, op een vierkant vlak.

@@ -40,9 +40,11 @@ export const viewport: Viewport = {
   initialScale: 1,
   // Kookmodus staat tot in de hoeken; de veilige zones regelen we in CSS.
   viewportFit: "cover",
+  // Dezelfde waarden als --bg in globals.css. Staan ze uit elkaar, dan zie je
+  // op het beginscherm een streep tussen de statusbalk en de pagina.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8faf9" },
-    { media: "(prefers-color-scheme: dark)", color: "#101413" },
+    { media: "(prefers-color-scheme: light)", color: "#f8f5ef" },
+    { media: "(prefers-color-scheme: dark)", color: "#151412" },
   ],
 };
 
@@ -58,6 +60,25 @@ export default function RootLayout({
 }) {
   return (
     <html lang="nl">
+      <head>
+        {/* De browser vindt deze bestanden pas als hij de stylesheet heeft
+            gelezen. Vooruit laden scheelt de flits waarin de eerste pagina in
+            de systeemletter staat en daarna verspringt. */}
+        <link
+          rel="preload"
+          href="/fonts/sourcesans-latin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/fraunces-latin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body>
         {children}
         <ServiceWorker />

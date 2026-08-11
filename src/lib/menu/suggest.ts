@@ -17,6 +17,8 @@
  * Pure functie, zonder database ernaast, zodat de afweging te testen is.
  */
 
+import { dagenTussen, geleden, geledenAchteraan, hoofdletter } from "@/lib/tijd";
+
 export type Kandidaat = {
   id: string;
   title: string;
@@ -101,18 +103,10 @@ export function suggest(
  * gisteren opsloeg heeft nog geen achterstand, iets van vorig jaar wel.
  */
 function laatstGemaakt(kandidaat: Kandidaat, vandaag: Date): number {
-  const dag = (d: Date) => {
-    const x = new Date(d);
-    x.setHours(0, 0, 0, 0);
-    return x.getTime();
-  };
-  const nu = dag(vandaag);
-  const dagen = (toen: number) => Math.max(0, Math.round((nu - toen) / 86_400_000));
-
   if (kandidaat.cookedAt.length === 0) {
-    return Math.min(dagen(dag(kandidaat.createdAt)), NOOIT_GEMAAKT_DAGEN);
+    return Math.min(dagenTussen(kandidaat.createdAt, vandaag), NOOIT_GEMAAKT_DAGEN);
   }
-  return dagen(Math.max(...kandidaat.cookedAt.map(dag)));
+  return Math.min(...kandidaat.cookedAt.map((toen) => dagenTussen(toen, vandaag)));
 }
 
 /** De sterkste reden in gewone taal. */
@@ -121,24 +115,13 @@ function reden(kandidaat: Kandidaat, dagenGeleden: number, gemiddelde: number | 
     return "Nog nooit gemaakt";
   }
   if (kandidaat.again.yes > 0 && dagenGeleden >= 21) {
-    return `Wilden jullie vaker, en het is ${periode(dagenGeleden)} geleden`;
+    return `Wilden jullie vaker, en het is ${geleden(dagenGeleden)}`;
   }
   if (gemiddelde !== null && gemiddelde >= 4.5) {
-    return `Hoog gewaardeerd, ${periode(dagenGeleden)} geleden`;
+    return `Hoog gewaardeerd, ${geledenAchteraan(dagenGeleden)}`;
   }
   if (kandidaat.again.yes > 0) {
     return "Wilden jullie vaker eten";
   }
-  return `${hoofdletter(periode(dagenGeleden))} geleden`;
-}
-
-function periode(dagen: number): string {
-  if (dagen <= 1) return "gisteren";
-  if (dagen < 14) return `${dagen} dagen`;
-  if (dagen < 60) return `${Math.round(dagen / 7)} weken`;
-  return `${Math.round(dagen / 30)} maanden`;
-}
-
-function hoofdletter(tekst: string): string {
-  return tekst.charAt(0).toLocaleUpperCase("nl-NL") + tekst.slice(1);
+  return hoofdletter(geledenAchteraan(dagenGeleden));
 }

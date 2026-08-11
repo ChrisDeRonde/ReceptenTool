@@ -3,6 +3,7 @@ import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
 import { icons } from "@/lib/icons";
 import { toParam } from "@/lib/menu/week";
+import { dagenTussen, datumKort, geleden } from "@/lib/tijd";
 
 /**
  * Wat je van dit gerecht vond, en hoe vaak je het al maakte.
@@ -99,11 +100,7 @@ export function CookLog({
               <li key={entry.id}>
                 <div className="cooklog-head">
                   <span className="cooklog-date">
-                    {entry.cookedAt.toLocaleDateString("nl-NL", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
+                    {datumKort(entry.cookedAt, new Date())}
                   </span>
                   {entry.who && <Avatar name={entry.who} size={22} withName />}
                   {entry.rating !== null && <Stars value={entry.rating} />}
@@ -202,24 +199,9 @@ export function CookLog({
   );
 }
 
-/**
- * "vandaag", "gisteren", "3 dagen geleden", of gewoon de datum.
- *
- * Tellen in kalenderdagen en niet in verstreken tijd: iets dat je vanochtend
- * maakte is vanavond nog steeds vandaag, ook al zitten er twaalf uur tussen.
- */
+/** "vandaag", "gisteren", "3 dagen geleden". Zie `lib/tijd`. */
 function when(date: Date): string {
-  const vandaag = new Date();
-  vandaag.setHours(0, 0, 0, 0);
-  const toen = new Date(date);
-  toen.setHours(0, 0, 0, 0);
-
-  const days = Math.round((vandaag.getTime() - toen.getTime()) / 86_400_000);
-  if (days <= 0) return "vandaag";
-  if (days === 1) return "gisteren";
-  if (days < 14) return `${days} dagen geleden`;
-  if (days < 60) return `${Math.round(days / 7)} weken geleden`;
-  return date.toLocaleDateString("nl-NL", { month: "long", year: "numeric" });
+  return geleden(dagenTussen(date, new Date()));
 }
 
 /**

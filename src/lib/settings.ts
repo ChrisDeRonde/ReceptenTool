@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { schoon } from "@/lib/people";
+import { MAX_SERVINGS } from "@/lib/recipe/scale";
 
 /**
  * Instellingen die je vanuit de app kunt wijzigen.
@@ -18,8 +19,15 @@ export const PERSONEN = "personen";
 /** Twee mensen: het huishouden waar deze app voor gebouwd is. */
 export const HUISHOUDEN_STANDAARD = 2;
 
-/** Meer dan dit is catering; dit voorkomt ook onzin in de omrekening. */
-export const HUISHOUDEN_MAX = 24;
+/**
+ * Meer dan dit is catering; dit voorkomt ook onzin in de omrekening.
+ *
+ * Dezelfde grens als waar een recept naartoe schaalt: het huishouden ís de
+ * standaard voor het aantal porties, dus twee verschillende plafonds zouden
+ * betekenen dat je een huishouden kunt opgeven waar geen recept voor uit te
+ * rekenen valt.
+ */
+export const HUISHOUDEN_MAX = MAX_SERVINGS;
 
 export async function readSetting(key: string): Promise<string | null> {
   const row = await prisma.setting.findUnique({ where: { key } });

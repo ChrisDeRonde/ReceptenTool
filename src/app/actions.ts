@@ -12,6 +12,7 @@ import {
 import { localImageName, storeRemoteImage } from "@/lib/images";
 import { keepDuplicate, processShareItem } from "@/lib/pipeline";
 import { ingredientFromFields } from "@/lib/recipe/amount";
+import { MAX_SERVINGS, MIN_SERVINGS } from "@/lib/recipe/scale";
 import {
   recipeSchema,
   type Ingredient,
@@ -217,7 +218,9 @@ export async function removeFromMenu(formData: FormData): Promise<void> {
   const id = readField(formData, "id");
   if (!id) return;
 
-  await prisma.menuEntry.delete({ where: { id } });
+  // deleteMany en niet delete: tik je op een trage verbinding twee keer op het
+  // kruisje, dan is de tweede een lege opdracht in plaats van een foutpagina.
+  await prisma.menuEntry.deleteMany({ where: { id } });
   revalidatePath("/weekmenu");
 }
 
@@ -227,9 +230,14 @@ export async function setMenuServings(formData: FormData): Promise<void> {
   const value = Number(readField(formData, "porties") ?? "");
   if (!id || !Number.isInteger(value)) return;
 
-  await prisma.menuEntry.update({
+  await prisma.menuEntry.updateMany({
     where: { id },
-    data: { servings: value > 0 ? Math.min(value, 24) : null },
+    data: {
+      // Dezelfde grenzen als de knoppen op het scherm; die komen uit dezelfde
+      // constanten. Een los getal hier loopt vroeg of laat uit de pas.
+      servings:
+        value >= MIN_SERVINGS ? Math.min(value, MAX_SERVINGS) : null,
+    },
   });
   revalidatePath("/weekmenu");
 }
@@ -526,7 +534,16 @@ export async function deleteCookLog(formData: FormData): Promise<void> {
   const id = readField(formData, "id");
   if (!id) return;
 
-  const log = await prisma.cookLog.delete({ where: { id } });
+  // Eerst kijken welk recept het was, en dan pas weg — anders weten we na de
+  // verwijdering niet meer welke pagina ververst moet worden. Is de regel er al
+  // niet meer (dubbel getikt), dan valt er ook niets te verversen.
+  const log = await prisma.cookLog.findUnique({
+    where: { id },
+    select: { recipeId: true },
+  });
+  if (!log) return;
+
+  await prisma.cookLog.deleteMany({ where: { id } });
   revalidatePath(`/recepten/${log.recipeId}`);
   revalidatePath("/");
 }

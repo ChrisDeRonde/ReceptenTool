@@ -207,10 +207,22 @@ Zacht en zakelijk: warm papier in plaats van wit, pastelvlakken in plaats van
 verzadigde kleur, haarlijnen in plaats van randen. Eén salie-accent voor alles
 wat een actie is; zand en oudroze voor tips en alarm.
 
-Titels staan in **Newsreader** (schreef, met een optische as, dus grote koppen
-worden fijner getekend dan kleine), de rest in **Inter**. Beide staan als
-variabel woff2-bestand in `public/fonts` — latin-subset, samen ±180 kB, en er
-gaat bij het laden niets naar een externe server.
+Titels staan in **Fraunces**, een zachte oudschreef met een optische as (grote
+koppen worden vanzelf fijner getekend dan kleine) plus twee assen die de app
+zijn gezicht geven: `SOFT` rondt de hoeken af en `WONK` geeft de a, g en y hun
+schuine staart. Die twee staan één keer ingesteld op de `body`, zodat élke plek
+waar de schreefletter opduikt — koppen, avatars, stapnummers — er hetzelfde
+uitziet. De lopende tekst is **Source Sans 3**: humanistisch en open, waar Inter
+neutraal en technisch is.
+
+Beide staan als variabel woff2-bestand in `public/fonts` — latin-subset, samen
+±150 kB, en er gaat bij het laden niets naar een externe server. Ze worden in
+`layout.tsx` vooruit geladen, anders vindt de browser ze pas nadat hij de
+stylesheet heeft gelezen en verspringt de eerste pagina zichtbaar.
+
+Elke kleurcombinatie die tekst draagt haalt minimaal 4,5:1 op zijn eigen
+ondergrond, in beide standen. Dat is geen keurmerk maar praktisch: dit is een
+app die je met een telefoon in de keuken leest, soms met de zon erop.
 
 Iconen komen uit **Hugeicons**. Het pakket `@hugeicons/core-free-icons` levert
 ze als data (`[tag, attributen][]`); `src/components/Icon.tsx` tekent die zelf.
@@ -603,6 +615,7 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/who.ts`             | Het naamkaartje: wie noteert er. Geen tweede slot.          |
 | `src/lib/settings.ts`        | Voorkeuren uit de database; geheimen blijven in .env.       |
 | `src/lib/people.ts`          | Wie er zijn en welke kleur bij wie hoort.                   |
+| `src/lib/tijd.ts`            | "3 dagen geleden" en "vandaag 21:03", in kalenderdagen.     |
 | `src/components/Avatar.tsx`  | Een naam als rondje met initiaal.                           |
 | `src/app/manifest.ts`        | Naam, kleuren en iconen voor "zet op beginscherm".          |
 | `public/sw.js`               | Service worker: cache en offlinescherm. Hoog `VERSIE` op.   |
@@ -649,7 +662,8 @@ npm test
 
 Node's eigen testrunner over de pure functies: zoeken, hoeveelheden lezen en
 schrijven, porties omrekenen, boodschappen samenvoegen en indelen, weken en
-categorieën, het inlogkoekje, duplicaatherkenning en de weekmenu-voorstellen.
+categorieën, het inlogkoekje, duplicaatherkenning, de weekmenu-voorstellen en
+het rekenen met kalenderdagen.
 Geen framework, geen bouwstap — `tests/resolve-alias.mjs` vertaalt `@/lib/x`
 naar `src/lib/x` en plakt de ontbrekende `.ts` erachter, en Node 22 streept de
 types zelf af.
@@ -658,7 +672,8 @@ De keuze wat er wél in staat: alles wat een oordeel velt over Nederlandse taal
 of over geld. Daar zaten alle bugs die ik met de hand vond, en daar vond deze
 suite er bij het schrijven meteen nog twee: `rode paprika's` werd niet
 samengevoegd met `rode paprika`, en `rundergehakt` belandde onder *Overig*
-terwijl `gehakt` gewoon werkte.
+terwijl `gehakt` gewoon werkte. En één taalfout: een voorstel van gisteren
+heette "Gisteren geleden".
 
 Wat er niet in staat: alles wat een database of een browser nodig heeft. Dat
 test ik met de hand tegen een draaiende app; het zou hier een testomgeving

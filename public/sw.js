@@ -14,7 +14,7 @@
  */
 
 // Ophogen bij een wijziging hieronder; de oude caches worden dan opgeruimd.
-const VERSIE = "v1";
+const VERSIE = "v2";
 const STATISCH = `statisch-${VERSIE}`;
 const PAGINAS = `paginas-${VERSIE}`;
 const PLAATJES = `plaatjes-${VERSIE}`;
@@ -24,8 +24,8 @@ const MAX_PAGINAS = 60;
 
 /** Wat er meteen bij het installeren in de cache mag: alles wat nooit wijzigt. */
 const VOORAF = [
-  "/fonts/inter-latin.woff2",
-  "/fonts/newsreader-latin.woff2",
+  "/fonts/fraunces-latin.woff2",
+  "/fonts/sourcesans-latin.woff2",
   "/icoon/icoon-192.png",
   "/icoon/apple-touch-icon.png",
 ];
@@ -167,8 +167,8 @@ function offlinePagina() {
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Geen verbinding</title>
 <style>
-  :root { color-scheme: light dark; --bg:#faf7f2; --ink:#33302b; --muted:#8a8378; --accent:#4f7a68; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#1a1917; --ink:#ece7df; --muted:#9c948a; --accent:#8fb9a3; } }
+  :root { color-scheme: light dark; --bg:#f8f5ef; --ink:#1e1c18; --muted:#6e6760; --accent:#477060; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#151412; --ink:#f5efe5; --muted:#9a9287; --accent:#93bda6; } }
   body { margin:0; min-height:100dvh; display:grid; place-items:center; padding:1.35rem;
          background:var(--bg); color:var(--ink); text-align:center;
          font:400 16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif; }
