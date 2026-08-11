@@ -855,8 +855,23 @@ form.stack {
 
 .aisle .amount {
   flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   color: var(--muted);
   font-size: 0.88rem;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+
+/* De prijs staat onder de hoeveelheid; hij is een schatting, geen belofte. */
+.aisle .price {
+  font-size: 0.78rem;
+  color: var(--accent);
+}
+
+.list-count .total {
+  float: right;
   font-variant-numeric: tabular-nums;
 }
 

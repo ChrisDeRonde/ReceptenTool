@@ -1,5 +1,6 @@
 "use server";
 
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { detectSourceType } from "@/lib/extract";
@@ -11,7 +12,8 @@ import {
 import { processShareItem } from "@/lib/pipeline";
 import { deletePhotos, parsePhotos, savePhotos } from "@/lib/photos";
 import { aisleFor, isStore } from "@/lib/shopping/aisles";
-import { addIngredients, setStore } from "@/lib/shopping/list";
+import { addIngredients, getStore, setStore } from "@/lib/shopping/list";
+import { fillMatches } from "@/lib/shopping/lookup";
 import { canonicalName } from "@/lib/shopping/units";
 import { parseServings, scaleRecipe } from "@/lib/recipe/scale";
 import { flattenIngredients, recipeSchema } from "@/lib/recipe/schema";
@@ -194,7 +196,16 @@ export async function addRecipeToList(formData: FormData): Promise<void> {
   const recipe =
     servings === null ? parsed.data : scaleRecipe(parsed.data, servings);
 
-  await addIngredients(flattenIngredients(recipe), recipe.title);
+  const ingredients = flattenIngredients(recipe);
+  await addIngredients(ingredients, recipe.title);
+
+  // Prijzen erbij zoeken gebeurt ná het antwoord: de lijst staat er meteen,
+  // de prijzen druppelen erachteraan. Wachten zou de enige trage stap in de
+  // hele app introduceren.
+  const store = await getStore();
+  after(async () => {
+    await fillMatches(store, ingredients.map((item) => item.name));
+  });
 
   revalidatePath("/lijst");
   revalidatePath(`/recepten/${id}`);
@@ -215,6 +226,12 @@ export async function addListItem(formData: FormData): Promise<void> {
       fromRecipe: null,
     },
   });
+
+  const store = await getStore();
+  after(async () => {
+    await fillMatches(store, [name]);
+  });
+
   revalidatePath("/lijst");
 }
 

@@ -16,6 +16,8 @@ import { formatAmount } from "@/lib/shopping/units";
 export type ListItem = {
   id: string;
   name: string;
+  /** Genormaliseerde naam; de sleutel waarop de prijs is opgezocht. */
+  key: string;
   quantity: number | null;
   unit: string | null;
   aisle: string;
@@ -30,16 +32,28 @@ export type ListItem = {
  * server voordat het vinkje omgaat voelt in een supermarkt met slecht bereik
  * als een kapotte app, dus de UI loopt vooruit en de server volgt.
  */
+export type PriceInfo = {
+  price: string | null;
+  title: string | null;
+  url: string | null;
+};
+
 export function ShoppingList({
   groups,
   showSource,
   store,
+  prices,
+  total,
 }: {
   groups: { aisle: Aisle; items: ListItem[] }[];
   /** Bij één recept op de lijst weet je de herkomst wel; dan is het ruis. */
   showSource: boolean;
   /** Waar de zoekknop per regel naartoe wijst. */
   store: Store;
+  /** Wat we al van de winkel weten, per ingrediëntsleutel. Mag leeg zijn. */
+  prices: Record<string, PriceInfo>;
+  /** Geschat totaal van wat nog te halen is, of null als er iets ontbreekt. */
+  total: string | null;
 }) {
   const [, startTransition] = useTransition();
   const flat = groups.flatMap((group) => group.items);
@@ -75,6 +89,7 @@ export function ShoppingList({
         {open === 0
           ? "Alles afgevinkt."
           : `${open} ${open === 1 ? "ding" : "dingen"} te halen`}
+        {total && open > 0 && <span className="total">± {total}</span>}
       </p>
 
       {groups.map((group) => {
@@ -106,6 +121,9 @@ export function ShoppingList({
                     </span>
                     <span className="amount">
                       {formatAmount({ quantity: item.quantity, unit: item.unit })}
+                      {prices[item.key]?.price && (
+                        <span className="price">{prices[item.key].price}</span>
+                      )}
                     </span>
                   </label>
                   {!item.checked && (
@@ -113,11 +131,13 @@ export function ShoppingList({
                     // je daar zelf — zie de opmerking bij searchUrl.
                     <a
                       className="to-store"
-                      href={searchUrl(store, item.name)}
+                      // Kennen we het exacte product, dan gaan we daarheen;
+                      // anders naar de zoekpagina.
+                      href={prices[item.key]?.url ?? searchUrl(store, item.name)}
                       target="_blank"
                       rel="noreferrer"
-                      aria-label={`${item.name} opzoeken bij ${STORE_LABELS[store]}`}
-                      title={`Opzoeken bij ${STORE_LABELS[store]}`}
+                      aria-label={`${item.name} bij ${STORE_LABELS[store]}`}
+                      title={prices[item.key]?.title ?? `Opzoeken bij ${STORE_LABELS[store]}`}
                     >
                       <Icon icon={icons.basket} size={16} />
                     </a>

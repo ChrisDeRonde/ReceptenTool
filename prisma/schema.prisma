@@ -117,3 +117,34 @@ model Setting {
   key   String @id
   value String
 }
+
+/// Gevonden supermarktproduct bij een ingrediënt.
+///
+/// Dit is de cache die het snel houdt: opzoeken duurt een seconde, teruglezen
+/// een milliseconde, en uien komen in elk tweede recept voor. Ook een misser
+/// wordt bewaard — anders zoek je elke keer opnieuw naar iets dat er niet is.
+model ProductMatch {
+  id    String @id @default(cuid())
+  store String
+  /// Genormaliseerde ingrediëntnaam, dezelfde sleutel als op de lijst.
+  key   String
+
+  found      Boolean @default(true)
+  productId  String?
+  title      String?
+  brand      String?
+  priceCents Int?
+  /// "per stuk", "1 kg" — wat AH naast de prijs zet.
+  unitInfo   String?
+  imageUrl   String?
+  url        String?
+
+  /// Welke aanpak het opleverde: jsonld | embedded | dom | browser | none.
+  strategy String
+  /// Hoe lang het ophalen duurde, in milliseconden. Voor de diagnose.
+  ms       Int      @default(0)
+
+  fetchedAt DateTime @default(now())
+
+  @@unique([store, key])
+}

@@ -2,6 +2,7 @@ import { addListItem, chooseStore, clearCheckedItems, clearList } from "@/app/ac
 import { ShoppingList } from "@/components/ShoppingList";
 import { STORES, STORE_LABELS } from "@/lib/shopping/aisles";
 import { getStore, groupedList } from "@/lib/shopping/list";
+import { cachedMatches, formatPrice } from "@/lib/shopping/lookup";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,21 @@ export default async function ListPage() {
     (sum, group) => sum + group.items.filter((item) => item.checked).length,
     0,
   );
+  // Eén query voor alle prijzen die we al kennen; wat er nog niet is, staat er
+  // straks vanzelf bij. De pagina wacht nergens op.
+  const matches = await cachedMatches(
+    store,
+    groups.flatMap((group) => group.items.map((item) => item.key)),
+  );
+
+  const openCents = groups
+    .flatMap((group) => group.items)
+    .filter((item) => !item.checked)
+    .reduce<number | null>((sum, item) => {
+      const price = matches.get(item.key)?.priceCents;
+      return price == null || sum === null ? sum : sum + price;
+    }, 0);
+
   const sources = new Set(
     groups.flatMap((group) => group.items.map((item) => item.fromRecipe)).filter(Boolean),
   );
@@ -56,6 +72,17 @@ export default async function ListPage() {
           groups={groups}
           showSource={sources.size > 1}
           store={store}
+          prices={Object.fromEntries(
+            [...matches].map(([key, match]) => [
+              key,
+              {
+                price: formatPrice(match.priceCents),
+                title: match.title,
+                url: match.url,
+              },
+            ]),
+          )}
+          total={openCents === null ? null : formatPrice(openCents)}
         />
       )}
 

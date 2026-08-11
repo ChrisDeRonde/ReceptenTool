@@ -98,6 +98,41 @@ Afvinken loopt vooruit op de server: in een supermarkt met slecht bereik moet
 een vinkje meteen omgaan. Na de kassa haal je met één knop weg wat in het
 karretje lag; de rest blijft staan.
 
+### Prijzen en directe productlinks
+
+Zodra een recept op de lijst komt, zoekt de app op de achtergrond het bijbehorende
+product op bij de gekozen winkel. Dan staat er een prijs bij de regel, een geschat
+totaal bovenaan, en wijst het mandje naar het exacte product in plaats van naar een
+zoekpagina. Je wacht er nooit op: het toevoegen zelf duurt tientallen milliseconden,
+het opzoeken loopt daarna via `after()`.
+
+Drie dingen houden het snel:
+
+- **Geen browser.** Een gewone `fetch` plus de `<script>`-blokken uitlezen. De
+  scripts worden met een regex uit de HTML gehaald in plaats van de hele pagina in
+  cheerio te laden: op een zoekpagina van bijna een megabyte scheelt dat 209 ms per
+  opzoeking (gemeten: 209 ms → 1,0 ms). Alleen als beide JSON-routes niets opleveren
+  volgt er een echte DOM-parse, en die kost wél ~220 ms.
+- **De cache.** Een gevonden product blijft in `ProductMatch` staan, per winkel en
+  per genormaliseerde ingrediëntnaam. Uien en olijfolie zoek je één keer op. Ook
+  missers worden bewaard, anders zoek je elke keer opnieuw naar iets dat er niet is.
+  Prijzen verversen na zeven dagen, missers na twee — op de achtergrond, dus de
+  lijst is intussen gewoon zichtbaar.
+- **Drie tegelijk.** Genoeg om tien ingrediënten snel af te werken, bescheiden
+  genoeg tegenover de winkel.
+
+Er zijn drie manieren om aan de producten te komen, en welke het werd staat in de
+kolom `strategy`: `jsonld` (schema.org, stabiel), `embedded` (de datablob van de
+pagina) en `dom` (de HTML zelf — werkt tot de eerste restyling). Meten doe je zo:
+
+```bash
+curl "http://localhost:3000/api/prijs-test?q=melk,ui,spaghetti&winkel=ah"
+```
+
+Dat slaat niets op en geeft per term de tijd voor ophalen en uitlezen terug, plus de
+gebruikte strategie. Komt daar `none` uit, dan levert de winkel zijn producten pas
+met JavaScript en is er zonder browser niets te halen.
+
 ### Naar de winkel
 
 Achter elke regel staat een mandje dat dat product opzoekt bij de gekozen

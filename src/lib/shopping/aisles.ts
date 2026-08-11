@@ -29,14 +29,22 @@ export const STORE_LABELS: Record<Store, string> = {
  *
  * Kloppen de adressen ooit niet meer, dan is dit de enige plek om ze te wijzigen.
  */
-const SEARCH: Record<Store, (term: string) => string> = {
-  ah: (term) => `https://www.ah.nl/zoeken?query=${encodeURIComponent(term)}`,
-  jumbo: (term) =>
-    `https://www.jumbo.com/zoeken?searchTerms=${encodeURIComponent(term)}`,
+const SEARCH: Record<Store, { base: string; param: string }> = {
+  ah: { base: "https://www.ah.nl/zoeken", param: "query" },
+  jumbo: { base: "https://www.jumbo.com/zoeken", param: "searchTerms" },
 };
 
+/**
+ * Het adres mag door de omgeving worden overschreven (`AH_SEARCH_BASE`,
+ * `JUMBO_SEARCH_BASE`). Dat is hoe de snelheidsmeting tegen een lokale
+ * testpagina kan draaien in plaats van tegen de echte winkel — dezelfde truc
+ * als bij `INSTAGRAM_EMBED_BASE`.
+ */
 export function searchUrl(store: Store, term: string): string {
-  return SEARCH[store](term.trim());
+  const spec = SEARCH[store];
+  const base =
+    process.env[`${store.toUpperCase()}_SEARCH_BASE`] ?? spec.base;
+  return `${base}?${spec.param}=${encodeURIComponent(term.trim())}`;
 }
 
 export const DEFAULT_STORE: Store = "ah";
