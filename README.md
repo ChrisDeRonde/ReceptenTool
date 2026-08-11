@@ -188,6 +188,31 @@ voor iconen in de bundel. Welke icoon waarvoor dient staat in `src/lib/icons.ts`
 Alle kleuren en maten zijn variabelen bovenin `src/app/globals.css`, in een
 lichte en een donkere set.
 
+## Dubbel herkennen
+
+Twee mensen die door dezelfde tijdlijn scrollen delen vroeg of laat hetzelfde
+gerecht. In plaats van het er twee keer in te zetten, zet de inbox het item op
+**Heb je al**, met een link naar het recept dat er al staat en een knop *Toch
+toevoegen* — twee varianten kunnen best allebei de moeite waard zijn, en de
+herkenning is een vermoeden, geen oordeel.
+
+Twee signalen, op twee momenten:
+
+- **Dezelfde bron-URL.** Dit wordt gecontroleerd *vóór* de modelaanroep, dus
+  een dubbele deelactie kost niets. Bij het vergelijken gaan het schema,
+  `www.`, de afsluitende slash, het fragment en alle meelifterparameters
+  (`utm_*`, `fbclid`, `igshid`, …) eraf; parameters die er wél toe doen blijven
+  staan, want sommige sites zetten hun recept-id in `?p=123`.
+- **Dezelfde titel.** Die komt uit het model, dus dit kan pas erna. Het recept
+  wordt dan niet opgeslagen, maar de modeluitvoer wordt bewaard in
+  `ShareItem.pendingData` — zo kost *Toch toevoegen* geen tweede aanroep.
+  Bij het vergelijken gaan accenten, leestekens én spaties eraf: Nederlands
+  plakt woorden aan elkaar en niet iedereen doet dat hetzelfde, dus
+  "truffel-roomsaus" en "truffelroomsaus" zijn hetzelfde gerecht.
+
+Opnieuw verwerken van een item is geen duplicaat van zichzelf; het eigen recept
+telt niet mee bij het zoeken.
+
 ## Recept bewerken
 
 Op elk recept staat een potloodje. Daar pas je alles aan wat het model ervan

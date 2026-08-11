@@ -15,7 +15,7 @@ model ShareItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  /// pending | processing | done | failed | needs_input
+  /// pending | processing | done | failed | needs_input | duplicate
   status String @default("pending")
 
   /// instagram | ah | website | text | foto
@@ -41,7 +41,15 @@ model ShareItem {
   /// Het volledige spoor van geprobeerde strategieën, als JSON-array.
   attempts String?
 
-  recipe Recipe?
+  recipe Recipe? @relation("Bron")
+
+  /// Het recept dat hier al op leek. Gezet als dit item op `duplicate` staat.
+  duplicateOfId String?
+  duplicateOf   Recipe? @relation("Duplicaat", fields: [duplicateOfId], references: [id], onDelete: SetNull)
+
+  /// De modeluitvoer die klaarstaat terwijl jij beslist of het echt een
+  /// duplicaat is. Zo kost "toch toevoegen" geen tweede modelaanroep.
+  pendingData String?
 
   @@index([status, createdAt])
 }
@@ -85,7 +93,10 @@ model Recipe {
   menuEntries MenuEntry[]
 
   shareItemId String?    @unique
-  shareItem   ShareItem? @relation(fields: [shareItemId], references: [id], onDelete: SetNull)
+  shareItem   ShareItem? @relation("Bron", fields: [shareItemId], references: [id], onDelete: SetNull)
+
+  /// Items die als duplicaat van dit recept zijn aangemerkt.
+  duplicateItems ShareItem[] @relation("Duplicaat")
 
   @@index([createdAt])
 }

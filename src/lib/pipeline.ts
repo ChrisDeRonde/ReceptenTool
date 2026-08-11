@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { errorMessage, extractSource } from "@/lib/extract";
+import { findDuplicate } from "@/lib/recipe/duplicate";
 import { storeRemoteImage } from "@/lib/images";
 import { parsePhotos, readPhotoBase64 } from "@/lib/photos";
 import {
@@ -8,7 +9,7 @@ import {
   packMealTypes,
 } from "@/lib/recipe/categories";
 import { parseRecipe } from "@/lib/recipe/parse";
-import type { Recipe } from "@/lib/recipe/schema";
+import { recipeSchema, type Recipe } from "@/lib/recipe/schema";
 
 /**
  * Verwerkt één binnengekomen item: bron ophalen, recept eruit halen, opslaan.
@@ -17,13 +18,21 @@ import type { Recipe } from "@/lib/recipe/schema";
  * `needs_input` op het item zelf, zodat je in de inbox ziet wat er misging en
  * het opnieuw kunt proberen.
  */
-export async function processShareItem(itemId: string): Promise<void> {
+export async function processShareItem(
+  itemId: string,
+  options: { force?: boolean } = {},
+): Promise<void> {
   const item = await prisma.shareItem.findUnique({ where: { id: itemId } });
   if (!item) return;
 
   await prisma.shareItem.update({
     where: { id: itemId },
-    data: { status: "processing", error: null },
+    data: {
+      status: "processing",
+      error: null,
+      duplicateOfId: null,
+      pendingData: null,
+    },
   });
 
   try {
@@ -40,6 +49,20 @@ export async function processShareItem(itemId: string): Promise<void> {
         sourceType: "foto",
         images,
       });
+
+      if (!options.force) {
+        const known = await findKnownRecipe(
+          { sourceUrl: null, title: recipe.title },
+          itemId,
+        );
+        if (known) {
+          await markDuplicate(itemId, known, {
+            rawText: describePhotos(photos.length, note),
+            pending: recipe,
+          });
+          return;
+        }
+      }
 
       await saveRecipe({
         itemId,
@@ -74,6 +97,18 @@ export async function processShareItem(itemId: string): Promise<void> {
       return;
     }
 
+    const canonical = extracted.canonicalUrl ?? item.sourceUrl;
+
+    // Dit is het goedkope moment om te merken dat je hem al hebt: de bron-URL
+    // kennen we nu, en de modelaanroep is nog niet gedaan.
+    if (!options.force) {
+      const known = await findKnownRecipe({ sourceUrl: canonical, title: null }, itemId);
+      if (known) {
+        await markDuplicate(itemId, known, { attempts, rawText: extracted.text });
+        return;
+      }
+    }
+
     // Vóór de modelaanroep opslaan: als het parsen faalt wil je in de inbox
     // kunnen zien wélke tekst het model kreeg en hoe die is opgehaald.
     await prisma.shareItem.update({
@@ -92,6 +127,24 @@ export async function processShareItem(itemId: string): Promise<void> {
       sourceUrl: extracted.canonicalUrl,
       sourceType: extracted.sourceType,
     });
+
+    // En dit is het laatste moment: de titel komt uit het model, dus deze
+    // controle kan pas nu. Het recept wordt niet opgeslagen, maar de uitvoer
+    // bewaren we wel — anders kost "toch toevoegen" een tweede aanroep.
+    if (!options.force) {
+      const known = await findKnownRecipe(
+        { sourceUrl: canonical, title: recipe.title },
+        itemId,
+      );
+      if (known) {
+        await markDuplicate(itemId, known, {
+          attempts,
+          rawText: extracted.text,
+          pending: recipe,
+        });
+        return;
+      }
+    }
 
     await saveRecipe({
       itemId,
@@ -174,4 +227,84 @@ async function saveRecipe(params: {
       },
     }),
   ]);
+}
+
+/**
+ * Staat dit recept er al?
+ *
+ * Alle titels en bron-URL's in het geheugen vergelijken in plaats van een
+ * genormaliseerde kolom bij te houden: bij een paar honderd recepten is dat
+ * sneller dan een index die kan verouderen, en het scheelt een kolom die bij
+ * elke bewerking bijgewerkt moet worden.
+ */
+async function findKnownRecipe(
+  candidate: { sourceUrl: string | null; title: string | null },
+  itemId: string,
+): Promise<{ id: string; title: string; reason: "bron" | "titel" } | null> {
+  const rows = await prisma.recipe.findMany({
+    // Het recept dat bij dít item hoort telt niet mee: opnieuw verwerken is
+    // geen duplicaat van zichzelf.
+    where: { NOT: { shareItemId: itemId } },
+    select: { id: true, title: true, sourceUrl: true },
+  });
+  return findDuplicate(candidate, rows);
+}
+
+async function markDuplicate(
+  itemId: string,
+  known: { id: string; reason: "bron" | "titel" },
+  extra: { attempts?: string; rawText: string; pending?: Recipe },
+): Promise<void> {
+  await prisma.shareItem.update({
+    where: { id: itemId },
+    data: {
+      status: "duplicate",
+      duplicateOfId: known.id,
+      error:
+        known.reason === "bron"
+          ? "Deze bron heb je al eens verwerkt."
+          : "Er staat al een recept met deze titel.",
+      rawText: extra.rawText,
+      attempts: extra.attempts,
+      pendingData: extra.pending ? JSON.stringify(extra.pending) : null,
+    },
+  });
+}
+
+/**
+ * "Toch toevoegen" bij een item dat als duplicaat is aangemerkt.
+ *
+ * Staat de modeluitvoer al klaar, dan wordt die gewoon opgeslagen — dat kost
+ * niets. Zat de treffer op de bron-URL, dan was het model nog niet aan de
+ * beurt en moet er alsnog verwerkt worden, nu zonder controle.
+ */
+export async function keepDuplicate(itemId: string): Promise<void> {
+  const item = await prisma.shareItem.findUnique({ where: { id: itemId } });
+  if (!item || item.status !== "duplicate") return;
+
+  if (!item.pendingData) {
+    await processShareItem(itemId, { force: true });
+    return;
+  }
+
+  const parsed = recipeSchema.safeParse(JSON.parse(item.pendingData));
+  if (!parsed.success) {
+    await processShareItem(itemId, { force: true });
+    return;
+  }
+
+  await saveRecipe({
+    itemId,
+    recipe: parsed.data,
+    sourceUrl: item.sourceUrl,
+    sourceType: item.sourceType,
+    fallbackImageUrl: null,
+    fallbackSourceName: null,
+    rawText: item.rawText ?? "",
+  });
+
+  await prisma.shareItem.update({
+    where: { id: itemId },
+    data: { duplicateOfId: null, pendingData: null, error: null },
+  });
 }

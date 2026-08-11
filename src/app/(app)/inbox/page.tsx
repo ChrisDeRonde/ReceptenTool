@@ -3,6 +3,7 @@ import {
   addSource,
   deleteItem,
   fetchRecipeImages,
+  keepAnyway,
   retryItem,
 } from "@/app/actions";
 import { logout } from "@/app/login/actions";
@@ -25,13 +26,17 @@ const STATUS: Record<string, { label: string; tone: string }> = {
   done: { label: "Klaar", tone: "ok" },
   failed: { label: "Mislukt", tone: "bad" },
   needs_input: { label: "Tekst nodig", tone: "bad" },
+  duplicate: { label: "Heb je al", tone: "warn" },
 };
 
 export default async function InboxPage() {
   const items = await prisma.shareItem.findMany({
     orderBy: { createdAt: "desc" },
     take: 50,
-    include: { recipe: { select: { id: true, title: true } } },
+    include: {
+      recipe: { select: { id: true, title: true } },
+      duplicateOf: { select: { id: true, title: true } },
+    },
   });
 
   return (
@@ -135,7 +140,29 @@ export default async function InboxPage() {
                 <p className="trail">opgehaald via {item.strategy}</p>
               )}
 
-              {item.error && <p className="trail">{item.error}</p>}
+              {item.status === "duplicate" && item.duplicateOf ? (
+                <div className="dupe">
+                  <p>
+                    {item.error} Je hebt al{" "}
+                    <Link href={`/recepten/${item.duplicateOf.id}`}>
+                      {item.duplicateOf.title}
+                    </Link>
+                    .{" "}
+                    {item.pendingData
+                      ? "Het nieuwe recept staat klaar en is nog niet opgeslagen."
+                      : "Er is geen modelaanroep gedaan, dus dit heeft niets gekost."}
+                  </p>
+                  <form action={keepAnyway}>
+                    <input type="hidden" name="id" value={item.id} />
+                    <button type="submit" className="secondary">
+                      <Icon icon={icons.plus} size={16} />
+                      Toch toevoegen
+                    </button>
+                  </form>
+                </div>
+              ) : (
+                item.error && <p className="trail">{item.error}</p>
+              )}
 
               {(item.status === "failed" || item.status === "needs_input") && (
                 <form

@@ -10,7 +10,7 @@ import {
   packMealTypes,
 } from "@/lib/recipe/categories";
 import { localImageName, storeRemoteImage } from "@/lib/images";
-import { processShareItem } from "@/lib/pipeline";
+import { keepDuplicate, processShareItem } from "@/lib/pipeline";
 import { ingredientFromFields } from "@/lib/recipe/amount";
 import {
   recipeSchema,
@@ -464,4 +464,19 @@ function readLines(formData: FormData, name: string): string[] {
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean);
+}
+
+/**
+ * Een item dat als duplicaat is aangemerkt tóch als recept opslaan.
+ *
+ * Twee varianten van hetzelfde gerecht kunnen best allebei de moeite waard
+ * zijn, en de herkenning is een vermoeden — geen oordeel.
+ */
+export async function keepAnyway(formData: FormData): Promise<void> {
+  const id = readField(formData, "id");
+  if (!id) return;
+
+  await keepDuplicate(id);
+  revalidatePath("/inbox");
+  revalidatePath("/");
 }

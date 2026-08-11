@@ -819,6 +819,17 @@ form.stack {
   color: var(--danger);
 }
 
+/* Geen fout, wel iets om naar te kijken. */
+.status.warn {
+  color: #a8823f;
+}
+
+@media (prefers-color-scheme: dark) {
+  .status.warn {
+    color: #d3ac6a;
+  }
+}
+
 .panel .shots {
   margin-top: 0.7rem;
 }
@@ -1742,4 +1753,18 @@ button.add:hover {
   margin: 1.5rem 0 0;
   color: var(--muted);
   font-size: 0.78rem;
+}
+
+/* Melding dat een binnengekomen recept er al lijkt te staan. */
+.dupe {
+  margin-top: 0.7rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--r-sm);
+  background: var(--sand);
+}
+
+.dupe p {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
 }
