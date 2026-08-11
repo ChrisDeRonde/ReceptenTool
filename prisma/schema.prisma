@@ -77,6 +77,11 @@ model Recipe {
 
   favorite Boolean @default(false)
 
+  /// Wanneer je het recept zelf hebt bijgewerkt. Null betekent: nog precies
+  /// zoals het uit de bron kwam. Staat hier zodat de app kan waarschuwen
+  /// voordat opnieuw verwerken die aanpassingen overschrijft.
+  editedAt DateTime?
+
   menuEntries MenuEntry[]
 
   shareItemId String?    @unique

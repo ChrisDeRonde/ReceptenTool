@@ -109,6 +109,14 @@ export default async function RecipePage({
           >
             <Icon icon={icons.menu} size={19} />
           </Link>
+          <Link
+            href={`/recepten/${row.id}/bewerken`}
+            className="button secondary icon"
+            aria-label="Recept bewerken"
+            title="Bewerken"
+          >
+            <Icon icon={icons.edit} size={19} />
+          </Link>
           <form action={toggleFavorite}>
             <input type="hidden" name="id" value={row.id} />
             <button
@@ -253,7 +261,9 @@ export default async function RecipePage({
         </div>
       )}
 
-      {recipe.assumptions.length > 0 && (
+      {/* Alleen zolang het recept nog is zoals het binnenkwam: heb je het zelf
+          bijgewerkt, dan zegt deze lijst niets meer over wat er nú staat. */}
+      {recipe.assumptions.length > 0 && row.editedAt === null && (
         <div className="callout">
           <h3>Zelf aangevuld</h3>
           <ul>
@@ -269,6 +279,17 @@ export default async function RecipePage({
         mealTypes={mealTypes}
         cuisine={row.cuisine}
       />
+
+      {row.editedAt && (
+        <p className="edited">
+          <Icon icon={icons.edit} size={13} />
+          Zelf bijgewerkt op {row.editedAt.toLocaleDateString("nl-NL", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}.
+        </p>
+      )}
 
       {recipe.tags.length > 0 && (
         <div className="tags">

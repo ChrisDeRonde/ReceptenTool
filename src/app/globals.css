@@ -1578,3 +1578,168 @@ button.linky {
   padding-top: 0;
   border-top: 0;
 }
+
+/* --- Recept bewerken ------------------------------------------------------ */
+
+.editor section {
+  margin-bottom: 2rem;
+}
+
+.editor .hint {
+  margin: -0.4rem 0 1rem;
+  font-size: 0.83rem;
+}
+
+.editor .hint code {
+  padding: 0.05em 0.3em;
+  border-radius: 4px;
+  background: var(--sunken);
+  font-size: 0.95em;
+}
+
+/* Label boven veld; overal dezelfde ritmiek. */
+.field {
+  display: block;
+  margin-bottom: 0.85rem;
+}
+
+.field > .eyebrow {
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+/* Vier korte getallen naast elkaar, en op een smal scherm twee per rij. */
+.numbers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+  gap: 0.6rem;
+}
+
+.ing-group {
+  margin-bottom: 1.1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.ing-group:last-of-type {
+  border-bottom: 0;
+}
+
+.group-name {
+  margin-bottom: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+/* Eén ingrediënt is één regel: smal vakje voor de maat, breed voor de naam.
+   Op een telefoon zakt de notitie naar de tweede regel. */
+.ing-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr auto;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.ing-row .note-in {
+  grid-column: 1 / 3;
+}
+
+@media (min-width: 34rem) {
+  .ing-row {
+    grid-template-columns: 5.5rem 1fr 9rem auto;
+  }
+
+  .ing-row .note-in {
+    grid-column: auto;
+  }
+}
+
+.ing-row input {
+  font-size: 0.9rem;
+}
+
+.amount-in {
+  font-variant-numeric: tabular-nums;
+}
+
+.step-row {
+  margin-bottom: 1.1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.step-row:last-of-type {
+  border-bottom: 0;
+}
+
+.step-head {
+  display: grid;
+  grid-template-columns: 1.6rem 1fr 4.2rem auto;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.step-no {
+  font-family: var(--font-display);
+  color: var(--muted);
+  text-align: center;
+}
+
+.step-row textarea {
+  margin-bottom: 0.4rem;
+}
+
+.step-row input,
+.step-row textarea {
+  font-size: 0.9rem;
+}
+
+/* Onopvallende plusknop; hij hoort bij de rij eronder, niet erboven. */
+button.add {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 2.2rem;
+  padding: 0 0.7rem;
+  border: 1px dashed var(--line);
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+button.add:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Opslaan blijft binnen bereik van je duim. */
+.editor-bar {
+  position: sticky;
+  bottom: calc(var(--dock) + env(safe-area-inset-bottom));
+  display: flex;
+  gap: 0.6rem;
+  padding: 1rem 0;
+  background: linear-gradient(to bottom, transparent, var(--bg) 45%);
+}
+
+.editor-bar .grow {
+  flex: 1;
+}
+
+.editor-bar .button.secondary {
+  flex: 0 0 8rem;
+}
+
+/* Klein regeltje onderaan het recept. */
+.edited {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 1.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}

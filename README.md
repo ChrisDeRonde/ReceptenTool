@@ -188,6 +188,34 @@ voor iconen in de bundel. Welke icoon waarvoor dient staat in `src/lib/icons.ts`
 Alle kleuren en maten zijn variabelen bovenin `src/app/globals.css`, in een
 lichte en een donkere set.
 
+## Recept bewerken
+
+Op elk recept staat een potloodje. Daar pas je alles aan wat het model ervan
+maakte: titel, omschrijving, porties, tijden, ingrediënten, stappen, tips en
+tags. Dat is niet alleen om fouten te herstellen — na twee keer koken weet je
+dat er een teen knoflook bij moet, en zonder bewerken verhuist die kennis naar
+je hoofd in plaats van naar het recept.
+
+- **Hoeveelheden typ je als tekst**: `300 g`, `2 teentje`, `½ tl`, `1/2 kop`,
+  `0,5 l`. `parseAmount` in `recipe/amount.ts` maakt daar weer een getal en een
+  eenheid van, zodat omrekenen naar meer personen blijft werken. Eén veldje per
+  regel in plaats van vier — dit doe je op een telefoon.
+- Een marge als `2-3 el` blijft staan zoals je hem typt en schaalt niet mee.
+  Er stiekem 2 van maken zou het recept preciezer laten lijken dan het is.
+- **De koppeling tussen stappen en ingrediënten** (waar de kookmodus op leunt)
+  is een positienummer, en dat schuift zodra je een regel weghaalt. Elke rij
+  draagt daarom onzichtbaar zijn oorspronkelijke plek mee, zodat de
+  verwijzingen na het opslaan meeschuiven. Wat je weghaalt verdwijnt ook uit de
+  stappen die het noemden; de staptekst zelf blijft ongemoeid.
+- Zonder JavaScript kun je alles aanpassen wat er al staat. Alleen rijen
+  toevoegen en verwijderen heeft JavaScript nodig.
+
+Dit is de enige plek die `data` overschrijft — tot nu toe bleef die blob precies
+zoals het model hem opleverde. Wat de bron zei blijft opvraagbaar via
+`ShareItem.rawText`. Een bijgewerkt recept krijgt `editedAt`, en onder aan de
+pagina staat sinds wanneer. Het kopje "Zelf aangevuld" verdwijnt dan: die lijst
+gaat over wat het model verzon, en zegt niets meer over wat er nú staat.
+
 ## Categorieën
 
 Elk recept krijgt bij het importeren een **maaltijdmoment** (ontbijt, lunch,

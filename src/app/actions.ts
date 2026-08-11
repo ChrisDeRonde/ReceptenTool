@@ -11,6 +11,14 @@ import {
 } from "@/lib/recipe/categories";
 import { localImageName, storeRemoteImage } from "@/lib/images";
 import { processShareItem } from "@/lib/pipeline";
+import { ingredientFromFields } from "@/lib/recipe/amount";
+import {
+  recipeSchema,
+  type Ingredient,
+  type IngredientGroup,
+  type Recipe,
+  type Step,
+} from "@/lib/recipe/schema";
 import { deletePhotos, parsePhotos, savePhotos } from "@/lib/photos";
 import { fromParam, midnight, startOfWeek, toParam } from "@/lib/menu/week";
 
@@ -282,4 +290,178 @@ async function deleteImageIfUnused(imageUrl: string | null): Promise<void> {
   if (others > 0) return;
 
   await deletePhotos([{ name, mime: "" }]);
+}
+
+/**
+ * Een recept met de hand bijwerken.
+ *
+ * Dit is de enige plek die `data` overschrijft. Tot nu toe bleef die blob
+ * precies zoals het model hem opleverde en pasten we alleen de kolommen aan;
+ * dat is een mooie garantie, maar hij staat een receptenverzameling in de weg.
+ * Na twee keer koken weet je dat er een teen knoflook bij moet, en zonder
+ * bewerken verhuist die kennis naar je hoofd in plaats van naar het recept.
+ * Wat de bron zei blijft opvraagbaar: `ShareItem.rawText` bewaart de tekst
+ * waar het model op werkte.
+ *
+ * De velden komen als `ing.<groep>.<regel>.<veld>` binnen, zodat er rijen bij
+ * en af kunnen zonder dat het formulier van vorm verandert.
+ */
+export async function updateRecipe(formData: FormData): Promise<void> {
+  const id = readField(formData, "id");
+  if (!id) return;
+
+  const row = await prisma.recipe.findUnique({ where: { id } });
+  if (!row) return;
+
+  const parsed = recipeSchema.safeParse(JSON.parse(row.data));
+  if (!parsed.success) return;
+  const before = parsed.data;
+
+  const { groups, moved } = readIngredients(formData);
+  const steps = readSteps(formData, moved);
+
+  const recipe: Recipe = {
+    ...before,
+    title: readField(formData, "titel") ?? before.title,
+    description: readField(formData, "omschrijving"),
+    servings: readNumber(formData, "porties"),
+    prepMinutes: readNumber(formData, "voorbereiden"),
+    cookMinutes: readNumber(formData, "bereiden"),
+    totalMinutes: readNumber(formData, "totaal"),
+    ingredientGroups: groups,
+    steps,
+    tips: readLines(formData, "tips"),
+    tags: (readField(formData, "tags") ?? "")
+      .split(",")
+      .map((tag) => tag.trim().toLowerCase())
+      .filter(Boolean),
+  };
+
+  await prisma.recipe.update({
+    where: { id },
+    data: {
+      title: recipe.title,
+      description: recipe.description,
+      servings: recipe.servings,
+      prepMinutes: recipe.prepMinutes,
+      cookMinutes: recipe.cookMinutes,
+      totalMinutes: recipe.totalMinutes,
+      data: JSON.stringify(recipe),
+      tags: recipe.tags.join(","),
+      editedAt: new Date(),
+    },
+  });
+
+  revalidatePath(`/recepten/${id}`);
+  revalidatePath("/");
+  redirect(`/recepten/${id}`);
+}
+
+/**
+ * De ingrediëntvelden terug naar groepen.
+ *
+ * Levert er ook bij op waar elke oorspronkelijke regel terechtkwam. De stappen
+ * verwijzen naar ingrediënten met een positienummer, en dat nummer schuift
+ * zodra je er eentje weghaalt; zonder deze vertaalslag wijst de kookmodus na
+ * één bewerking naar het verkeerde ingrediënt.
+ */
+function readIngredients(formData: FormData): {
+  groups: IngredientGroup[];
+  moved: Map<number, number>;
+} {
+  const rows = new Map<number, Map<number, Record<string, string>>>();
+
+  for (const [key, value] of formData.entries()) {
+    const match = /^ing\.(\d+)\.(\d+)\.(hoeveelheid|naam|notitie|van)$/.exec(key);
+    if (!match) continue;
+    const group = Number(match[1]);
+    const index = Number(match[2]);
+    if (!rows.has(group)) rows.set(group, new Map());
+    const items = rows.get(group)!;
+    if (!items.has(index)) items.set(index, {});
+    items.get(index)![match[3]] = String(value);
+  }
+
+  const groups: IngredientGroup[] = [];
+  const moved = new Map<number, number>();
+  let flat = 0;
+
+  for (const groupIndex of [...rows.keys()].sort((a, b) => a - b)) {
+    const name = readField(formData, `groep.${groupIndex}.naam`);
+    const items: Ingredient[] = [];
+
+    for (const itemIndex of [...rows.get(groupIndex)!.keys()].sort((a, b) => a - b)) {
+      const fields = rows.get(groupIndex)!.get(itemIndex)!;
+      const item = ingredientFromFields({
+        amount: fields.hoeveelheid ?? "",
+        name: fields.naam ?? "",
+        note: fields.notitie ?? "",
+      });
+      if (!item) continue;
+
+      const from = Number(fields.van);
+      if (Number.isInteger(from) && from >= 0) moved.set(from, flat);
+      items.push(item);
+      flat += 1;
+    }
+
+    // Een groep zonder ingrediënten is een kop boven niets.
+    if (items.length > 0) groups.push({ name, items });
+  }
+
+  return { groups, moved };
+}
+
+function readSteps(formData: FormData, moved: Map<number, number>): Step[] {
+  const rows = new Map<number, Record<string, string>>();
+
+  for (const [key, value] of formData.entries()) {
+    const match = /^stap\.(\d+)\.(titel|tekst|minuten|tip|refs)$/.exec(key);
+    if (!match) continue;
+    const index = Number(match[1]);
+    if (!rows.has(index)) rows.set(index, {});
+    rows.get(index)![match[2]] = String(value);
+  }
+
+  const steps: Step[] = [];
+  for (const index of [...rows.keys()].sort((a, b) => a - b)) {
+    const fields = rows.get(index)!;
+    const text = (fields.tekst ?? "").trim();
+    if (!text) continue;
+
+    const minutes = Number.parseInt(fields.minuten ?? "", 10);
+    const title = (fields.titel ?? "").trim();
+    const tip = (fields.tip ?? "").trim();
+
+    steps.push({
+      title: title ? title : null,
+      text,
+      // Verwijzingen naar ingrediënten die je hebt weggehaald verdwijnen
+      // gewoon; de overige schuiven mee naar hun nieuwe plek.
+      ingredientRefs: (fields.refs ?? "")
+        .split(",")
+        .map((value) => Number.parseInt(value, 10))
+        .filter((value) => Number.isInteger(value))
+        .map((value) => moved.get(value))
+        .filter((value): value is number => value !== undefined),
+      timerMinutes: Number.isInteger(minutes) && minutes > 0 ? minutes : null,
+      tip: tip ? tip : null,
+    });
+  }
+
+  return steps;
+}
+
+/** Een getal uit een veld, of null als het leeg of onzin is. */
+function readNumber(formData: FormData, name: string): number | null {
+  const value = Number.parseInt(readField(formData, name) ?? "", 10);
+  return Number.isInteger(value) && value >= 0 ? value : null;
+}
+
+/** Een textarea met één ding per regel. */
+function readLines(formData: FormData, name: string): string[] {
+  return (readField(formData, name) ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
