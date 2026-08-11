@@ -247,7 +247,12 @@ export function CookMode({
           Vorige
         </button>
         {isLast ? (
-          <Link href={backHref} className="button">
+          // Naar het recept mét het log-formulier open: dit is het enige moment
+          // dat je nog precies weet hoe het ging.
+          <Link
+            href={`${backHref}${backHref.includes("?") ? "&" : "?"}gekookt=1#gekookt`}
+            className="button"
+          >
             Klaar — eet smakelijk
           </Link>
         ) : (

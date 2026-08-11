@@ -124,6 +124,37 @@ dan een index die kan verouderen (gemeten: 31 ms voor de hele pagina). Loopt de
 collectie ooit in de duizenden, dan is een `RecipeIngredient`-tabel de volgende
 stap; `src/lib/recipe/search.ts` is dan het enige bestand dat verandert.
 
+## Gemaakt: sterren, opmerking, vaker eten
+
+Onder elk recept staat **Gemaakt**: hoe vaak je het maakte, wat je ervan vond
+en wanneer voor het laatst. Eén regel per keer, met drie dingen erin — een
+oordeel van één tot vijf sterren, één regel tekst, en of het vaker mag.
+
+Alles mag leeg blijven. Een formulier dat je dwingt een oordeel te geven vul je
+na één keer niet meer in, en dan is de hele log waardeloos; soms wil je alleen
+weten *dát* je het gemaakt hebt.
+
+Het beste moment om dit in te vullen is meteen na het koken, dus de knop
+**Klaar — eet smakelijk** in de kookmodus brengt je naar het recept met het
+formulier al open. De datum staat standaard op vandaag en is aan te passen, dus
+achteraf bijwerken kan ook.
+
+- De sterren zijn radio-knoppen met labels, geen JavaScript-widget: het werkt
+  ook zonder scripts en een schermlezer weet er raad mee. Ze staan aflopend in
+  de HTML omdat CSS de rij omdraait — alleen zo kan "de aangevinkte plus alles
+  erna" de lágere sterren inkleuren.
+- Op het overzicht staat het gemiddelde oordeel als sterren bij de tegel. Wat
+  je er zelf van vond weegt zwaarder dan uit welke keuken het komt.
+- Regels zonder oordeel tellen niet mee in het gemiddelde, wel in het aantal
+  keer.
+- "Laatst" telt in kalenderdagen en niet in verstreken uren: iets dat je
+  vanochtend maakte is vanavond nog steeds vandaag.
+
+Elke keer is een eigen regel in `CookLog`, want het gaat niet over het recept
+maar over díe avond. Hoe vaak je iets eet en hoe lang het geleden is volgen
+daar vanzelf uit — de basis onder een weekmenu dat ooit zelf iets kan
+voorstellen.
+
 ## Weekmenu en boodschappen
 
 Op een recept staat een kalenderknop: die neemt het recept "in de hand" mee naar
@@ -432,6 +463,14 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/recipe/prompt.ts`   | **De huisstijl van een recept.** Hier sleutel je aan toon.  |
 | `src/lib/recipe/schema.ts`   | Vorm van een recept — Zod plus JSON Schema, samen bijhouden. |
 | `src/lib/pipeline.ts`        | Rijgt extractie en parsing aan elkaar, bewaakt de status.   |
+| `src/middleware.ts`          | Het slot: één poort voor pagina's én server actions.        |
+| `src/lib/session.ts`         | Inlogkoekje ondertekenen en nakijken; rem op mispogingen.   |
+| `scripts/backup.mjs`         | Database en foto's veiligstellen; draai hem uit de cron.    |
+| `src/lib/images.ts`          | Receptfoto's downloaden naar eigen schijf.                  |
+| `src/components/RecipeEditor.tsx` | Het bewerkscherm; rijen erbij en eraf.                 |
+| `src/lib/recipe/amount.ts`   | "300 g" terug naar getal en eenheid. Tegenhanger van format. |
+| `src/lib/recipe/duplicate.ts` | Herkennen dat je een recept al hebt: bron-URL en titel.    |
+| `src/components/CookLog.tsx` | Gemaakt: sterren, opmerking, vaker eten.                    |
 
 ## Aan de output sleutelen
 

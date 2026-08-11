@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { toggleFavorite } from "@/app/actions";
 import { CategoryEditor } from "@/components/CategoryEditor";
+import { CookLog } from "@/components/CookLog";
 import { Icon } from "@/components/Icon";
 import { prisma } from "@/lib/db";
 import { icons } from "@/lib/icons";
@@ -26,7 +27,12 @@ export default async function RecipePage({
 }) {
   const { id } = await params;
   const query = await searchParams;
-  const row = await prisma.recipe.findUnique({ where: { id } });
+  const row = await prisma.recipe.findUnique({
+    where: { id },
+    include: {
+      cookLogs: { orderBy: [{ cookedAt: "desc" }, { createdAt: "desc" }] },
+    },
+  });
   if (!row) notFound();
 
   const parsed = recipeSchema.safeParse(JSON.parse(row.data));
@@ -274,6 +280,13 @@ export default async function RecipePage({
         </div>
       )}
 
+      <CookLog
+        recipeId={row.id}
+        entries={row.cookLogs}
+        // Kom je net uit de kookmodus, dan staat het formulier al open.
+        open={readOne(query.gekookt) !== null}
+      />
+
       <CategoryEditor
         recipeId={row.id}
         mealTypes={mealTypes}
@@ -302,4 +315,9 @@ export default async function RecipePage({
       )}
     </main>
   );
+}
+
+function readOne(value: string | string[] | undefined): string | null {
+  const first = Array.isArray(value) ? value[0] : value;
+  return first?.trim() || null;
 }

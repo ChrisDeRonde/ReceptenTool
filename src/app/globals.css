@@ -1768,3 +1768,186 @@ button.add:hover {
   font-size: 0.85rem;
   line-height: 1.5;
 }
+
+/* --- Kooklog -------------------------------------------------------------- */
+
+/* Alleen voor schermlezers. */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.stars {
+  display: inline-flex;
+  gap: 0.05rem;
+  vertical-align: -0.15em;
+  color: var(--line);
+}
+
+.stars svg.on {
+  color: #c9a227;
+  fill: currentcolor;
+}
+
+@media (prefers-color-scheme: dark) {
+  .stars svg.on {
+    color: #d9b747;
+  }
+}
+
+.cooklog-sum {
+  margin: 0 0 0.9rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.cooklog-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.cooklog-list li {
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.cooklog-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.cooklog-date {
+  font-size: 0.83rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* De prullenbak helemaal rechts, los van de rest. */
+.cooklog-head form {
+  margin-left: auto;
+}
+
+.cooklog-note {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.again {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+}
+
+.again.yes {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.again.no {
+  background: var(--sunken);
+  color: var(--muted);
+}
+
+/* Het invulblok zit dicht, net als de indeling eronder. */
+.cooklog-add > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.6rem;
+  color: var(--muted);
+  font-size: 0.86rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.cooklog-add > summary::-webkit-details-marker {
+  display: none;
+}
+
+.cooklog-add[open] > summary {
+  color: var(--ink);
+  margin-bottom: 0.6rem;
+}
+
+.cooklog-add fieldset {
+  margin: 0 0 0.9rem;
+  padding: 0;
+  border: 0;
+}
+
+.cooklog-add legend {
+  margin-bottom: 0.35rem;
+  padding: 0;
+}
+
+/* Vijf sterren om aan te tikken. Radio's onder de motorkap, zodat het ook
+   zonder JavaScript werkt en een schermlezer er raad mee weet. */
+.star-pick {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.star-pick label {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--r-sm);
+  color: var(--line);
+  cursor: pointer;
+}
+
+.star-pick input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Tik je de derde ster aan, dan kleuren de eerste drie mee. Zonder
+   JavaScript: de latere sterren staan verderop in de DOM, dus we kleuren
+   vanaf rechts en draaien de rij visueel om. */
+.star-pick {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
+.star-pick label:hover,
+.star-pick label:hover ~ label,
+.star-pick:has(input:checked) label:has(input:checked),
+.star-pick:has(input:checked) label:has(input:checked) ~ label {
+  color: #c9a227;
+}
+
+.star-pick label:has(input:checked) svg,
+.star-pick label:has(input:checked) ~ label svg {
+  fill: currentcolor;
+}
+
+.star-pick label:has(input:focus-visible) {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .star-pick label:hover,
+  .star-pick label:hover ~ label,
+  .star-pick:has(input:checked) label:has(input:checked),
+  .star-pick:has(input:checked) label:has(input:checked) ~ label {
+    color: #d9b747;
+  }
+}
+
+/* In het overzicht staan de sterren vóór de keuken. */
+.sub .stars {
+  margin-right: 0.2rem;
+}

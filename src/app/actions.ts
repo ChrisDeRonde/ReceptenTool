@@ -480,3 +480,45 @@ export async function keepAnyway(formData: FormData): Promise<void> {
   revalidatePath("/inbox");
   revalidatePath("/");
 }
+
+/* --- Kooklog -------------------------------------------------------------- */
+
+/**
+ * Vastleggen dat je dit gemaakt hebt, en hoe het beviel.
+ *
+ * Sterren, één regel tekst en "vaker eten?" — meer niet. Alles mag leeg: soms
+ * wil je alleen weten dát je het gemaakt hebt, en een formulier dat je dwingt
+ * een oordeel te geven vul je na een keer niet meer in.
+ */
+export async function logCook(formData: FormData): Promise<void> {
+  const recipeId = readField(formData, "recipeId");
+  if (!recipeId) return;
+
+  const rating = Number.parseInt(readField(formData, "sterren") ?? "", 10);
+  const again = readField(formData, "vaker");
+  const day = readField(formData, "wanneer");
+
+  await prisma.cookLog.create({
+    data: {
+      recipeId,
+      // Standaard vandaag; achteraf invullen mag ook.
+      cookedAt: day ? midnight(fromParam(day)) : midnight(new Date()),
+      rating: rating >= 1 && rating <= 5 ? rating : null,
+      note: readField(formData, "opmerking"),
+      again: again === "ja" ? true : again === "nee" ? false : null,
+    },
+  });
+
+  revalidatePath(`/recepten/${recipeId}`);
+  revalidatePath("/");
+  redirect(`/recepten/${recipeId}`);
+}
+
+export async function deleteCookLog(formData: FormData): Promise<void> {
+  const id = readField(formData, "id");
+  if (!id) return;
+
+  const log = await prisma.cookLog.delete({ where: { id } });
+  revalidatePath(`/recepten/${log.recipeId}`);
+  revalidatePath("/");
+}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Stars } from "@/components/CookLog";
 import { Icon } from "@/components/Icon";
 import { SearchBox } from "@/components/SearchBox";
 import { prisma } from "@/lib/db";
@@ -71,9 +72,10 @@ export default async function HomePage({
   const complete = scored.filter((entry) => (entry.hit?.matched ?? 0) === terms.length);
   const partial = scored.filter((entry) => (entry.hit?.matched ?? 0) < terms.length);
 
-  const [usedMealTypes, usedCuisines] = await Promise.all([
+  const [usedMealTypes, usedCuisines, ratings] = await Promise.all([
     collectMealTypes(),
     collectCuisines(),
+    collectRatings(),
   ]);
 
   const href = (next: { maaltijd?: MealType | null; keuken?: string | null }) => {
@@ -160,12 +162,12 @@ export default async function HomePage({
         </div>
       ) : (
         <>
-          <Grid entries={complete} terms={terms.length} />
+          <Grid entries={complete} terms={terms.length} ratings={ratings} />
 
           {partial.length > 0 && (
             <>
               <h2 className="section near">Bijna</h2>
-              <Grid entries={partial} terms={terms.length} />
+              <Grid entries={partial} terms={terms.length} ratings={ratings} />
             </>
           )}
         </>
@@ -187,7 +189,15 @@ type Entry = {
   hit: Hit | null;
 };
 
-function Grid({ entries, terms }: { entries: Entry[]; terms: number }) {
+function Grid({
+  entries,
+  terms,
+  ratings,
+}: {
+  entries: Entry[];
+  terms: number;
+  ratings: Map<string, number>;
+}) {
   if (entries.length === 0) return null;
 
   return (
@@ -197,6 +207,7 @@ function Grid({ entries, terms }: { entries: Entry[]; terms: number }) {
         const sub = [recipe.cuisine, ...mealTypes.map((t) => MEAL_TYPE_LABELS[t])]
           .filter(Boolean)
           .join(" · ");
+        const rating = ratings.get(recipe.id);
 
         return (
           <Link key={recipe.id} href={`/recepten/${recipe.id}`} className="tile">
@@ -227,6 +238,13 @@ function Grid({ entries, terms }: { entries: Entry[]; terms: number }) {
                 <p className="sub missing">mist {hit.missing.join(", ")}</p>
               ) : hit && hit.inIngredients.length > 0 ? (
                 <p className="sub found">met {hit.inIngredients.join(", ")}</p>
+              ) : rating !== undefined ? (
+                // Wat je er zelf van vond weegt zwaarder dan uit welke keuken
+                // het komt; dat laatste staat toch al in de filters.
+                <p className="sub">
+                  <Stars value={Math.round(rating)} size={12} />
+                  {sub && <span className="muted"> {sub}</span>}
+                </p>
               ) : (
                 sub && <p className="sub">{sub}</p>
               )}
@@ -278,4 +296,23 @@ async function collectCuisines(): Promise<string[]> {
   return rows
     .map((row) => row.cuisine)
     .filter((cuisine): cuisine is string => cuisine !== null);
+}
+
+/**
+ * Het gemiddelde oordeel per recept, voor de tegels.
+ *
+ * Eén groepering in plaats van een teller per recept: het overzicht mag geen
+ * vraag per tegel stellen.
+ */
+async function collectRatings(): Promise<Map<string, number>> {
+  const rows = await prisma.cookLog.groupBy({
+    by: ["recipeId"],
+    where: { NOT: { rating: null } },
+    _avg: { rating: true },
+  });
+  return new Map(
+    rows
+      .filter((row) => row._avg.rating !== null)
+      .map((row) => [row.recipeId, row._avg.rating as number]),
+  );
 }
