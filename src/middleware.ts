@@ -45,8 +45,11 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   // Alles behalve wat de browser sowieso nodig heeft om de inlogpagina te
-  // kunnen tonen: de bundel, de fonts en het icoon.
+  // kunnen tonen: de bundel, de fonts en het icoon. Plus twee dingen die bij
+  // "zet op beginscherm" horen — het manifest en de service worker. Daar staat
+  // niets persoonlijks in, en een inlogpagina in plaats van een script zou het
+  // toestel de worker laten afwijzen.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|fonts/|manifest.webmanifest|.*\\.(?:png|jpe?g|svg|webp|ico|woff2?)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|fonts/|icoon/|sw.js|manifest.webmanifest|.*\\.(?:png|jpe?g|svg|webp|ico|woff2?)$).*)",
   ],
 };

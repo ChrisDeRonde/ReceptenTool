@@ -1,9 +1,38 @@
 import type { Metadata, Viewport } from "next";
+import { ServiceWorker } from "@/components/ServiceWorker";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Recepten",
   description: "Recepten van Instagram, AH en websites, netjes opgeslagen.",
+  applicationName: "Recepten",
+  icons: {
+    icon: [
+      { url: "/icoon/icoon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icoon/icoon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/icoon/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    // Zonder dit opent "Zet op beginscherm" alsnog een Safari-venster met balk.
+    capable: true,
+    title: "Recepten",
+    // Doorzichtige statusbalk: de klok staat over onze eigen achtergrond, en
+    // de veilige zones vangen we in CSS op.
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    // Anders maakt iOS van "200 g" en van tijden ineens telefoonnummers.
+    telephone: false,
+  },
+  other: {
+    // Next zendt tegenwoordig alleen `mobile-web-app-capable`. Safari kijkt
+    // van oudsher naar de apple-variant, en zonder die tag opent "Zet op
+    // beginscherm" alsnog een venster mét adresbalk — precies wat we niet
+    // willen. Nieuwere iOS-versies leiden het ook uit het manifest af; beide
+    // meesturen kost niets en dekt allebei de gevallen.
+    "apple-mobile-web-app-capable": "yes",
+  },
 };
 
 export const viewport: Viewport = {
@@ -29,7 +58,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="nl">
-      <body>{children}</body>
+      <body>
+        {children}
+        <ServiceWorker />
+      </body>
     </html>
   );
 }

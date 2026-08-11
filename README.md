@@ -450,6 +450,23 @@ belanden — een schijf in dezelfde behuizing gaat samen met de rest stuk. Wijs
 `BACKUP_DIR` naar een aangekoppelde schijf, of laat rsync of rclone de map
 oppikken.
 
+## Op je beginscherm
+
+Open de app in Safari op je iPhone en tik op **Zet op beginscherm**. Je krijgt
+een eigen icoon, volledig scherm zonder adresbalk, snelkoppelingen bij lang
+indrukken, en een kookmodus die blijft werken als de wifi in de keuken hapert.
+
+Wat offline werkt is bewust beperkt: de recepten staan op een server, dus
+zonder verbinding kun je niets nieuws ophalen of opslaan. De service worker
+bewaart wat je het laatst bekeek — pagina's netwerk-eerst, zodat je nooit oude
+hoeveelheden krijgt als de server bereikbaar is. Alles wat schrijft gaat er
+ongemoeid langs.
+
+Zie **[docs/ios-app.md](docs/ios-app.md)** voor hoe het in elkaar zit, wat er
+wel en niet offline werkt, en het pad naar een Capacitor-schil met TestFlight
+als je dat ooit wilt. Kort: dat kan zonder Swift en zonder iets te herbouwen,
+maar de App Store gaat een WebView om een privé-server niet toelaten.
+
 ## Delen vanaf iOS
 
 Zie **[docs/ios-delen.md](docs/ios-delen.md)**. Kort samengevat: Safari op iOS
@@ -495,6 +512,9 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/recipe/duplicate.ts` | Herkennen dat je een recept al hebt: bron-URL en titel.    |
 | `src/components/CookLog.tsx` | Gemaakt: sterren, opmerking, vaker eten.                    |
 | `src/lib/who.ts`             | Het naamkaartje: wie noteert er. Geen tweede slot.          |
+| `src/app/manifest.ts`        | Naam, kleuren en iconen voor "zet op beginscherm".          |
+| `public/sw.js`               | Service worker: cache en offlinescherm. Hoog `VERSIE` op.   |
+| `scripts/iconen.mjs`         | Alle icoonmaten uit één bron (`npm run iconen`).            |
 
 ## Aan de output sleutelen
 
@@ -520,9 +540,9 @@ die al in de database staan stuk op de validatie.
 - **Verwerken gebeurt in hetzelfde proces** via Next's `after()`. Bij twee
   gebruikers is een echte wachtrij overbodig; komt daar ooit volume bij, dan is
   `processShareItem` het enige dat een worker hoeft aan te roepen.
-- **Eén gedeeld token** in plaats van accounts. Genoeg voor twee mensen die
-  elkaar vertrouwen, maar er is dus geen onderscheid tussen gebruikers behalve
-  het `sharedBy`-veld dat de Shortcut meestuurt.
+- **Eén gedeeld token** (`INGEST_TOKEN`) voor de ingest-endpoints, in plaats
+  van een sleutel per apparaat. Genoeg voor twee telefoons; wil je er ooit een
+  intrekken, dan moet je het token overal verversen.
 - **Eén wachtwoord voor de hele app**, geen accounts. Wie het wachtwoord heeft,
   mag alles. De namen uit `APP_USERS` zijn een label en geen grens; zodra de
   app het huishouden verlaat — vrienden, familie, publiek — draait die
@@ -538,3 +558,5 @@ die al in de database staan stuk op de validatie.
 | `npm run typecheck` | TypeScript zonder build                  |
 | `npm run db:push`   | Schema naar de database                  |
 | `npm run db:studio` | Database in de browser bekijken          |
+| `npm run db:backup` | Database + foto's naar `backups/`        |
+| `npm run iconen`    | App-iconen opnieuw tekenen               |

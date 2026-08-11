@@ -12,7 +12,8 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate",
-    "db:backup": "node scripts/backup.mjs"
+    "db:backup": "node scripts/backup.mjs",
+    "iconen": "node scripts/iconen.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",
@@ -31,6 +32,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "prisma": "^7.9.1",
+    "sharp": "^0.35.3",
     "typescript": "^5.7.0"
   }
 }

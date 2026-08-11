@@ -141,7 +141,11 @@ h3 {
 .shell {
   max-width: var(--maxw);
   margin: 0 auto;
-  padding: 2.25rem var(--gutter)
+  /* De bovenmarge moet de statusbalk meenemen. In een browsertabblad is
+     env(safe-area-inset-top) nul en verandert er niets; staat de app op je
+     beginscherm of straks in een schil, dan is er geen adresbalk meer en zou
+     de titel anders tegen de klok aan lopen. */
+  padding: calc(2.25rem + env(safe-area-inset-top)) var(--gutter)
     calc(var(--dock) + env(safe-area-inset-bottom) + 2rem);
 }
 
