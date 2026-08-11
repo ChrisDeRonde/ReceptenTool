@@ -5,6 +5,7 @@ import { CategoryEditor } from "@/components/CategoryEditor";
 import { CookLog } from "@/components/CookLog";
 import { Icon } from "@/components/Icon";
 import { prisma } from "@/lib/db";
+import { currentPerson } from "@/lib/who";
 import { icons } from "@/lib/icons";
 import { MEAL_TYPE_LABELS, unpackMealTypes } from "@/lib/recipe/categories";
 import { formatAmount } from "@/lib/recipe/format";
@@ -285,6 +286,7 @@ export default async function RecipePage({
         entries={row.cookLogs}
         // Kom je net uit de kookmodus, dan staat het formulier al open.
         open={readOne(query.gekookt) !== null}
+        who={await currentPerson()}
       />
 
       <CategoryEditor
@@ -296,11 +298,13 @@ export default async function RecipePage({
       {row.editedAt && (
         <p className="edited">
           <Icon icon={icons.edit} size={13} />
-          Zelf bijgewerkt op {row.editedAt.toLocaleDateString("nl-NL", {
+          {row.editedBy ? `Bijgewerkt door ${row.editedBy} op ` : "Zelf bijgewerkt op "}
+          {row.editedAt.toLocaleDateString("nl-NL", {
             day: "numeric",
             month: "long",
             year: "numeric",
-          })}.
+          })}
+          .
         </p>
       )}
 

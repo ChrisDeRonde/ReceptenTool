@@ -11,6 +11,7 @@ import {
   sameSecret,
   throttled,
 } from "@/lib/session";
+import { configuredPeople, currentPerson } from "@/lib/who";
 
 /**
  * Achter welk IP zit deze poging? Alleen om te tellen, niet om te vertrouwen —
@@ -49,7 +50,15 @@ export async function login(formData: FormData): Promise<void> {
   const cookie = await createSessionCookie(expected);
   (await cookies()).set(cookie);
 
-  redirect(safeNext(formData.get("verder")));
+  const next = safeNext(formData.get("verder"));
+
+  // Weten we nog niet wie dit is, dan vragen we het één keer. Zijn er geen
+  // namen ingesteld, dan slaat `currentPerson` dat over en gaat dit niet op.
+  if (configuredPeople().length > 0 && (await currentPerson()) === null) {
+    redirect(`/wie?verder=${encodeURIComponent(next)}`);
+  }
+
+  redirect(next);
 }
 
 export async function logout(): Promise<void> {

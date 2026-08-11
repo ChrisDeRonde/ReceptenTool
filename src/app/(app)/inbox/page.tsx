@@ -15,6 +15,7 @@ import {
 import { Icon } from "@/components/Icon";
 import { PhotoForm } from "@/components/PhotoForm";
 import { prisma } from "@/lib/db";
+import { configuredPeople, currentPerson } from "@/lib/who";
 import { icons } from "@/lib/icons";
 import { parsePhotos, photoUrl } from "@/lib/photos";
 
@@ -92,6 +93,7 @@ export default async function InboxPage() {
               <div className="row" style={{ justifyContent: "space-between" }}>
                 <span className={`status ${status.tone}`}>{status.label}</span>
                 <span className="muted" style={{ fontSize: "0.8rem" }}>
+                  {item.sharedBy && `${item.sharedBy} · `}
                   {item.createdAt.toLocaleString("nl-NL")}
                 </span>
               </div>
@@ -202,15 +204,41 @@ export default async function InboxPage() {
       <RemoteImageLine />
       <BackupLine />
 
-      {/* De inbox is de servicehoek van de app, dus hier hangt ook de knop om
-          eruit te gaan. */}
-      <form action={logout} className="signout">
-        <button type="submit" className="quiet">
-          <Icon icon={icons.logout} size={15} />
-          Uitloggen
-        </button>
-      </form>
+      {/* De inbox is de servicehoek van de app, dus hier hangen ook wisselen
+          en uitloggen. */}
+      <div className="signout">
+        <WhoLine />
+        <form action={logout}>
+          <button type="submit" className="quiet">
+            <Icon icon={icons.logout} size={15} />
+            Uitloggen
+          </button>
+        </form>
+      </div>
     </main>
+  );
+}
+
+/** Wie ben je nu, en hoe wissel je. Alleen als er namen zijn ingesteld. */
+async function WhoLine() {
+  const who = await currentPerson();
+  if (configuredPeople().length === 0) return null;
+
+  return (
+    <p className="whoami">
+      <Icon icon={icons.people} size={15} />
+      {who ? (
+        <>
+          Je noteert als <strong>{who}</strong>.{" "}
+          <Link href="/wie?verder=%2Finbox">Wisselen</Link>
+        </>
+      ) : (
+        <>
+          Nog geen naam gekozen.{" "}
+          <Link href="/wie?verder=%2Finbox">Zeg wie je bent</Link>
+        </>
+      )}
+    </p>
   );
 }
 

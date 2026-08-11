@@ -21,6 +21,7 @@ import {
 } from "@/lib/recipe/schema";
 import { deletePhotos, parsePhotos, savePhotos } from "@/lib/photos";
 import { fromParam, midnight, startOfWeek, toParam } from "@/lib/menu/week";
+import { currentPerson } from "@/lib/who";
 
 /**
  * Server actions voor de web-UI. De iOS-kant praat met /api/share; dit is voor
@@ -38,7 +39,7 @@ export async function addSource(formData: FormData): Promise<void> {
       sourceType: detectSourceType(url),
       sourceUrl: url,
       sharedText: text,
-      sharedBy: readField(formData, "sharedBy"),
+      sharedBy: readField(formData, "sharedBy") ?? (await currentPerson()),
     },
   });
 
@@ -73,7 +74,7 @@ export async function addPhotos(formData: FormData): Promise<string | null> {
       status: "pending",
       sourceType: "foto",
       sharedText: readField(formData, "note"),
-      sharedBy: readField(formData, "sharedBy"),
+      sharedBy: readField(formData, "sharedBy") ?? (await currentPerson()),
       photos: JSON.stringify(stored),
     },
   });
@@ -349,6 +350,7 @@ export async function updateRecipe(formData: FormData): Promise<void> {
       data: JSON.stringify(recipe),
       tags: recipe.tags.join(","),
       editedAt: new Date(),
+      editedBy: await currentPerson(),
     },
   });
 
@@ -506,6 +508,7 @@ export async function logCook(formData: FormData): Promise<void> {
       rating: rating >= 1 && rating <= 5 ? rating : null,
       note: readField(formData, "opmerking"),
       again: again === "ja" ? true : again === "nee" ? false : null,
+      who: await currentPerson(),
     },
   });
 

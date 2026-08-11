@@ -145,6 +145,9 @@ achteraf bijwerken kan ook.
   erna" de lágere sterren inkleuren.
 - Op het overzicht staat het gemiddelde oordeel als sterren bij de tegel. Wat
   je er zelf van vond weegt zwaarder dan uit welke keuken het komt.
+- Staan er namen in `APP_USERS`, dan splitst de samenvatting per persoon
+  ("Chris ★★★★★ · Sanne ★★") in plaats van één gemiddelde te tonen. Zie
+  [Wie ben jij](#wie-ben-jij).
 - Regels zonder oordeel tellen niet mee in het gemiddelde, wel in het aantal
   keer.
 - "Laatst" telt in kalenderdagen en niet in verstreken uren: iets dat je
@@ -379,6 +382,26 @@ pagina is de variant waar je er één vergeet.
 
 Uitloggen staat onderaan de Inbox.
 
+### Wie ben jij
+
+Binnen de voordeur staat een **naamkaartje**, geen tweede slot. Zet de namen in
+`APP_USERS` (komma-gescheiden) en de app vraagt na het inloggen één keer wie je
+bent. Die naam komt bij je oordeel in de kooklog, bij wat je importeert en bij
+wat je bewerkt.
+
+Het is nadrukkelijk geen authenticatie: iedereen kan elke naam kiezen en
+wisselen kost één tik in de Inbox. Dat kan ook niet anders — jullie delen het
+wachtwoord van de voordeur, dus er valt binnen niets te bewijzen. Wat het wél
+oplevert is dat "Chris ★★★★★, Sanne ★★" niet langer als één gemiddelde van 3,5
+op je scherm staat, een cijfer waar niemand zich in herkent.
+
+Alleen namen die in `APP_USERS` staan worden geaccepteerd. Het koekje is aan te
+passen door wie het krijgt en die waarde belandt in de database en op het
+scherm; de lijst is dus de begrenzing.
+
+Laat je `APP_USERS` leeg, dan is de hele functie uit: geen vraag, geen namen,
+en alles werkt zoals het zonder werkte.
+
 ## Back-up
 
 ```bash
@@ -471,6 +494,7 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/recipe/amount.ts`   | "300 g" terug naar getal en eenheid. Tegenhanger van format. |
 | `src/lib/recipe/duplicate.ts` | Herkennen dat je een recept al hebt: bron-URL en titel.    |
 | `src/components/CookLog.tsx` | Gemaakt: sterren, opmerking, vaker eten.                    |
+| `src/lib/who.ts`             | Het naamkaartje: wie noteert er. Geen tweede slot.          |
 
 ## Aan de output sleutelen
 
@@ -500,8 +524,10 @@ die al in de database staan stuk op de validatie.
   elkaar vertrouwen, maar er is dus geen onderscheid tussen gebruikers behalve
   het `sharedBy`-veld dat de Shortcut meestuurt.
 - **Eén wachtwoord voor de hele app**, geen accounts. Wie het wachtwoord heeft,
-  mag alles — er is geen onderscheid tussen jullie twee behalve het
-  `sharedBy`-veld dat de Shortcut meestuurt.
+  mag alles. De namen uit `APP_USERS` zijn een label en geen grens; zodra de
+  app het huishouden verlaat — vrienden, familie, publiek — draait die
+  afweging om en heb je echte accounts nodig, met gehashte wachtwoorden, een
+  rem per account en een herstelroute.
 
 ## Commando's
 

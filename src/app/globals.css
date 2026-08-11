@@ -1951,3 +1951,59 @@ button.add:hover {
 .sub .stars {
   margin-right: 0.2rem;
 }
+
+/* --- Wie ben jij ---------------------------------------------------------- */
+
+/* Namen naast elkaar op het keuzescherm; geen wachtwoord, dus geen veld. */
+.who-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.who-pick button {
+  width: 100%;
+  min-height: 3rem;
+  font-size: 1rem;
+}
+
+.gate-card .small {
+  margin: 1rem 0 0;
+  font-size: 0.82rem;
+}
+
+/* Wie je bent, onderaan de inbox naast uitloggen. */
+.whoami {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.4rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.whoami strong {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+/* De naam bij een kooklogregel. */
+.who {
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--sunken);
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.per-person {
+  white-space: nowrap;
+}
+
+/* Onder wiens naam je nu noteert; hoort bij de samenvouwkop. */
+.as-who {
+  margin-left: auto;
+  padding-left: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}

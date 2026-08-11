@@ -89,6 +89,8 @@ model Recipe {
   /// zoals het uit de bron kwam. Staat hier zodat de app kan waarschuwen
   /// voordat opnieuw verwerken die aanpassingen overschrijft.
   editedAt DateTime?
+  /// Wie dat deed, als er een naam gekozen was. Zie src/lib/who.ts.
+  editedBy String?
 
   menuEntries MenuEntry[]
   cookLogs    CookLog[]
@@ -147,6 +149,10 @@ model CookLog {
 
   /// Vaker eten? Null betekent: niet gezegd.
   again Boolean?
+
+  /// Wie dit vond. Null als er geen naam gekozen was; een oordeel zonder naam
+  /// is nog steeds een oordeel.
+  who String?
 
   @@index([recipeId, cookedAt])
 }

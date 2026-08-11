@@ -20,6 +20,7 @@ export type CookEntry = {
   rating: number | null;
   note: string | null;
   again: boolean | null;
+  who: string | null;
 };
 
 export function Stars({ value, size = 14 }: { value: number; size?: number }) {
@@ -36,16 +37,23 @@ export function CookLog({
   recipeId,
   entries,
   open,
+  who,
 }: {
   recipeId: string;
   entries: CookEntry[];
   open: boolean;
+  /** Wie dit invult, als er namen zijn ingesteld. */
+  who: string | null;
 }) {
   const rated = entries.filter((entry) => entry.rating !== null);
   const average =
     rated.length > 0
       ? rated.reduce((sum, entry) => sum + (entry.rating ?? 0), 0) / rated.length
       : null;
+
+  // Hebben jullie er allebei iets van gevonden, dan is één gemiddelde een
+  // cijfer waar niemand zich in herkent. Dan liever per persoon.
+  const perPerson = byPerson(rated);
 
   const today = toParam(new Date());
 
@@ -62,13 +70,20 @@ export function CookLog({
         <>
           <p className="cooklog-sum">
             {entries.length === 1 ? "Eén keer gemaakt" : `${entries.length} keer gemaakt`}
-            {average !== null && (
+            {perPerson.length > 1 ? (
+              perPerson.map((person) => (
+                <span key={person.name} className="per-person">
+                  {" · "}
+                  {person.name} <Stars value={Math.round(person.average)} />
+                </span>
+              ))
+            ) : average !== null ? (
               <>
                 {" · "}
                 <Stars value={Math.round(average)} />{" "}
                 {average.toFixed(1).replace(".", ",")}
               </>
-            )}
+            ) : null}
             {" · "}
             laatst {when(entries[0].cookedAt)}
           </p>
@@ -84,6 +99,7 @@ export function CookLog({
                       year: "numeric",
                     })}
                   </span>
+                  {entry.who && <span className="who">{entry.who}</span>}
                   {entry.rating !== null && <Stars value={entry.rating} />}
                   {entry.again === true && (
                     <span className="again yes">
@@ -114,6 +130,7 @@ export function CookLog({
         <summary>
           <Icon icon={icons.note} size={16} />
           {entries.length === 0 ? "Vastleggen dat je het maakte" : "Nog een keer noteren"}
+          {who && <span className="as-who">als {who}</span>}
         </summary>
 
         <form action={logCook}>
@@ -193,4 +210,24 @@ function when(date: Date): string {
   if (days < 14) return `${days} dagen geleden`;
   if (days < 60) return `${Math.round(days / 7)} weken geleden`;
   return date.toLocaleDateString("nl-NL", { month: "long", year: "numeric" });
+}
+
+/**
+ * Het gemiddelde per persoon, voor recepten waar meer dan één iemand iets van
+ * vond. Regels zonder naam blijven buiten beeld: die horen bij niemand.
+ */
+function byPerson(rated: CookEntry[]): Array<{ name: string; average: number }> {
+  const buckets = new Map<string, number[]>();
+  for (const entry of rated) {
+    if (!entry.who) continue;
+    const list = buckets.get(entry.who) ?? [];
+    list.push(entry.rating as number);
+    buckets.set(entry.who, list);
+  }
+  return [...buckets.entries()]
+    .map(([name, values]) => ({
+      name,
+      average: values.reduce((sum, value) => sum + value, 0) / values.length,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
