@@ -86,9 +86,9 @@ samen die niet samenhoren. Mis je er een, dan zet je hem erbij in
 `src/lib/shopping/units.ts`.
 
 De lijst is gegroepeerd per schap en de volgorde volgt de winkel die je kiest:
-Albert Heijn, Jumbo, PLUS, Lidl of Aldi. Die routes zijn een benadering van de
-gebruikelijke indeling — filialen verschillen, dus zie het als een startpunt dat
-je in `src/lib/shopping/aisles.ts` bijstelt. Welk product in welk schap ligt komt
+Albert Heijn of Jumbo. Die routes zijn een benadering van de gebruikelijke
+indeling — filialen verschillen, dus zie het als een startpunt dat je in
+`src/lib/shopping/aisles.ts` bijstelt. Welk product in welk schap ligt komt
 uit een woordenlijst in datzelfde bestand: geen productdatabase, geen API, maar
 iets wat je kunt lezen en corrigeren. Nederlandse samenstellingen worden op hun
 kern beoordeeld, want slagroom is room en boerenkool is kool. Wat nergens op
@@ -97,6 +97,22 @@ past gaat naar *Overig*, onderaan de lijst maar wel op de lijst.
 Afvinken loopt vooruit op de server: in een supermarkt met slecht bereik moet
 een vinkje meteen omgaan. Na de kassa haal je met één knop weg wat in het
 karretje lag; de rest blijft staan.
+
+### Naar de winkel
+
+Achter elke regel staat een mandje dat dat product opzoekt bij de gekozen
+winkel. Op een telefoon met de AH- of Jumbo-app opent zo'n link de app zelf, dus
+toevoegen is nog één tik in plaats van overtypen.
+
+Let op wat dit **niet** is: het legt niets in je mandje. Daar bestaat geen
+openbare koppeling voor — beide ketens doen dat alleen binnen hun eigen app, met
+jouw account erachter. Er zijn onofficiële, teruggeviste API's voor AH, maar die
+vragen je inloggegevens, staan op gespannen voet met hun voorwaarden en breken
+zodra zij iets wijzigen; daarom staat dat hier niet in.
+
+De zoekadressen staan als twee regels in `src/lib/shopping/aisles.ts`
+(`SEARCH`). Ze zijn niet vanaf een testomgeving te controleren, dus als een van
+de twee ooit verhuist, is dat de enige plek die je aanpast.
 
 ## Uiterlijk
 

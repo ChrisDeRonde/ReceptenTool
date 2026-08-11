@@ -4,7 +4,13 @@ import { useOptimistic, useTransition } from "react";
 import { removeListItem, toggleListItem } from "@/app/actions";
 import { Icon } from "@/components/Icon";
 import { icons } from "@/lib/icons";
-import { AISLE_LABELS, type Aisle } from "@/lib/shopping/aisles";
+import {
+  AISLE_LABELS,
+  STORE_LABELS,
+  searchUrl,
+  type Aisle,
+  type Store,
+} from "@/lib/shopping/aisles";
 import { formatAmount } from "@/lib/shopping/units";
 
 export type ListItem = {
@@ -27,10 +33,13 @@ export type ListItem = {
 export function ShoppingList({
   groups,
   showSource,
+  store,
 }: {
   groups: { aisle: Aisle; items: ListItem[] }[];
   /** Bij één recept op de lijst weet je de herkomst wel; dan is het ruis. */
   showSource: boolean;
+  /** Waar de zoekknop per regel naartoe wijst. */
+  store: Store;
 }) {
   const [, startTransition] = useTransition();
   const flat = groups.flatMap((group) => group.items);
@@ -99,6 +108,20 @@ export function ShoppingList({
                       {formatAmount({ quantity: item.quantity, unit: item.unit })}
                     </span>
                   </label>
+                  {!item.checked && (
+                    // Opent de app van de winkel op dit product. Toevoegen doe
+                    // je daar zelf — zie de opmerking bij searchUrl.
+                    <a
+                      className="to-store"
+                      href={searchUrl(store, item.name)}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`${item.name} opzoeken bij ${STORE_LABELS[store]}`}
+                      title={`Opzoeken bij ${STORE_LABELS[store]}`}
+                    >
+                      <Icon icon={icons.basket} size={16} />
+                    </a>
+                  )}
                   <button
                     type="button"
                     className="quiet"

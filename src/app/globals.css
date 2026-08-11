@@ -866,11 +866,22 @@ form.stack {
   color: var(--muted);
 }
 
-.aisle li button {
+.aisle li button,
+.aisle li .to-store {
   flex: 0 0 auto;
-  width: 2rem;
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  min-height: 2.4rem;
   padding: 0;
-  opacity: 0.5;
+  opacity: 0.55;
+}
+
+/* De knop naar de winkel mag opvallen; het kruisje niet. */
+.aisle li .to-store {
+  color: var(--accent);
+  opacity: 1;
+  text-decoration: none;
 }
 
 .add-item {

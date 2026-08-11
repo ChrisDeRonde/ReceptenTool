@@ -22,7 +22,8 @@ export default async function ListPage() {
       <div className="page-head">
         <h1>Boodschappen</h1>
         <p>
-          De volgorde volgt de looproute van {STORE_LABELS[store]}.
+          Op volgorde van de looproute bij {STORE_LABELS[store]}. Het mandje
+          achter een regel zoekt dat product op in hun app.
         </p>
       </div>
 
@@ -51,7 +52,11 @@ export default async function ListPage() {
           </p>
         </div>
       ) : (
-        <ShoppingList groups={groups} showSource={sources.size > 1} />
+        <ShoppingList
+          groups={groups}
+          showSource={sources.size > 1}
+          store={store}
+        />
       )}
 
       <form action={addListItem} className="add-item">

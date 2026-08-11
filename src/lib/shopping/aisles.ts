@@ -10,16 +10,34 @@
  * het bij jullie winkel net anders, dan versleep je hier een regel.
  */
 
-export const STORES = ["ah", "jumbo", "plus", "lidl", "aldi"] as const;
+export const STORES = ["ah", "jumbo"] as const;
 export type Store = (typeof STORES)[number];
 
 export const STORE_LABELS: Record<Store, string> = {
   ah: "Albert Heijn",
   jumbo: "Jumbo",
-  plus: "PLUS",
-  lidl: "Lidl",
-  aldi: "Aldi",
 };
+
+/**
+ * Een product opzoeken in de winkel van je keuze.
+ *
+ * Dit is bewust een zóéklink en geen "leg in mandje": daar bestaat geen
+ * openbare koppeling voor. Zowel AH als Jumbo doen dat alleen binnen hun eigen
+ * app, met jouw account erachter. Wat dit wél doet: op een telefoon met de app
+ * geïnstalleerd opent deze link de app op dat product, zodat toevoegen nog één
+ * tik is in plaats van overtypen.
+ *
+ * Kloppen de adressen ooit niet meer, dan is dit de enige plek om ze te wijzigen.
+ */
+const SEARCH: Record<Store, (term: string) => string> = {
+  ah: (term) => `https://www.ah.nl/zoeken?query=${encodeURIComponent(term)}`,
+  jumbo: (term) =>
+    `https://www.jumbo.com/zoeken?searchTerms=${encodeURIComponent(term)}`,
+};
+
+export function searchUrl(store: Store, term: string): string {
+  return SEARCH[store](term.trim());
+}
 
 export const DEFAULT_STORE: Store = "ah";
 
@@ -62,11 +80,8 @@ export const AISLE_LABELS: Record<Aisle, string> = {
 };
 
 /**
- * De looproute per winkel.
- *
- * AH, Jumbo en PLUS beginnen doorgaans bij de groente en eindigen bij de
- * koeling; Lidl en Aldi zetten de bakafdeling vooraan en hebben een kortere
- * route met minder schappen.
+ * De looproute per winkel. Beide beginnen doorgaans bij de groente; daarna
+ * verschilt de volgorde van de versafdelingen.
  */
 const ROUTES: Record<Store, Aisle[]> = {
   ah: [
@@ -99,51 +114,6 @@ const ROUTES: Record<Store, Aisle[]> = {
     "nonfood",
     "overig",
   ],
-  plus: [
-    "groente",
-    "vlees",
-    "vis",
-    "kaas",
-    "brood",
-    "zuivel",
-    "voorraad",
-    "kruiden",
-    "bakken",
-    "diepvries",
-    "drank",
-    "nonfood",
-    "overig",
-  ],
-  lidl: [
-    "brood",
-    "groente",
-    "zuivel",
-    "kaas",
-    "vlees",
-    "vis",
-    "diepvries",
-    "voorraad",
-    "kruiden",
-    "bakken",
-    "drank",
-    "nonfood",
-    "overig",
-  ],
-  aldi: [
-    "groente",
-    "brood",
-    "zuivel",
-    "kaas",
-    "vlees",
-    "diepvries",
-    "voorraad",
-    "kruiden",
-    "bakken",
-    "vis",
-    "drank",
-    "nonfood",
-    "overig",
-  ],
 };
 
 export function aisleOrder(store: Store): Aisle[] {
@@ -162,13 +132,14 @@ const KEYWORDS: Array<[Aisle, string[]]> = [
   ["diepvries", ["diepvries", "ijs", "ijsblokjes", "bladerdeeg", "filodeeg", "erwtjes uit de vriezer"]],
   ["bakken", [
     "bloem", "bakmeel", "gist", "bakpoeder", "vanille-extract", "vanillesuiker",
-    "cacao", "poedersuiker", "basterdsuiker", "amandelmeel", "custard", "marsepein",
+    "cacao", "suiker", "poedersuiker", "basterdsuiker", "amandelmeel", "custard",
+    "marsepein",
   ]],
   ["kruiden", [
     "peper", "zout", "kaneel", "komijn", "kurkuma", "paprikapoeder", "oregano",
     "tijm", "rozemarijn", "laurier", "kruidnagel", "nootmuskaat", "kerrie",
     "chilipoeder", "korianderzaad", "venkelzaad", "garam masala", "za'atar",
-    "sumak", "saffraan", "gedroogde", "bouillonblokje", "bouillontablet",
+    "sumak", "saffraan", "bouillonblokje", "bouillontablet",
   ]],
   ["groente", [
     "ui", "sjalot", "knoflook", "tomaat", "tomaten", "paprika", "courgette",
@@ -209,7 +180,7 @@ const KEYWORDS: Array<[Aisle, string[]]> = [
     "pasta", "spaghetti", "penne", "rigatoni", "macaroni", "lasagne", "noodle",
     "rijst", "risotto", "couscous", "bulgur", "quinoa", "linze", "kikkererwt",
     "boon", "olie", "olijfolie", "azijn", "sojasaus", "vissaus", "gochujang",
-    "miso", "mosterd", "ketchup", "mayonaise", "honing", "suiker", "stroop",
+    "miso", "mosterd", "ketchup", "mayonaise", "honing", "stroop",
     "tomatenpuree", "passata", "kokosmelk", "bouillon", "blik", "pot", "noten",
     "amandel", "walnoot", "cashew", "pinda", "sesam", "rozijn", "dadel", "abrikoos",
     "chocolade", "havermout", "muesli", "cornflakes", "tahin", "harissa", "curry",
@@ -239,6 +210,26 @@ for (const [aisle, keywords] of KEYWORDS) {
   for (const keyword of keywords) {
     if (!EXACT.has(keyword)) EXACT.set(keyword, aisle);
   }
+}
+
+/**
+ * De enkelvoudsvormen die bij een afgeknipt meervoud kunnen horen.
+ *
+ * Twee Nederlandse regels: de lettergreep gaat dicht (bonen → boon), en de
+ * slotmedeklinker verstemloost (abrikozen → abrikoos, druiven → druif). Beide
+ * mogen falen; dit is de laatste poging voordat iets bij Overig belandt.
+ */
+function enkelvoudVarianten(stem: string): string[] {
+  const out = new Set<string>();
+  const devoiced = stem.replace(/z$/, "s").replace(/v$/, "f");
+  for (const base of [stem, devoiced]) {
+    out.add(base);
+    const opened = base.replace(/([aeiou])([bcdfghjklmnpqrstvwxz])$/, "$1$1$2");
+    out.add(opened);
+    out.add(opened.replace(/z$/, "s").replace(/v$/, "f"));
+  }
+  out.delete(stem);
+  return [...out];
 }
 
 /**
@@ -272,6 +263,27 @@ export function aisleFor(name: string): Aisle {
     for (const [aisle, heads] of HEADS) {
       for (const head of heads) {
         if (word.length > head.length && word.endsWith(head)) return aisle;
+      }
+    }
+  }
+
+  // Laatste poging met het meervoud eraf. Alleen hier, niet bij het samenvoegen
+  // van hoeveelheden: een verkeerd schap kost je een omweg, twee ingrediënten
+  // ten onrechte samenvoegen kost je een verkeerde boodschap.
+  for (const word of words) {
+    for (const suffix of ["'s", "en", "s"]) {
+      if (!word.endsWith(suffix)) continue;
+      const stem = word.slice(0, -suffix.length);
+      if (stem.length < 3) continue;
+
+      const hit = EXACT.get(stem);
+      if (hit) return hit;
+
+      // "bonen" wordt "bon" en moet "boon" worden: Nederlands verdubbelt de
+      // klinker als de lettergreep in het meervoud opengaat.
+      for (const candidate of enkelvoudVarianten(stem)) {
+        const second = EXACT.get(candidate);
+        if (second) return second;
       }
     }
   }
