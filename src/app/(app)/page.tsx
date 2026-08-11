@@ -239,11 +239,12 @@ function Grid({
               ) : hit && hit.inIngredients.length > 0 ? (
                 <p className="sub found">met {hit.inIngredients.join(", ")}</p>
               ) : rating !== undefined ? (
-                // Wat je er zelf van vond weegt zwaarder dan uit welke keuken
-                // het komt; dat laatste staat toch al in de filters.
+                // Met sterren erbij past de hele opsomming niet meer op één
+                // regel, en dan begint de tweede met een losse punt. De keuken
+                // is genoeg: de maaltijdmomenten staan al als filter bovenaan.
                 <p className="sub">
                   <Stars value={Math.round(rating)} size={12} />
-                  {sub && <span className="muted"> {sub}</span>}
+                  {recipe.cuisine && <span className="muted"> {recipe.cuisine}</span>}
                 </p>
               ) : (
                 sub && <p className="sub">{sub}</p>
