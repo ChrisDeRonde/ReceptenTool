@@ -674,6 +674,9 @@ ol.steps li strong {
 
 input[type="text"],
 input[type="url"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
 textarea {
   width: 100%;
   font: inherit;
@@ -1449,4 +1452,66 @@ button.round.primary {
 
 .cook-nav button:disabled {
   opacity: 0.35;
+}
+
+/* --- Inlogscherm ---------------------------------------------------------- */
+
+/* Eén kaart, verticaal gecentreerd. Geen tabbalk: je bent nog nergens. */
+.gate {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+}
+
+.gate-card {
+  width: 100%;
+  max-width: 20rem;
+  text-align: center;
+}
+
+.gate-card h1 {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 500;
+  margin: 0.7rem 0 0.2rem;
+}
+
+.gate-card .muted {
+  margin: 0 0 1.3rem;
+  font-size: 0.9rem;
+}
+
+.gate-card .notice {
+  margin: 1rem 0 0;
+  text-align: left;
+}
+
+.gate-card code {
+  font-size: 0.82em;
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  background: var(--sunken);
+}
+
+/* Het bordje uit het overzicht, als rustpunt boven het formulier. */
+.gate-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.gate-card button[type="submit"] {
+  width: 100%;
+}
+
+/* Uitloggen staat onderaan de inbox: bereikbaar, maar niet in de weg. */
+.signout {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
 }

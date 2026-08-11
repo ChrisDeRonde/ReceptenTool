@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { addSource, deleteItem, retryItem } from "@/app/actions";
+import { logout } from "@/app/login/actions";
 import { Icon } from "@/components/Icon";
 import { PhotoForm } from "@/components/PhotoForm";
 import { prisma } from "@/lib/db";
@@ -160,6 +161,15 @@ export default async function InboxPage() {
           );
         })
       )}
+
+      {/* De inbox is de servicehoek van de app, dus hier hangt ook de knop om
+          eruit te gaan. */}
+      <form action={logout} className="signout">
+        <button type="submit" className="quiet">
+          <Icon icon={icons.logout} size={15} />
+          Uitloggen
+        </button>
+      </form>
     </main>
   );
 }

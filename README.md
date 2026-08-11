@@ -229,7 +229,7 @@ opnieuw vanuit de inbox om ze alsnog te krijgen.
 ## Aan de praat krijgen
 
 ```bash
-cp .env.example .env      # vul ANTHROPIC_API_KEY en INGEST_TOKEN in
+cp .env.example .env      # vul ANTHROPIC_API_KEY, INGEST_TOKEN en APP_PASSWORD in
 npm install
 npm run db:push           # maakt dev.db aan
 npm run dev               # http://localhost:3000
@@ -240,6 +240,35 @@ Genereer er een met `openssl rand -hex 32`; zonder token van minstens 16 tekens
 weigert `/api/share` álle verzoeken.
 
 Zonder iOS kun je alles testen via **Inbox → Handmatig toevoegen**.
+
+## Op slot
+
+De app vraagt om één gedeeld wachtwoord (`APP_PASSWORD`, minstens 8 tekens).
+Dat is geen accountsysteem en dat hoeft ook niet: er zijn twee gebruikers die
+elkaar vertrouwen.
+
+Het slot zit in `src/middleware.ts` en dus vóór alles. Dat is met opzet: de
+pagina's waren nooit het echte probleem, de **server actions** waren dat.
+Die zijn gewoon POST-endpoints op diezelfde pagina's, en er zit `addSource`
+tussen (kost een modelaanroep per keer) en `deleteItem`. Een controle per
+pagina is de variant waar je er één vergeet.
+
+- Het koekje is zelfdragend: vervaldatum plus HMAC, ondertekend met een sleutel
+  die van het wachtwoord is afgeleid. Geen sessietabel, en het wachtwoord
+  wijzigen logt iedereen automatisch uit.
+- Drie maanden geldig, `httpOnly` en `SameSite=Lax`. `Secure` staat aan zodra
+  `APP_BASE_URL` met `https://` begint — op http zou de browser het koekje
+  nooit terugsturen en kwam je nooit voorbij het inlogscherm.
+- Acht mispogingen per IP per tien minuten. Een wachtwoord van acht tekens is
+  te raden als je duizend keer per minuut mag proberen; met deze rem niet.
+  De teller staat in het geheugen en is na een herstart leeg.
+- `/api/share`, `/api/items` en `/api/extract-preview` gaan er ongemoeid
+  langs: die hebben `INGEST_TOKEN` al, en de Shortcut heeft niets aan een
+  inlogpagina als antwoord.
+- Staat `APP_PASSWORD` niet ingevuld, dan blijft **alles** dicht en legt het
+  inlogscherm uit wat eraan ontbreekt. Fout dichtvallen, niet open.
+
+Uitloggen staat onderaan de Inbox.
 
 ## Delen vanaf iOS
 
@@ -305,8 +334,9 @@ die al in de database staan stuk op de validatie.
 - **Eén gedeeld token** in plaats van accounts. Genoeg voor twee mensen die
   elkaar vertrouwen, maar er is dus geen onderscheid tussen gebruikers behalve
   het `sharedBy`-veld dat de Shortcut meestuurt.
-- **De web-UI zelf is niet afgeschermd.** Wie de URL kent, kan de recepten
-  lezen. Zet er authenticatie voor als de app publiek bereikbaar is.
+- **Eén wachtwoord voor de hele app**, geen accounts. Wie het wachtwoord heeft,
+  mag alles — er is geen onderscheid tussen jullie twee behalve het
+  `sharedBy`-veld dat de Shortcut meestuurt.
 
 ## Commando's
 
