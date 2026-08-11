@@ -15,6 +15,7 @@ import {
   weekRange,
 } from "@/lib/menu/week";
 import { suggest } from "@/lib/menu/suggest";
+import { huishouden } from "@/lib/settings";
 import { MAX_SERVINGS, MIN_SERVINGS } from "@/lib/recipe/scale";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +28,7 @@ export default async function WeekMenuPage({
   const query = await searchParams;
   const monday = startOfWeek(fromParam(query.week));
   const days = weekDays(monday);
+  const thuis = await huishouden();
 
   // Kwam je hier vanaf een recept, dan staat dat recept "in de hand" en kies
   // je alleen nog de dag. Dat scheelt een tussenscherm.
@@ -101,7 +103,7 @@ export default async function WeekMenuPage({
               <h2 className="eyebrow">{dayLabel(day)}</h2>
 
               {meals.map((meal) => {
-                const servings = meal.servings ?? meal.recipe.servings;
+                const servings = meal.servings ?? thuis;
                 return (
                   <div key={meal.id} className="meal">
                     <Link href={`/recepten/${meal.recipe.id}`} className="meal-title">
@@ -109,6 +111,7 @@ export default async function WeekMenuPage({
                     </Link>
 
                     <div className="meal-side">
+                      <span className="voor">{voorWie(servings, thuis)}</span>
                       {servings !== null && (
                         <div className="stepper">
                           {/* Formulieren in plaats van links: het is een
@@ -193,6 +196,16 @@ export default async function WeekMenuPage({
       )}
     </main>
   );
+}
+
+/**
+ * "Iedereen" leest prettiger dan een getal dat toch altijd hetzelfde is; wijk
+ * je ervan af, dan wil je juist wél zien hoeveel het er zijn.
+ */
+function voorWie(servings: number, thuis: number): string {
+  if (servings === thuis) return "iedereen";
+  if (servings === 1) return "1 persoon";
+  return `${servings} personen`;
 }
 
 /**

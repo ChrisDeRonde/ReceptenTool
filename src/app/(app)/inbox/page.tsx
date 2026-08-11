@@ -16,7 +16,8 @@ import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
 import { PhotoForm } from "@/components/PhotoForm";
 import { prisma } from "@/lib/db";
-import { configuredPeople, currentPerson } from "@/lib/who";
+import { currentPerson } from "@/lib/who";
+import { people } from "@/lib/settings";
 import { icons } from "@/lib/icons";
 import { parsePhotos, photoUrl } from "@/lib/photos";
 
@@ -223,7 +224,7 @@ export default async function InboxPage() {
 /** Wie ben je nu, en hoe wissel je. Alleen als er namen zijn ingesteld. */
 async function WhoLine() {
   const who = await currentPerson();
-  if (configuredPeople().length === 0) return null;
+  if ((await people()).length === 0) return null;
 
   return (
     <p className="whoami">

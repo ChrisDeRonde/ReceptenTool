@@ -1,5 +1,6 @@
 import { TabBar } from "@/components/TabBar";
 import { prisma } from "@/lib/db";
+import { currentPerson } from "@/lib/who";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export default async function AppLayout({
   return (
     <div className="shell">
       {children}
-      <TabBar openItems={openItems} />
+      <TabBar openItems={openItems} who={await currentPerson()} />
     </div>
   );
 }

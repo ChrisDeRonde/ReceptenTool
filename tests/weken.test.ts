@@ -16,7 +16,7 @@ import {
   packMealTypes,
   unpackMealTypes,
 } from "@/lib/recipe/categories";
-import { tintFor } from "@/lib/people";
+import { schoon, tintForIn } from "@/lib/people";
 
 describe("weken beginnen op maandag", () => {
   // 2026-08-11 is een dinsdag.
@@ -114,21 +114,39 @@ describe("categorieën", () => {
 describe("avatarkleuren", () => {
   // Hier zat een bug: met een hash op de naam kregen twee huisgenoten dezelfde
   // tint, en dan doet het rondje precies niet waar het voor is.
-  test("namen uit APP_USERS krijgen elk een eigen tint", () => {
-    process.env.APP_USERS = "Chris,Sanne";
-    assert.notEqual(tintFor("Chris"), tintFor("Sanne"));
+  test("iedereen in de lijst krijgt een eigen tint", () => {
+    assert.notEqual(tintForIn("Chris", ["Chris", "Sanne"]), tintForIn("Sanne", ["Chris", "Sanne"]));
   });
 
   test("de volgorde bepaalt de kleur, niet de naam", () => {
-    process.env.APP_USERS = "Chris,Sanne";
-    const eerste = tintFor("Chris");
-    process.env.APP_USERS = "Sanne,Chris";
-    assert.equal(tintFor("Sanne"), eerste);
+    assert.equal(tintForIn("Chris", ["Chris", "Sanne"]), tintForIn("Sanne", ["Sanne", "Chris"]));
   });
 
   test("een onbekende naam valt terug op iets geldigs", () => {
-    process.env.APP_USERS = "Chris,Sanne";
-    const tint = tintFor("Iemand Anders");
+    const tint = tintForIn("Iemand Anders", ["Chris", "Sanne"]);
     assert.ok(Number.isInteger(tint) && tint >= 0 && tint < 4, String(tint));
+  });
+});
+
+describe("de namenlijst opschonen", () => {
+  test("spaties en lege stukken eruit", () => {
+    assert.deepEqual(schoon(" Chris , , Sanne "), ["Chris", "Sanne"]);
+  });
+
+  test("dubbelen tellen één keer, ongeacht hoofdletters", () => {
+    assert.deepEqual(schoon("Chris,chris,Sanne"), ["Chris", "Sanne"]);
+  });
+
+  test("een leeg veld levert niemand op", () => {
+    assert.deepEqual(schoon(""), []);
+    assert.deepEqual(schoon("   ,  "), []);
+  });
+
+  test("een onmogelijk lange naam valt af", () => {
+    assert.deepEqual(schoon(`Chris,${"a".repeat(40)}`), ["Chris"]);
+  });
+
+  test("nooit meer dan acht", () => {
+    assert.equal(schoon("a,b,c,d,e,f,g,h,i,j").length, 8);
   });
 });

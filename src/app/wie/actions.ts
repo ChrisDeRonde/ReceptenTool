@@ -2,7 +2,8 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { configuredPeople, personCookie } from "@/lib/who";
+import { personCookie } from "@/lib/who";
+import { people } from "@/lib/settings";
 
 /**
  * De volgende pagina komt uit de URL, dus die mag alleen binnen deze app
@@ -15,7 +16,7 @@ function safeNext(value: FormDataEntryValue | null): string {
 
 export async function chooseWho(formData: FormData): Promise<void> {
   const wanted = String(formData.get("naam") ?? "");
-  const name = configuredPeople().find((person) => person === wanted);
+  const name = (await people()).find((person) => person === wanted);
 
   // Alleen namen die in APP_USERS staan. Het koekje is aan te passen door wie
   // het krijgt, en die waarde belandt in de database en op het scherm.

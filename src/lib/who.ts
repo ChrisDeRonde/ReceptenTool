@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { configuredPeople } from "@/lib/people";
+import { people } from "@/lib/settings";
 
 /**
  * Wie zit er achter het scherm?
@@ -17,8 +17,6 @@ export const WHO_COOKIE = "wie";
 /** Een jaar; je wisselt van naam als je dat wilt, niet omdat het verloopt. */
 const MAX_AGE_SECONDS = 365 * 24 * 60 * 60;
 
-export { configuredPeople };
-
 /**
  * De gekozen naam, of null.
  *
@@ -28,13 +26,13 @@ export { configuredPeople };
  * dan wat jij hebt ingesteld.
  */
 export async function currentPerson(): Promise<string | null> {
-  const people = configuredPeople();
-  if (people.length === 0) return null;
+  const namen = await people();
+  if (namen.length === 0) return null;
 
   const value = (await cookies()).get(WHO_COOKIE)?.value;
   if (!value) return null;
 
-  return people.find((name) => name === value) ?? null;
+  return namen.find((name) => name === value) ?? null;
 }
 
 export function personCookie(name: string) {

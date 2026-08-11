@@ -22,6 +22,7 @@ import {
 import { deletePhotos, parsePhotos, savePhotos } from "@/lib/photos";
 import { fromParam, midnight, startOfWeek, toParam } from "@/lib/menu/week";
 import { currentPerson } from "@/lib/who";
+import { huishouden } from "@/lib/settings";
 
 /**
  * Server actions voor de web-UI. De iOS-kant praat met /api/share; dit is voor
@@ -194,13 +195,17 @@ export async function addToMenu(formData: FormData): Promise<void> {
   if (!recipeId || !day) return;
 
   const date = fromParam(day);
-  const servings = Number(readField(formData, "porties") ?? "");
+  const gekozen = Number(readField(formData, "porties") ?? "");
 
   await prisma.menuEntry.create({
     data: {
       recipeId,
       date: midnight(date),
-      servings: Number.isInteger(servings) && servings > 0 ? servings : null,
+      // Stond er geen aantal op je scherm, dan kook je voor het huishouden —
+      // niet voor het aantal porties dat toevallig in de bron stond. Dat
+      // laatste is een eigenschap van het recept, niet van jullie.
+      servings:
+        Number.isInteger(gekozen) && gekozen > 0 ? gekozen : await huishouden(),
     },
   });
 

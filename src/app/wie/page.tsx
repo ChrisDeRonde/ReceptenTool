@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
 import { icons } from "@/lib/icons";
-import { configuredPeople, currentPerson } from "@/lib/who";
+import { currentPerson } from "@/lib/who";
+import { people as configuredPeople } from "@/lib/settings";
 import { chooseWho } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +27,7 @@ export default async function WhoPage({
 }) {
   const query = await searchParams;
   const next = readOne(query.verder) ?? "/";
-  const people = configuredPeople();
+  const people = await configuredPeople();
   const current = await currentPerson();
 
   // Zonder namen valt er niets te kiezen; dan is de functie uit en hoort deze

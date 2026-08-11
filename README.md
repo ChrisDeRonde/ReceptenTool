@@ -435,6 +435,34 @@ pagina is de variant waar je er één vergeet.
 
 Uitloggen staat onderaan de Inbox.
 
+### Huishouden, profiel en instellingen
+
+Onder de vierde tab staat **jouw hoek**: hoe vaak jij kookte, jouw gemiddelde,
+wat je het hoogst zette en wat je vaker wilde eten. De kooklog verzamelt dat per
+recept; hier staat het per persoon, en dat is de enige plek waar je "wat vind ík
+hier eigenlijk van" ziet zonder recept voor recept te bladeren.
+
+Daarachter zitten de **instellingen**. Twee dingen zijn daar te wijzigen:
+
+- **Huishouden** — voor hoeveel mensen je meestal kookt. Dit is de standaard
+  voor een gerecht op het weekmenu en daarmee voor de boodschappenlijst.
+  Daarvóór gebruikten we het aantal porties dat toevallig in de bron stond, en
+  dat is een eigenschap van het recept en niet van jullie. Per avond kun je er
+  nog van afwijken; het weekmenu schrijft dan *iedereen*, *1 persoon* of
+  *4 personen*.
+- **Wie de app gebruiken** — dezelfde namen als hiervoor in `APP_USERS`, maar nu
+  vanuit de app te wijzigen. Staat er niets in de database, dan wordt `APP_USERS`
+  gelezen; sla je hier iets op, dan neemt de app het over. Zo blijft een
+  bestaande opzet werken zoals hij werkte.
+
+Wat je er níét kunt wijzigen: `APP_PASSWORD`, `ANTHROPIC_API_KEY`,
+`INGEST_TOKEN` en `APP_BASE_URL`. Die staan onderaan als leeslijst met alleen
+óf ze ingevuld zijn. Een formulier dat het wachtwoord kan aanpassen is een
+formulier waarmee iemand die binnen is jou eruit kan zetten.
+
+Instellingen staan als sleutel-waardeparen in één `Setting`-tabel; er komt af en
+toe eentje bij en dan wil je geen migratie voor een getal.
+
 ### Wie ben jij
 
 Binnen de voordeur staat een **naamkaartje**, geen tweede slot. Zet de namen in
@@ -573,6 +601,7 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/recipe/duplicate.ts` | Herkennen dat je een recept al hebt: bron-URL en titel.    |
 | `src/components/CookLog.tsx` | Gemaakt: sterren, opmerking, vaker eten.                    |
 | `src/lib/who.ts`             | Het naamkaartje: wie noteert er. Geen tweede slot.          |
+| `src/lib/settings.ts`        | Voorkeuren uit de database; geheimen blijven in .env.       |
 | `src/lib/people.ts`          | Wie er zijn en welke kleur bij wie hoort.                   |
 | `src/components/Avatar.tsx`  | Een naam als rondje met initiaal.                           |
 | `src/app/manifest.ts`        | Naam, kleuren en iconen voor "zet op beginscherm".          |

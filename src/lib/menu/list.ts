@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { huishouden } from "@/lib/settings";
 import { scaleRecipe } from "@/lib/recipe/scale";
 import { flattenIngredients, recipeSchema } from "@/lib/recipe/schema";
 import { AISLE_LABELS, aisleFor, aisleOrder, type Aisle } from "@/lib/shopping/aisles";
@@ -33,6 +34,9 @@ export type WeekList = {
 };
 
 export async function weekShoppingList(monday: Date): Promise<WeekList> {
+  // Oudere regels hebben geen aantal; die tellen mee voor het huishouden.
+  const standaard = await huishouden();
+
   const entries = await prisma.menuEntry.findMany({
     where: { date: weekRange(monday) },
     orderBy: [{ date: "asc" }, { createdAt: "asc" }],
@@ -54,7 +58,7 @@ export async function weekShoppingList(monday: Date): Promise<WeekList> {
     const parsed = recipeSchema.safeParse(JSON.parse(entry.recipe.data));
     if (!parsed.success) continue;
 
-    const servings = entry.servings ?? parsed.data.servings;
+    const servings = entry.servings ?? standaard;
     const recipe =
       servings === null || servings === parsed.data.servings
         ? parsed.data

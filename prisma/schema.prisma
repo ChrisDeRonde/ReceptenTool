@@ -156,3 +156,13 @@ model CookLog {
 
   @@index([recipeId, cookedAt])
 }
+
+/// Instellingen die je vanuit de app kunt wijzigen.
+///
+/// Sleutel-waardeparen en geen kolommen: er komen er af en toe eentje bij, en
+/// dan wil je geen migratie voor een getal. Geheimen staan hier níét in — die
+/// horen in .env, waar ze niet via een webformulier te wijzigen zijn.
+model Setting {
+  key   String @id
+  value String
+}
