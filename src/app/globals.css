@@ -689,14 +689,41 @@ ol.steps li strong {
 
 .tags {
   display: flex;
-  gap: 0.9rem;
+  gap: 0.4rem;
   flex-wrap: wrap;
   margin-top: 1.75rem;
 }
 
+/* Rond en verzonken, waar de categorieën bovenaan vlakke kapitaaltjes zijn en
+   de filters op het overzicht vierkant en opstaand. Drie vormen, drie
+   betekenissen — je hoeft niet te lezen om te zien wat wat is. */
 .tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.1rem;
+  padding: 0 0.8rem;
+  border-radius: 999px;
+  background: var(--sunken);
+  color: var(--body);
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.tag::before {
+  content: "#";
+  /* Het hekje heeft zelf al ruimte aan de rechterkant; nog een marge erbij
+     maakt er twee losse tekens van. */
+  margin-right: -0.04em;
   color: var(--muted);
-  font-size: 0.78rem;
+}
+
+.tag:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.tag:hover::before {
+  color: var(--accent);
 }
 
 /* Melding over wat er niet meeschaalt. */

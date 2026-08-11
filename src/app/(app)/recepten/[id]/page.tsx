@@ -316,11 +316,13 @@ export default async function RecipePage({
       )}
 
       {recipe.tags.length > 0 && (
+        // Aanklikbaar naar het zoeken: dat kijkt al in de tags, dus dan zijn
+        // ze meer dan een opsomming onderaan de pagina.
         <div className="tags">
           {recipe.tags.map((tag) => (
-            <span key={tag} className="tag">
+            <Link key={tag} href={`/?q=${encodeURIComponent(tag)}`} className="tag">
               {tag}
-            </span>
+            </Link>
           ))}
         </div>
       )}

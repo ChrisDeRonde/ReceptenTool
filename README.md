@@ -275,6 +275,22 @@ zoals het model hem opleverde. Wat de bron zei blijft opvraagbaar via
 pagina staat sinds wanneer. Het kopje "Zelf aangevuld" verdwijnt dan: die lijst
 gaat over wat het model verzon, en zegt niets meer over wat er nú staat.
 
+## Drie soorten labels
+
+Op de receptpagina staan drie dingen die op elkaar lijken maar iets anders
+betekenen, en ze hebben elk hun eigen vorm zodat je niet hoeft te lezen om te
+zien wat wat is:
+
+| Waar | Wat | Vorm |
+| --- | --- | --- |
+| Onder de titel | Maaltijdmoment en keuken | Vlakke kapitaaltjes, links naar het gefilterde overzicht |
+| Boven het raster | De actieve filters | Vierkante chips met een eigen vlak en schaduw |
+| Onderaan het recept | Tags | Ronde, verzonken chips met een `#` |
+
+Tags zijn aanklikbaar en gaan naar het zoeken. Dat kijkt al in de tags, dus ze
+zijn meer dan een opsomming onderaan de pagina — anders dan de categorieën
+hierboven, die een echte kolom in de database hebben en waarop gefilterd wordt.
+
 ## Categorieën
 
 Elk recept krijgt bij het importeren een **maaltijdmoment** (ontbijt, lunch,
