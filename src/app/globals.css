@@ -214,6 +214,70 @@ h3 {
   font-size: 0.85rem;
 }
 
+/* --- Zoeken -------------------------------------------------------------- */
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+}
+
+.search:focus-within {
+  border-color: var(--accent);
+}
+
+.search-icon {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.search input {
+  flex: 1;
+  min-height: 2.9rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 0.95rem;
+}
+
+.search input:focus-visible {
+  outline: none;
+}
+
+/* Het kruisje van type=search zelf wegpoetsen; we hebben een eigen knop. */
+.search input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.search button {
+  width: 1.8rem;
+  min-height: 1.8rem;
+  padding: 0;
+}
+
+/* Wat een treffer wél of juist níét had. */
+.sub.found {
+  color: var(--accent);
+}
+
+.sub.missing::before {
+  content: "";
+}
+
+h2.section.near {
+  font-size: 1.05rem;
+  color: var(--muted);
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
 /* --- Filterrails --------------------------------------------------------- */
 
 /* Horizontaal scrollen in plaats van afbreken: de rij blijft één regel, ook

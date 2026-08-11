@@ -67,6 +67,38 @@ maakt levert iOS zelf als JPEG aan. En **een foto van alleen een gerecht levert
 geen recept op**: de prompt verbiedt raden, dus dan krijg je een titel met een
 lege ingrediëntenlijst in plaats van een verzonnen recept.
 
+## Zoeken
+
+Boven het overzicht staat een zoekveld dat meezoekt terwijl je typt. Het kijkt
+in de titel, de omschrijving, de tags, de keuken **en de ingrediënten** — dat
+laatste is waar het om begonnen was: je hebt paprika en gehakt liggen en wilt
+weten wat je daarmee kunt.
+
+Typ je meerdere woorden, dan telt de app per woord of het voorkomt. Recepten die
+álles afdekken staan bovenaan met *met paprika, gehakt*; daaronder, achter het
+kopje **Bijna**, staat wat je met één boodschap ook kunt maken, met *mist
+paprika* erbij. Dat is de vraag die je in de keuken stelt.
+
+Spaties splitsen in losse termen. Wil je op een combinatie zoeken, gebruik dan
+een komma: `rode paprika, gehakt` zoekt naar rode paprika én gehakt, en niet
+naar drie losse woorden.
+
+De zoekterm staat in de URL en combineert met de categoriefilters, dus je kunt
+een gevonden selectie delen en hij overleeft een refresh. Zonder JavaScript werkt
+het ook: dan is het een gewoon formulier waar je op Enter drukt.
+
+Matchen gebeurt op hele woorden, met twee uitzonderingen die Nederlands nodig
+heeft: een woord mag met de zoekterm beginnen (`paprika` vindt `paprika's`) en
+erop eindigen als er minstens drie letters voor staan (`gehakt` vindt
+`rundergehakt`, maar `loem` vindt niet `bloem`). Een kale `includes` zou "ui"
+laten matchen op "br**ui**ne suiker", en dat soort treffers sloopt je vertrouwen
+in de zoekfunctie sneller dan een gemiste treffer.
+
+Er is geen index-tabel: bij een paar honderd recepten is alles doorlopen sneller
+dan een index die kan verouderen (gemeten: 31 ms voor de hele pagina). Loopt de
+collectie ooit in de duizenden, dan is een `RecipeIngredient`-tabel de volgende
+stap; `src/lib/recipe/search.ts` is dan het enige bestand dat verandert.
+
 ## Weekmenu en boodschappen
 
 Op een recept staat een kalenderknop: die neemt het recept "in de hand" mee naar
@@ -236,6 +268,7 @@ op dezelfde endpoint worden aangesloten.
 | `src/app/actions.ts`         | Server actions voor de web-UI (toevoegen, opnieuw, wissen). |
 | `src/lib/extract/`           | De ophaalketen. `providers/` bevat de bronspecifieke strategieën. |
 | `src/lib/photos.ts`          | Gefotografeerde bronnen: opslaan, teruglezen, opruimen.     |
+| `src/lib/recipe/search.ts`   | Zoeken op naam en ingrediënt; woordmatching.                |
 | `src/lib/menu/week.ts`       | Weken en dagen; maandag als begin.                          |
 | `src/lib/menu/list.ts`       | Een week aan recepten optellen tot één boodschappenlijst.   |
 | `src/lib/shopping/units.ts`  | Hoeveelheden optellen en namen gelijktrekken.               |

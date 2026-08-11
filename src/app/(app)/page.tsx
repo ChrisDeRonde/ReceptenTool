@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
+import { SearchBox } from "@/components/SearchBox";
 import { prisma } from "@/lib/db";
 import { icons } from "@/lib/icons";
 import {
@@ -9,6 +10,13 @@ import {
   unpackMealTypes,
   type MealType,
 } from "@/lib/recipe/categories";
+import {
+  buildHaystack,
+  compareHits,
+  parseQuery,
+  score,
+  type Hit,
+} from "@/lib/recipe/search";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +28,10 @@ export default async function HomePage({
   const query = await searchParams;
   const mealFilter = readMealFilter(query.maaltijd);
   const cuisineFilter = readOne(query.keuken);
+  const rawQuery = readOne(query.q) ?? "";
+  const terms = parseQuery(rawQuery);
 
-  const allRecipes = await prisma.recipe.findMany({
+  const rows = await prisma.recipe.findMany({
     // Keuken is één waarde, dus die filtert exact in SQL. Maaltijdmomenten
     // staan komma-gescheiden in één kolom; `contains` narrowt, waarna we
     // hieronder op hele waarden filteren zodat een deelwoord nooit meetelt.
@@ -30,17 +40,37 @@ export default async function HomePage({
       ...(mealFilter ? { mealTypes: { contains: mealFilter } } : {}),
     },
     orderBy: [{ favorite: "desc" }, { createdAt: "desc" }],
-    take: 200,
+    take: 500,
   });
 
-  const recipes = mealFilter
-    ? allRecipes.filter((recipe) =>
-        unpackMealTypes(recipe.mealTypes).includes(mealFilter),
-      )
-    : allRecipes;
+  const filtered = mealFilter
+    ? rows.filter((recipe) => unpackMealTypes(recipe.mealTypes).includes(mealFilter))
+    : rows;
 
-  // De filterbalk toont alleen wat er daadwerkelijk in de collectie zit; een
-  // knop voor een keuken die je niet hebt is alleen maar ruis.
+  // Zoeken gebeurt in het geheugen: de ingrediënten zitten in de JSON-blob, en
+  // bij deze aantallen is alles doorlopen sneller dan een index die kan
+  // verouderen. Zonder zoekterm wordt hier niets gedaan.
+  const scored =
+    terms.length === 0
+      ? filtered.map((recipe) => ({ recipe, hit: null as Hit | null }))
+      : filtered
+          .map((recipe) => ({ recipe, hit: score(buildHaystack(recipe), terms) }))
+          .filter((entry): entry is { recipe: (typeof filtered)[number]; hit: Hit } =>
+            entry.hit !== null,
+          )
+          .sort((a, b) =>
+            compareHits(
+              { hit: a.hit, favorite: a.recipe.favorite, createdAt: a.recipe.createdAt },
+              { hit: b.hit, favorite: b.recipe.favorite, createdAt: b.recipe.createdAt },
+            ),
+          );
+
+  // Alles-of-niets: recepten die al je termen afdekken staan boven de streep,
+  // de rest eronder met wat je nog mist. Dat is precies wat je wilt weten als
+  // je in de koelkast hebt gekeken.
+  const complete = scored.filter((entry) => (entry.hit?.matched ?? 0) === terms.length);
+  const partial = scored.filter((entry) => (entry.hit?.matched ?? 0) < terms.length);
+
   const [usedMealTypes, usedCuisines] = await Promise.all([
     collectMealTypes(),
     collectCuisines(),
@@ -52,6 +82,7 @@ export default async function HomePage({
     const cuisine = next.keuken === undefined ? cuisineFilter : next.keuken;
     if (meal) params.set("maaltijd", meal);
     if (cuisine) params.set("keuken", cuisine);
+    if (rawQuery) params.set("q", rawQuery);
     const qs = params.toString();
     return qs ? `/?${qs}` : "/";
   };
@@ -62,16 +93,15 @@ export default async function HomePage({
     <main>
       <div className="page-head">
         <h1>Recepten</h1>
-        <p>
-          {recipes.length} {recipes.length === 1 ? "recept" : "recepten"}
-          {filtering && " in deze selectie"}
-        </p>
+        <p>{summary(scored.length, terms.length, filtering)}</p>
       </div>
+
+      <SearchBox initial={rawQuery} />
 
       {usedMealTypes.length > 0 && (
         <div className="rail">
           {filtering && (
-            <Link href="/" className="chip ghost">
+            <Link href={href({ maaltijd: null, keuken: null })} className="chip ghost">
               Alles
             </Link>
           )}
@@ -101,9 +131,17 @@ export default async function HomePage({
         </div>
       )}
 
-      {recipes.length === 0 ? (
+      {scored.length === 0 ? (
         <div className="empty">
-          {filtering ? (
+          {terms.length > 0 ? (
+            <>
+              <p>Niets gevonden voor &ldquo;{rawQuery}&rdquo;.</p>
+              <p>
+                Zoek op een ingrediënt, een gerecht of een keuken. Meerdere
+                woorden mag: dan zie je bovenaan wat ze allemaal gebruikt.
+              </p>
+            </>
+          ) : filtering ? (
             <>
               <p>Niks in deze categorie.</p>
               <p>
@@ -121,49 +159,89 @@ export default async function HomePage({
           )}
         </div>
       ) : (
-        <div className="grid">
-          {recipes.map((recipe) => {
-            const mealTypes = unpackMealTypes(recipe.mealTypes);
-            const sub = [recipe.cuisine, ...mealTypes.map((t) => MEAL_TYPE_LABELS[t])]
-              .filter(Boolean)
-              .join(" · ");
+        <>
+          <Grid entries={complete} terms={terms.length} />
 
-            return (
-              <Link
-                key={recipe.id}
-                href={`/recepten/${recipe.id}`}
-                className="tile"
-              >
-                <div className={`thumb ${recipe.imageUrl ? "" : "blank"}`}>
-                  {recipe.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={recipe.imageUrl} alt="" loading="lazy" />
-                  ) : (
-                    <Icon icon={icons.plate} size={34} strokeWidth={1.2} />
-                  )}
-                  {recipe.favorite && (
-                    <span className="fav" title="Favoriet">
-                      <Icon icon={icons.favorite} size={14} />
-                    </span>
-                  )}
-                  {recipe.totalMinutes && (
-                    <span className="clock">
-                      <Icon icon={icons.clock} size={13} />
-                      {recipe.totalMinutes} min
-                    </span>
-                  )}
-                </div>
-                <div className="tile-body">
-                  <h2>{recipe.title}</h2>
-                  {sub && <p className="sub">{sub}</p>}
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+          {partial.length > 0 && (
+            <>
+              <h2 className="section near">Bijna</h2>
+              <Grid entries={partial} terms={terms.length} />
+            </>
+          )}
+        </>
       )}
     </main>
   );
+}
+
+type Entry = {
+  recipe: {
+    id: string;
+    title: string;
+    imageUrl: string | null;
+    favorite: boolean;
+    totalMinutes: number | null;
+    cuisine: string | null;
+    mealTypes: string;
+  };
+  hit: Hit | null;
+};
+
+function Grid({ entries, terms }: { entries: Entry[]; terms: number }) {
+  if (entries.length === 0) return null;
+
+  return (
+    <div className="grid">
+      {entries.map(({ recipe, hit }) => {
+        const mealTypes = unpackMealTypes(recipe.mealTypes);
+        const sub = [recipe.cuisine, ...mealTypes.map((t) => MEAL_TYPE_LABELS[t])]
+          .filter(Boolean)
+          .join(" · ");
+
+        return (
+          <Link key={recipe.id} href={`/recepten/${recipe.id}`} className="tile">
+            <div className={`thumb ${recipe.imageUrl ? "" : "blank"}`}>
+              {recipe.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={recipe.imageUrl} alt="" loading="lazy" />
+              ) : (
+                <Icon icon={icons.plate} size={34} strokeWidth={1.2} />
+              )}
+              {recipe.favorite && (
+                <span className="fav" title="Favoriet">
+                  <Icon icon={icons.favorite} size={14} />
+                </span>
+              )}
+              {recipe.totalMinutes && (
+                <span className="clock">
+                  <Icon icon={icons.clock} size={13} />
+                  {recipe.totalMinutes} min
+                </span>
+              )}
+            </div>
+            <div className="tile-body">
+              <h2>{recipe.title}</h2>
+
+              {/* Bij zoeken op meerdere dingen is "wat mis ik nog" de vraag. */}
+              {hit && terms > 1 && hit.missing.length > 0 ? (
+                <p className="sub missing">mist {hit.missing.join(", ")}</p>
+              ) : hit && hit.inIngredients.length > 0 ? (
+                <p className="sub found">met {hit.inIngredients.join(", ")}</p>
+              ) : (
+                sub && <p className="sub">{sub}</p>
+              )}
+            </div>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+function summary(found: number, terms: number, filtering: boolean): string {
+  const noun = found === 1 ? "recept" : "recepten";
+  if (terms > 0) return `${found} ${noun} gevonden`;
+  return `${found} ${noun}${filtering ? " in deze selectie" : ""}`;
 }
 
 function readOne(value: string | string[] | undefined): string | null {
