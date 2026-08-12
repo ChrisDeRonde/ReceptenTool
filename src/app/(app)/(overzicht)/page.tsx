@@ -23,6 +23,10 @@ import {
 
 export const dynamic = "force-dynamic";
 
+// `absolute` zodat het sjabloon uit de hoofdopmaak er niet nóg eens "Recepten"
+// achter plakt.
+export const metadata = { title: { absolute: "Recepten" } };
+
 export default async function HomePage({
   searchParams,
 }: {
@@ -97,7 +101,11 @@ export default async function HomePage({
     <main>
       <div className="page-head">
         <h1>Recepten</h1>
-        <p>{summary(scored.length, terms.length, filtering)}</p>
+        {/* Zoeken gebeurt tijdens het typen: de lijst eronder verandert zonder
+            dat er iets voorgelezen wordt. Deze regel telt mee hoeveel er
+            overblijft, dus als leesgebied vertelt hij precies wat er gebeurde.
+            Beleefd, zodat hij wacht tot je uitgetypt bent. */}
+        <p role="status">{summary(scored.length, terms.length, filtering)}</p>
       </div>
       <Vastkop titel="Recepten" />
 
@@ -230,6 +238,11 @@ function Grid({
                 {recipe.favorite && (
                   <span className="fav" title="Favoriet">
                     <Icon icon={icons.favorite} size={14} />
+                    {/* Het icoon is voor een schermlezer lucht, en `title` op
+                        een span wordt lang niet altijd voorgelezen. Zonder deze
+                        regel is er geen enkele manier om te horen dat dit een
+                        favoriet is. */}
+                    <span className="sr">Favoriet</span>
                   </span>
                 )}
                 {recipe.totalMinutes && (

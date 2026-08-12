@@ -58,9 +58,17 @@ export function CopyList({ plain, pretty }: { plain: string; pretty: string }) {
         </button>
       </div>
 
+      {/* Dat het gelukt is zie je aan de knop, maar een schermlezer leest een
+          knop niet opnieuw voor als alleen zijn opschrift verandert. Deze regel
+          staat er altijd, en wordt alleen gevuld — een leesgebied dat pas
+          verschijnt, wordt door sommige lezers niet opgemerkt. */}
+      <p className="sr" role="status">
+        {copied ? "De lijst staat op het klembord." : ""}
+      </p>
+
       {failed && (
         <>
-          <p className="form-error">
+          <p className="form-error" role="alert">
             Het klembord is hier niet beschikbaar — dat vraagt https. Selecteer
             de tekst hieronder en kopieer hem zelf.
           </p>

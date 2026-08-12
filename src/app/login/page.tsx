@@ -7,7 +7,7 @@ import { login } from "./actions";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Inloggen — Recepten",
+  title: "Inloggen",
   // Deze pagina is de enige die van buiten te zien is; hem laten indexeren
   // heeft geen enkel nut.
   robots: { index: false, follow: false },

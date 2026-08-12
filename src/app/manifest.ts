@@ -21,7 +21,10 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     start_url: "/",
     scope: "/",
-    orientation: "portrait",
+    // Geen `orientation: "portrait"`. Een app mag de stand van het scherm niet
+    // vastzetten (WCAG 1.3.4): wie zijn telefoon in een houder heeft liggen, of
+    // hem vanwege een beperking altijd liggend gebruikt, kan er dan niet bij.
+    // De opmaak is toch al vloeiend, dus liggend werkt gewoon.
     // Hetzelfde papier als in globals.css, zodat het opstartscherm niet flitst.
     background_color: "#f8f5ef",
     theme_color: "#f8f5ef",

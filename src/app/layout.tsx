@@ -3,7 +3,10 @@ import { ServiceWorker } from "@/components/ServiceWorker";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Recepten",
+  // Elke pagina vult alleen zijn eigen stuk in. Zonder dit heette elk tabblad
+  // "Recepten" — in je geschiedenis, in de tabbladenlijst en als eerste wat een
+  // schermlezer voorleest, en dan weet je van geen van de acht welke het is.
+  title: { default: "Recepten", template: "%s — Recepten" },
   description: "Recepten van Instagram, AH en websites, netjes opgeslagen.",
   applicationName: "Recepten",
   icons: {

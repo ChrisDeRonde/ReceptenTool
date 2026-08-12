@@ -13,6 +13,8 @@ import { saveSettings } from "./actions";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Instellingen" };
+
 /**
  * Wat je zonder bestand te bewerken kunt bijstellen.
  *

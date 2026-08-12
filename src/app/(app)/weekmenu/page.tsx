@@ -21,6 +21,8 @@ import { MAX_SERVINGS, MIN_SERVINGS } from "@/lib/recipe/scale";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Weekmenu" };
+
 export default async function WeekMenuPage({
   searchParams,
 }: {

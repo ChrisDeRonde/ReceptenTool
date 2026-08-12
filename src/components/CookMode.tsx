@@ -147,6 +147,15 @@ export function CookMode({
       ? Math.max(0, Math.round((timer.endsAt - now) / 1000))
       : (timer?.remaining ?? 0);
 
+  // Een timer die afgaat piept en trilt. Wie het toestel niet vasthoudt of het
+  // piepje niet hoort, mist dat; deze regel zegt het hardop. Hij staat er
+  // altijd en wordt alleen gevuld, zodat de schermlezer hem al kent op het
+  // moment dat er iets in komt te staan.
+  const afgegaan = Object.entries(timers)
+    .filter(([, t]) => t.done)
+    .map(([key]) => Number(key) + 1)
+    .sort((a, b) => a - b);
+
   // Timers van andere stappen die nog lopen of net afgingen.
   const elsewhere = Object.entries(timers)
     .map(([key, value]) => ({ index: Number(key), ...value }))
@@ -184,6 +193,15 @@ export function CookMode({
           ))}
         </div>
       </div>
+
+      {/* `alert` en niet `status`: een timer die afgaat mag onderbreken. */}
+      <p className="sr" role="alert">
+        {afgegaan.length === 0
+          ? ""
+          : afgegaan.length === 1
+            ? `De tijd voor stap ${afgegaan[0]} is om.`
+            : `De tijd voor stap ${afgegaan.slice(0, -1).join(", ")} en ${afgegaan.at(-1)} is om.`}
+      </p>
 
       {elsewhere.length > 0 && (
         <div className="cook-elsewhere">

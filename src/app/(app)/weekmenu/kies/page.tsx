@@ -9,6 +9,8 @@ import { MEAL_TYPE_LABELS, unpackMealTypes } from "@/lib/recipe/categories";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Gerecht kiezen" };
+
 /** Welk gerecht zet je op deze dag. Hetzelfde raster als het overzicht. */
 export default async function PickPage({
   searchParams,

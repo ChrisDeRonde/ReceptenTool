@@ -26,6 +26,8 @@ import { parsePhotos, photoUrl } from "@/lib/photos";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Inbox" };
+
 const STATUS: Record<string, { label: string; tone: string }> = {
   pending: { label: "In wachtrij", tone: "busy" },
   processing: { label: "Bezig", tone: "busy" },
@@ -67,10 +69,19 @@ export default async function InboxPage() {
       <section>
         <h2 className="section">Link of tekst</h2>
         <form action={addSource} className="stack">
-          <input type="url" name="url" placeholder="https://…" />
+          {/* Een placeholder is geen label: hij verdwijnt zodra je typt, en
+              een schermlezer leest hem niet altijd voor. De naam staat er
+              daarom apart bij. */}
+          <input
+            type="url"
+            name="url"
+            placeholder="https://…"
+            aria-label="Link naar het recept"
+          />
           <textarea
             name="text"
             placeholder="Of plak hier de recepttekst (bijvoorbeeld een Instagram-bijschrift)"
+            aria-label="Recepttekst om te plakken"
           />
           <div className="row">
             <button type="submit">Verwerken</button>
@@ -106,14 +117,11 @@ export default async function InboxPage() {
 
               <div style={{ marginTop: "0.6rem" }}>
                 {item.recipe ? (
-                  <Link
-                    href={`/recepten/${item.recipe.id}`}
-                    style={{ fontWeight: 500 }}
-                  >
+                  <Link href={`/recepten/${item.recipe.id}`} className="bron-link">
                     {item.recipe.title}
                   </Link>
                 ) : (
-                  <span className="muted">
+                  <span className="muted bron-tekst">
                     {item.sourceUrl ?? truncate(item.sharedText ?? "", 120)}
                   </span>
                 )}
@@ -138,7 +146,12 @@ export default async function InboxPage() {
 
               {item.sourceUrl && item.recipe && (
                 <p className="trail">
-                  <a href={item.sourceUrl} target="_blank" rel="noreferrer">
+                  <a
+                    href={item.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bron-tekst"
+                  >
                     {item.sourceUrl}
                   </a>
                 </p>
@@ -183,6 +196,7 @@ export default async function InboxPage() {
                     <textarea
                       name="text"
                       placeholder="Plak hier de recepttekst en probeer opnieuw"
+                      aria-label="Recepttekst om opnieuw te proberen"
                       defaultValue={item.sharedText ?? ""}
                     />
                   )}

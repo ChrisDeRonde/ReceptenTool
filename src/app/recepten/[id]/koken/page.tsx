@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CookMode } from "@/components/CookMode";
@@ -7,6 +8,24 @@ import { parseServings, scaleRecipe } from "@/lib/recipe/scale";
 import { recipeSchema } from "@/lib/recipe/schema";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * De titel van het tabblad is de naam van het gerecht. Dat is precies wat je
+ * zoekt als je drie tabbladen openhebt of terugbladert in je geschiedenis, en
+ * het is het eerste wat een schermlezer voorleest bij het openen.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const row = await prisma.recipe.findUnique({
+    where: { id },
+    select: { title: true },
+  });
+  return { title: row ? `Koken: ${row.title}` : "Kookmodus" };
+}
 
 export default async function CookPage({
   params,

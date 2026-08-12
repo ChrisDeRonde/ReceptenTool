@@ -140,7 +140,14 @@ export function PhotoForm() {
         </>
       )}
 
-      {error && <p className="form-error">{error}</p>}
+      {/* `alert` en niet `status`: dit onderbreekt wat de schermlezer aan het
+          voorlezen is. Je hebt net op verzenden gedrukt en er ging iets mis —
+          dat moet je horen voordat je verder gaat. */}
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
     </form>
   );
 }

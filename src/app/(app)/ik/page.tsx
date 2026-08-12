@@ -10,6 +10,8 @@ import { currentPerson } from "@/lib/who";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Ik" };
+
 /**
  * Jouw hoek van de app.
  *

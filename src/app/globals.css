@@ -140,6 +140,8 @@
     --ster: #d8b055;
 
     --track: rgb(245 239 229 / 14%);
+    /* Op het pastelvlak van de timer haalde --muted maar 4,3:1. */
+    --muted-op-pastel: #a49b8f;
 
     --shadow: 0 1px 2px rgb(0 0 0 / 35%);
   }
@@ -153,6 +155,16 @@ html,
 body {
   margin: 0;
   padding: 0;
+}
+
+/* Onderaan staat een vaste tabbalk en bovenaan schuift een vaste titelbalk in.
+   Zonder deze marge zet de browser een veld precies dáár neer als je er met
+   Tab naartoe springt of als je een ankerlink volgt — je focus staat dan waar
+   je hem niet ziet (WCAG 2.4.11). De maten zijn de gemeten hoogtes van de
+   balken; de veiligheidsrand van het toestel komt er los bij. */
+html {
+  scroll-padding-top: calc(4.5rem + env(safe-area-inset-top));
+  scroll-padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
 }
 
 body {
@@ -637,6 +649,9 @@ h3 {
 }
 
 .vastkop-titel {
+  /* Zonder dit weigert een flexvak te krimpen onder zijn inhoud en werkt de
+     ellips hieronder niet — dan duwt een lange titel de balk het scherm uit. */
+  min-width: 0;
   font-family: var(--font-display);
   font-weight: 560;
   font-size: 1.05rem;
@@ -685,8 +700,13 @@ h3 {
   background: var(--surface);
 }
 
+/* Het veld zelf zet zijn eigen omlijning uit (het zit in dit kader), dus de
+   focusring hoort hier. Dezelfde 1px-buitenlijn als elk ander invoerveld: bij
+   alleen een randkleurtje van een haarlijn zie je nauwelijks waar je bent. */
 .search:focus-within {
   border-color: var(--accent);
+  outline: 1px solid var(--accent);
+  outline-offset: 0;
 }
 
 .search-icon {
@@ -923,8 +943,13 @@ h2.section.near {
   margin: 0.9rem 0 0;
 }
 
-/* Categorieën als tekstlinks, niet als gekleurde blokjes. */
+/* Categorieën als tekstlinks, niet als gekleurde blokjes. Ze zien er vlak uit
+   maar zijn 26px hoog om aan te tikken: onder de 24 is een doel te klein om
+   met een duim te raken, en dat zie je niet aan de tekst af. */
 .pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.65rem;
   font-size: 0.78rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -945,6 +970,20 @@ h2.section.near {
 
 .actions .grow {
   flex: 1;
+}
+
+/* Op een heel smal scherm — een oude SE, of gewoon flink ingezoomde tekst —
+   knijpt deze rij de vier icoonknoppen tot spijkers van 24 px breed. Dat haalt
+   de norm nét, en niet meer dan dat. Kookmodus krijgt daar de hele eerste
+   regel, en de iconen staan er op ware grootte onder. */
+@media (max-width: 360px) {
+  .actions {
+    flex-wrap: wrap;
+  }
+
+  .actions .grow {
+    flex-basis: 100%;
+  }
 }
 
 /* Feiten in een raster met haarlijnen ertussen.
@@ -1331,6 +1370,24 @@ form.stack {
   word-break: break-word;
 }
 
+/* Een gedeelde link is één woord van tachtig tekens. Zonder dit duwt hij de
+   hele pagina zijwaarts, en dan scrolt álles mee — ook de tabbalk. */
+.bron-tekst {
+  display: block;
+  overflow-wrap: anywhere;
+  /* Hij staat op zijn eigen regel en is dus een eigen doel, geen link in een
+     zin: dan geldt de ondergrens van 24 pixels. */
+  min-height: 1.5rem;
+}
+
+/* De titel van wat er binnenkwam: de enige inhoud van zijn regel, dus ook een
+   eigen doel. */
+.bron-link {
+  display: inline-block;
+  min-height: 1.5rem;
+  font-weight: 500;
+}
+
 /* --- Weekmenu ------------------------------------------------------------ */
 
 .weeknav {
@@ -1382,15 +1439,21 @@ form.stack {
   letter-spacing: 0.06em;
 }
 
+/* Afbreken mag: op 320 pixels — een oude telefoon, of grote letters ingesteld —
+   passen de naam en de teller niet naast elkaar en stak de regel buiten het
+   scherm. Zolang het past verandert er niets. */
 .meal {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.6rem;
   padding: 0.35rem 0;
 }
 
 .meal-title {
   flex: 1;
+  /* Zonder dit krimpt een flexvak nooit onder zijn langste woord. */
+  min-width: 0;
   color: inherit;
   text-decoration: none;
   font-size: 0.98rem;
@@ -1897,12 +1960,14 @@ form.stack {
   gap: 1rem;
 }
 
+/* Eigen kleur en niet --muted: dit label ligt op het pastelvlak van de timer en
+   niet op papier, en daar haalde --muted in de donkere stand maar 4,3:1. */
 .timer-label {
   display: block;
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.11em;
-  color: var(--muted);
+  color: var(--muted-op-pastel, var(--muted));
 }
 
 .timer-clock {
@@ -2125,6 +2190,18 @@ button.round.primary {
   margin-top: 0.9rem;
   padding-top: 0;
   border-top: 0;
+}
+
+/* Losse tekstlinks die geen deel van een zin zijn maar een eigen doel: het
+   naamkaartje wisselen, overslaan, naar de instellingen. Een link midden in een
+   lopende zin valt hier buiten — die mag de regelhoogte volgen. */
+.gate-card .small a,
+.profiel-kop p a,
+.whoami a,
+.beheer-link a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.6rem;
 }
 
 /* Een knop die als link in een zin staat. */

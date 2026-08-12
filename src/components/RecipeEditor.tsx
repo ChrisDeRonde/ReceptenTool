@@ -265,6 +265,7 @@ export function RecipeEditor({
               value={group.name}
               onChange={(event) => patchGroup(gi, { name: event.target.value })}
               placeholder={gi === 0 ? "Kopje (bijv. Voor de saus) — mag leeg" : "Kopje"}
+              aria-label={`Kopje boven groep ${gi + 1}`}
               className="group-name"
             />
 
@@ -339,6 +340,7 @@ export function RecipeEditor({
                 value={step.title}
                 onChange={(event) => patchStep(si, { title: event.target.value })}
                 placeholder="Kop (mag leeg)"
+                aria-label={`Kop van stap ${si + 1}`}
               />
               <input
                 type="number"

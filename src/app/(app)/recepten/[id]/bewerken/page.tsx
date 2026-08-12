@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icon";
@@ -9,6 +10,24 @@ import { recipeSchema } from "@/lib/recipe/schema";
 import { versieVan } from "@/lib/recipe/versie";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * De titel van het tabblad is de naam van het gerecht. Dat is precies wat je
+ * zoekt als je drie tabbladen openhebt of terugbladert in je geschiedenis, en
+ * het is het eerste wat een schermlezer voorleest bij het openen.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const row = await prisma.recipe.findUnique({
+    where: { id },
+    select: { title: true },
+  });
+  return { title: row ? `${row.title} bewerken` : "Bewerken" };
+}
 
 export default async function EditRecipePage({
   params,

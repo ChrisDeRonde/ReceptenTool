@@ -8,6 +8,8 @@ import { fromParam, startOfWeek, toParam, weekLabel } from "@/lib/menu/week";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Boodschappen" };
+
 /**
  * De boodschappen van één week: alle recepten bij elkaar opgeteld, gegroepeerd
  * per schap, klaar om te kopiëren naar de app van de supermarkt.

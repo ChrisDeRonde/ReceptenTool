@@ -28,7 +28,15 @@ export type CookEntry = {
 
 export function Stars({ value, size = 14 }: { value: number; size?: number }) {
   return (
-    <span className="stars" title={`${value} van de 5`} aria-label={`${value} van de 5`}>
+    // `role="img"`: een aria-label op een kale span telt niet mee — een
+    // schermlezer negeert een naam op een element zonder rol. Met deze rol
+    // wordt de rij sterretjes één ding met een naam.
+    <span
+      className="stars"
+      role="img"
+      title={`${value} van de 5`}
+      aria-label={`${value} van de 5`}
+    >
       {[1, 2, 3, 4, 5].map((n) => (
         <Icon key={n} icon={icons.favorite} size={size} className={n <= value ? "on" : ""} />
       ))}

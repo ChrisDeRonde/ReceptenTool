@@ -11,7 +11,7 @@ import { chooseWho } from "./actions";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Wie ben jij? — Recepten",
+  title: "Wie ben jij?",
 };
 
 /**
