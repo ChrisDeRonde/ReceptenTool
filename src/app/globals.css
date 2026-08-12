@@ -2404,7 +2404,7 @@ button.add:hover {
    dezelfde maat, en dan roept een oordeel van drie weken geleden even hard als
    de uitkomst. */
 .cooklog-kop {
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.1rem;
 }
 
 .cooklog-cijfer {
@@ -2441,15 +2441,23 @@ button.add:hover {
    naam waar hij bij hoort in plaats van links onder de datum. */
 .cooklog-list li {
   display: grid;
-  /* `auto` en niet vast: de kolom groeit mee met de langste datum in de
-     lijst — "24 dec 2025" van vorig jaar past er dan ook in — maar hij is
-     nooit smaller dan dit, zodat er ook bij één regel een kolom staat. */
-  grid-template-columns: minmax(3.5rem, auto) 1fr auto;
+  /* `auto` en geen vaste maat: de kolom is precies zo breed als de langste
+     datum in déze lijst — "24 dec 2025" van vorig jaar past er dan ook in, en
+     bij alleen "9 aug" blijft er geen dode strook over. */
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   column-gap: 0.6rem;
-  row-gap: 0.15rem;
-  padding: 0.7rem 0;
+  row-gap: 0.1rem;
+  padding: 0.42rem 0;
   border-top: 1px solid var(--line);
+}
+
+/* De prullenbak bepaalde de hoogte van de hele regel: 38px raakvlak tegen 22px
+   inhoud, dus elke regel was bijna drie keer zo hoog als wat erin stond. De
+   negatieve marge haalt hem uit de berekening — hij blijft even groot om aan
+   te tikken, hij rekt de regel alleen niet meer op. */
+.cooklog-list button {
+  margin-block: -0.5rem;
 }
 
 .cooklog-datum {
@@ -2461,7 +2469,7 @@ button.add:hover {
 .cooklog-wie {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
   flex-wrap: wrap;
   font-size: 0.9rem;
 }
