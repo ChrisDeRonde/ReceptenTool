@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { updateRecipe } from "@/app/actions";
+import { useActionState, useState } from "react";
+import { updateRecipe, type BewerkStand } from "@/app/actions";
 import { Icon } from "@/components/Icon";
 import { icons } from "@/lib/icons";
 import { formatAmount } from "@/lib/recipe/format";
@@ -20,6 +20,11 @@ import { flattenIngredients, type Recipe } from "@/lib/recipe/schema";
  * velden wijzigen niet. Zonder JavaScript kun je dus nog steeds alles
  * aanpassen wat er al staat; alleen de plus- en prullenbakknoppen doen dan
  * niets. De rest van de app werkt ook zo.
+ *
+ * Het verborgen veld `versie` is de derde: daarmee merkt de server dat de ander
+ * dit recept intussen ook heeft bijgewerkt. Zie `lib/recipe/versie.ts`. Het
+ * formulier blijft dan gewoon staan met alles wat je hebt getypt erin — een
+ * waarschuwing die je werk weggooit is erger dan de botsing zelf.
  */
 
 type ItemRow = {
@@ -65,7 +70,40 @@ function toGroups(recipe: Recipe): GroupRow[] {
   }));
 }
 
-export function RecipeEditor({ id, recipe }: { id: string; recipe: Recipe }) {
+export function RecipeEditor({
+  id,
+  recipe,
+  versie,
+}: {
+  id: string;
+  recipe: Recipe;
+  /** Wanneer dit recept voor het laatst is bijgewerkt, toen je het opende. */
+  versie: string;
+}) {
+  const [stand, opslaan] = useActionState<BewerkStand, FormData>(updateRecipe, {
+    soort: "rust",
+  });
+
+  /**
+   * Ook het bovenblok in state, net als de ingrediënten en de stappen
+   * hieronder. Niet uit netheid: React zet een formulier na een `action` weer
+   * op zijn beginwaarden, en met `defaultValue` was alles wat je in deze acht
+   * velden had getypt weg op het moment dat de botsingsmelding verscheen —
+   * precies wanneer je het nodig hebt. Wat React uit state tekent komt terug.
+   */
+  const [kop, setKop] = useState(() => ({
+    titel: recipe.title,
+    omschrijving: recipe.description ?? "",
+    porties: recipe.servings?.toString() ?? "",
+    voorbereiden: recipe.prepMinutes?.toString() ?? "",
+    bereiden: recipe.cookMinutes?.toString() ?? "",
+    totaal: recipe.totalMinutes?.toString() ?? "",
+    tips: recipe.tips.join("\n"),
+    tags: recipe.tags.join(", "),
+  }));
+
+  const zet = (veld: keyof typeof kop) => (waarde: string) =>
+    setKop((oud) => ({ ...oud, [veld]: waarde }));
   const [groups, setGroups] = useState<GroupRow[]>(() => toGroups(recipe));
   const [steps, setSteps] = useState<StepRow[]>(() =>
     recipe.steps.map((step) => ({
@@ -134,8 +172,9 @@ export function RecipeEditor({ id, recipe }: { id: string; recipe: Recipe }) {
     setSteps((old) => old.filter((_, i) => i !== si));
 
   return (
-    <form action={updateRecipe} className="editor">
+    <form action={opslaan} className="editor">
       <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="versie" value={versie} />
 
       <section>
         <h2 className="section" style={{ marginTop: 0 }}>
@@ -144,7 +183,13 @@ export function RecipeEditor({ id, recipe }: { id: string; recipe: Recipe }) {
 
         <label className="field">
           <span className="eyebrow">Titel</span>
-          <input type="text" name="titel" defaultValue={recipe.title} required />
+          <input
+            type="text"
+            name="titel"
+            value={kop.titel}
+            onChange={(e) => zet("titel")(e.target.value)}
+            required
+          />
         </label>
 
         <label className="field">
@@ -152,7 +197,8 @@ export function RecipeEditor({ id, recipe }: { id: string; recipe: Recipe }) {
           <textarea
             name="omschrijving"
             rows={2}
-            defaultValue={recipe.description ?? ""}
+            value={kop.omschrijving}
+            onChange={(e) => zet("omschrijving")(e.target.value)}
             placeholder="Eén of twee zinnen: wat het is en waarom het de moeite waard is."
           />
         </label>
@@ -165,7 +211,8 @@ export function RecipeEditor({ id, recipe }: { id: string; recipe: Recipe }) {
               name="porties"
               min={1}
               max={24}
-              defaultValue={recipe.servings ?? ""}
+              value={kop.porties}
+              onChange={(e) => zet("porties")(e.target.value)}
             />
           </label>
           <label className="field">
@@ -174,7 +221,8 @@ export function RecipeEditor({ id, recipe }: { id: string; recipe: Recipe }) {
               type="number"
               name="voorbereiden"
               min={0}
-              defaultValue={recipe.prepMinutes ?? ""}
+              value={kop.voorbereiden}
+              onChange={(e) => zet("voorbereiden")(e.target.value)}
             />
           </label>
           <label className="field">
@@ -183,7 +231,8 @@ export function RecipeEditor({ id, recipe }: { id: string; recipe: Recipe }) {
               type="number"
               name="bereiden"
               min={0}
-              defaultValue={recipe.cookMinutes ?? ""}
+              value={kop.bereiden}
+              onChange={(e) => zet("bereiden")(e.target.value)}
             />
           </label>
           <label className="field">
@@ -192,7 +241,8 @@ export function RecipeEditor({ id, recipe }: { id: string; recipe: Recipe }) {
               type="number"
               name="totaal"
               min={0}
-              defaultValue={recipe.totalMinutes ?? ""}
+              value={kop.totaal}
+              onChange={(e) => zet("totaal")(e.target.value)}
             />
           </label>
         </div>
@@ -339,23 +389,65 @@ export function RecipeEditor({ id, recipe }: { id: string; recipe: Recipe }) {
 
         <label className="field">
           <span className="eyebrow">Tips — één per regel</span>
-          <textarea name="tips" rows={4} defaultValue={recipe.tips.join("\n")} />
+          <textarea
+            name="tips"
+            rows={4}
+            value={kop.tips}
+            onChange={(e) => zet("tips")(e.target.value)}
+          />
         </label>
 
         <label className="field">
           <span className="eyebrow">Tags — gescheiden door komma&apos;s</span>
-          <input type="text" name="tags" defaultValue={recipe.tags.join(", ")} />
+          <input
+            type="text"
+            name="tags"
+            value={kop.tags}
+            onChange={(e) => zet("tags")(e.target.value)}
+          />
         </label>
       </section>
 
-      <div className="editor-bar">
-        <a href={`/recepten/${id}`} className="button secondary">
-          Annuleren
-        </a>
-        <button type="submit" className="grow">
-          <Icon icon={icons.done} size={17} />
-          Opslaan
-        </button>
+      {/* De melding zit in hetzelfde plakkende blok als de knoppen. Zet je hem
+          gewoon in de tekst, dan verschijnt hij onderaan het document terwijl
+          de opslaanknop aan de onderkant van je scherm plakt — dan tik je op
+          Opslaan en zie je niets gebeuren. */}
+      <div className="editor-onderkant">
+        {stand.soort === "botsing" && (
+          <div className="botsing" role="alert">
+            <p>
+              <strong>{stand.wie}</strong>
+              {stand.wanneer && `, ${stand.wanneer}`}. Opslaan zou die versie
+              overschrijven.
+            </p>
+            <p className="muted">
+              Wat jij hebt ingevuld staat er nog. Bekijk in een ander tabblad
+              wat er nu staat, of sla het alsnog op.
+            </p>
+            <div className="row">
+              {/* Naam en waarde van een verzendknop gaan mee in het formulier;
+                  zo is dit dezelfde actie met één antwoord erbij. */}
+              <button type="submit" name="forceren" value="1" className="secondary">
+                Toch opslaan
+              </button>
+              {/* Een gewone link en geen knop: er valt hier één ding te
+                  beslissen, en dat is de knop ernaast. */}
+              <a href={`/recepten/${id}`} target="_blank" rel="noreferrer">
+                Wat staat er nu?
+              </a>
+            </div>
+          </div>
+        )}
+
+        <div className="editor-bar">
+          <a href={`/recepten/${id}`} className="button secondary">
+            Annuleren
+          </a>
+          <button type="submit" className="grow">
+            <Icon icon={icons.done} size={17} />
+            Opslaan
+          </button>
+        </div>
       </div>
 
       {total > 0 && steps.some((step) => step.refs.length > 0) && (

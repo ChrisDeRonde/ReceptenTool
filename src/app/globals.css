@@ -2264,17 +2264,21 @@ button.add:hover {
   border-color: var(--accent);
 }
 
-/* Opslaan blijft binnen bereik van je duim.
+/* Opslaan blijft binnen bereik van je duim, en een melding over het opslaan
+   hoort daar dus ook.
    De overgang loopt over een vaste hoogte en is daaronder dekkend: met een
    verloop op percentage stond de tekst die net onder de balk door schoof half
    zichtbaar tússen de knoppen. Nu vervaagt hij netjes en verdwijnt hij. */
-.editor-bar {
+.editor-onderkant {
   position: sticky;
   bottom: calc(var(--dock) + env(safe-area-inset-bottom));
-  display: flex;
-  gap: 0.6rem;
   padding: 1.75rem 0 1rem;
   background: linear-gradient(to bottom, transparent, var(--bg) 1.7rem);
+}
+
+.editor-bar {
+  display: flex;
+  gap: 0.6rem;
 }
 
 .editor-bar .grow {
@@ -2283,6 +2287,37 @@ button.add:hover {
 
 .editor-bar .button.secondary {
   flex: 0 0 8rem;
+}
+
+/* De ander was je voor. Direct boven de opslaanknop, want daar sta je te kijken
+   op het moment dat dit verschijnt. Zand en geen rood: er is niets stuk en er
+   is niets weg — er moet alleen iemand kiezen. */
+.botsing {
+  margin: 0 0 0.75rem;
+  padding: 0.9rem 1rem 1rem;
+  border-radius: var(--r-md);
+  background: var(--sand);
+  animation: opkomen var(--vlot) var(--soepel) both;
+}
+
+.botsing p {
+  margin: 0 0 0.5rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.botsing strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.botsing .row {
+  margin-top: 0.9rem;
+  gap: 0.9rem;
+}
+
+.botsing .row a {
+  font-size: 0.85rem;
 }
 
 /* Klein regeltje onderaan het recept. */

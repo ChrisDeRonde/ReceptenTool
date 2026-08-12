@@ -6,6 +6,7 @@ import { RecipeEditor } from "@/components/RecipeEditor";
 import { prisma } from "@/lib/db";
 import { icons } from "@/lib/icons";
 import { recipeSchema } from "@/lib/recipe/schema";
+import { versieVan } from "@/lib/recipe/versie";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +49,8 @@ export default async function EditRecipePage({
       </div>
       <Vastkop titel="Bewerken" meta={parsed.data.title} />
 
-      <RecipeEditor id={id} recipe={parsed.data} />
+      {/* De versie waarop dit formulier gebaseerd is; zie lib/recipe/versie.ts. */}
+      <RecipeEditor id={id} recipe={parsed.data} versie={versieVan(row.editedAt)} />
     </main>
   );
 }

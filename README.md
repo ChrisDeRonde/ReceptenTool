@@ -274,6 +274,19 @@ skelet komt uit de prefetch die Next doet zodra een link in beeld staat; is een
 link nooit voorgeladen, dan blijf je even op de oude pagina met alleen de
 indrukfeedback.
 
+> **Dit kost het no-JavaScript-gedrag van die pagina's.** Streamt Next een
+> wachtscherm, dan staat de echte inhoud onderaan het document in een verborgen
+> blok en schuift een inline script hem op zijn plek. Staat JavaScript uit, dan
+> gebeurt dat niet en blijf je naar grijze balken kijken. Gemeten, niet
+> aangenomen: met JS uit toonde `/weekmenu` twaalf skeletblokjes en nooit iets
+> anders.
+>
+> Daarom hebben **de twee formulierpagina's** — recept bewerken en instellingen
+> — er geen. Daar is de belofte "je kunt alles aanpassen wat er al staat" iets
+> waard, en de wachttijd is één query. De overige pagina's zijn lijsten om naar
+> te kijken; daar wint het wachtscherm, en met JavaScript uit zie je alleen het
+> skelet. Wil je dat andersom, dan is het per route één bestand weghalen.
+
 **De foto die meereist.** De foto op de tegel en de foto bovenaan het recept
 dragen via `<ViewTransition>` dezelfde naam, dus de browser laat hem van de ene
 plek naar de andere groeien in plaats van de een te laten verdwijnen en de ander
@@ -393,7 +406,35 @@ je hoofd in plaats van naar het recept.
   verwijzingen na het opslaan meeschuiven. Wat je weghaalt verdwijnt ook uit de
   stappen die het noemden; de staptekst zelf blijft ongemoeid.
 - Zonder JavaScript kun je alles aanpassen wat er al staat. Alleen rijen
-  toevoegen en verwijderen heeft JavaScript nodig.
+  toevoegen en verwijderen heeft JavaScript nodig. Deze pagina heeft daarom
+  bewust géén `loading.tsx`; zie *Wachtschermen* hieronder waarom die twee niet
+  samengaan.
+
+### Als jullie allebei tegelijk bewerken
+
+Twee mensen, twee telefoons, één recept: jij haalt er een teen knoflook bij, zij
+schrijft een stap om, en wie als tweede opslaat gooide het werk van de ander weg
+— zonder melding, want de app had geen idee.
+
+Het formulier stuurt daarom mee wanneer het recept voor het laatst was
+bijgewerkt (`versie`, uit `editedAt`). Klopt dat bij het opslaan niet meer, dan
+slaat de app níét op maar vraagt hij het: *"Sanne heeft dit recept intussen
+bijgewerkt, vandaag 19:41."* Met een knop om het alsnog te doen, en een link om
+in een ander tabblad te kijken wat er nu staat.
+
+Drie keuzes die het verschil maken:
+
+- **`editedAt` en niet `updatedAt`.** Die laatste verspringt ook als iemand het
+  recept alleen favoriet maakt, en een hartje is geen bewerking.
+- **Je typewerk blijft staan.** Een waarschuwing die je wijzigingen weggooit is
+  erger dan de botsing zelf. Daarvoor moest het bovenblok (titel, omschrijving,
+  de vier getallen, tips, tags) van `defaultValue` naar React-state: React zet
+  een formulier na een `action` terug op zijn beginwaarden, en dan was alles wat
+  je had getypt weg op precies het verkeerde moment. De ingrediënten en stappen
+  stonden al in state en hadden er geen last van.
+- **Een ontbrekend versieveld houdt niemand tegen.** Een oude pagina uit de
+  cache heeft het niet; iemand blokkeren op grond van niets is erger dan de
+  botsing. Zie `src/lib/recipe/versie.ts`, met tests.
 
 Dit is de enige plek die `data` overschrijft — tot nu toe bleef die blob precies
 zoals het model hem opleverde. Wat de bron zei blijft opvraagbaar via
@@ -789,6 +830,7 @@ op dezelfde endpoint worden aangesloten.
 | `src/components/FavorietKnop.tsx` | De ster die alvast vult terwijl de server nog bezig is. |
 | `src/components/Misgegaan.tsx` | Het scherm als er iets stukging; gedeeld door alle foutpagina's. |
 | `src/lib/recipe/markdown.ts` | Een recept als leesbaar bestand. Pure functie, met tests. |
+| `src/lib/recipe/versie.ts`   | Merkt dat de ander hetzelfde recept ook heeft bijgewerkt.   |
 | `src/app/manifest.ts`        | Naam, kleuren en iconen voor "zet op beginscherm".          |
 | `public/sw.js`               | Service worker: cache en offlinescherm. Hoog `VERSIE` op.   |
 | `scripts/iconen.mjs`         | Alle icoonmaten uit één bron (`npm run iconen`).            |

@@ -13,6 +13,7 @@ import { localImageName, storeRemoteImage } from "@/lib/images";
 import { keepDuplicate, processShareItem } from "@/lib/pipeline";
 import { ingredientFromFields } from "@/lib/recipe/amount";
 import { MAX_SERVINGS, MIN_SERVINGS } from "@/lib/recipe/scale";
+import { isVerouderd } from "@/lib/recipe/versie";
 import {
   recipeSchema,
   type Ingredient,
@@ -23,6 +24,7 @@ import {
 import { deletePhotos, parsePhotos, savePhotos } from "@/lib/photos";
 import { fromParam, midnight, startOfWeek, toParam } from "@/lib/menu/week";
 import { currentPerson } from "@/lib/who";
+import { momentTekst } from "@/lib/tijd";
 import { huishouden } from "@/lib/settings";
 
 /**
@@ -320,16 +322,53 @@ async function deleteImageIfUnused(imageUrl: string | null): Promise<void> {
  * De velden komen als `ing.<groep>.<regel>.<veld>` binnen, zodat er rijen bij
  * en af kunnen zonder dat het formulier van vorm verandert.
  */
-export async function updateRecipe(formData: FormData): Promise<void> {
+export type BewerkStand =
+  | { soort: "rust" }
+  /**
+   * Iemand was je voor. De tekst is hier al opgemaakt: het formulier hoeft niet
+   * te weten wie er ingelogd is om te kunnen zeggen "je hebt dit zelf ook
+   * bijgewerkt" in plaats van "Chris heeft dit bijgewerkt".
+   */
+  | { soort: "botsing"; wie: string; wanneer: string };
+
+export async function updateRecipe(
+  _vorige: BewerkStand,
+  formData: FormData,
+): Promise<BewerkStand> {
   const id = readField(formData, "id");
-  if (!id) return;
+  if (!id) return { soort: "rust" };
 
   const row = await prisma.recipe.findUnique({ where: { id } });
-  if (!row) return;
+  if (!row) return { soort: "rust" };
 
   const parsed = recipeSchema.safeParse(JSON.parse(row.data));
-  if (!parsed.success) return;
+  if (!parsed.success) return { soort: "rust" };
   const before = parsed.data;
+
+  // Is er iemand tussen geweest sinds jij dit formulier opende? Dan niet
+  // opslaan maar vragen. Alleen de tweede keer — met `forceren` erbij heb je
+  // die vraag al beantwoord.
+  const ik = await currentPerson();
+  // Bewust niet via `readField`: die maakt van een lege tekst `null`, en hier
+  // is leeg juist een waarde — "dit recept was nog nooit bijgewerkt toen ik dit
+  // formulier opende". Zonder dit onderscheid mist de controle precies het
+  // geval dat het vaakst voorkomt: twee mensen in een vers geïmporteerd recept.
+  const meegestuurd = formData.get("versie");
+  if (
+    formData.get("forceren") !== "1" &&
+    isVerouderd(typeof meegestuurd === "string" ? meegestuurd : null, row.editedAt)
+  ) {
+    return {
+      soort: "botsing",
+      wie:
+        row.editedBy === null
+          ? "Iemand heeft dit recept intussen bijgewerkt"
+          : row.editedBy === ik
+            ? "Je hebt dit recept zelf ook bijgewerkt, in een ander venster"
+            : `${row.editedBy} heeft dit recept intussen bijgewerkt`,
+      wanneer: row.editedAt ? momentTekst(row.editedAt, new Date()) : "",
+    };
+  }
 
   const { groups, moved } = readIngredients(formData);
   const steps = readSteps(formData, moved);
@@ -363,7 +402,7 @@ export async function updateRecipe(formData: FormData): Promise<void> {
       data: JSON.stringify(recipe),
       tags: recipe.tags.join(","),
       editedAt: new Date(),
-      editedBy: await currentPerson(),
+      editedBy: ik,
     },
   });
 
