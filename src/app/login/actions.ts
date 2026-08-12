@@ -11,7 +11,8 @@ import {
   sameSecret,
   throttled,
 } from "@/lib/session";
-import { currentPerson } from "@/lib/who";
+import { bekendeNaam } from "@/lib/people";
+import { currentPerson, personCookie } from "@/lib/who";
 import { people } from "@/lib/settings";
 
 /**
@@ -38,24 +39,39 @@ export async function login(formData: FormData): Promise<void> {
   const expected = configuredPassword();
   if (!expected) redirect("/login?fout=config");
 
+  // De naam is geen geheim en verandert niets aan het slot: iedereen typt
+  // hetzelfde wachtwoord. Hij gaat mee terug bij een misser zodat je bij een
+  // vertikte letter niet ook je gezicht opnieuw hoeft aan te tikken.
+  const naam = bekendeNaam(formData.get("naam"), await people());
+  const terug = (rest: string) =>
+    `/login?${rest}${naam ? `&naam=${encodeURIComponent(naam)}` : ""}`;
+
   const ip = await clientIp();
-  if (throttled(ip)) redirect("/login?fout=teveel");
+  if (throttled(ip)) redirect(terug("fout=teveel"));
 
   const given = String(formData.get("wachtwoord") ?? "");
   if (!sameSecret(given, expected)) {
     noteFailedAttempt(ip);
-    redirect(`/login?fout=1&verder=${encodeURIComponent(safeNext(formData.get("verder")))}`);
+    redirect(
+      terug(`fout=1&verder=${encodeURIComponent(safeNext(formData.get("verder")))}`),
+    );
   }
 
   forgetAttempts(ip);
   const cookie = await createSessionCookie(expected);
-  (await cookies()).set(cookie);
+  const jar = await cookies();
+  jar.set(cookie);
+
+  // Pas hier, en niet bij een mislukte poging: wie er niet in komt, hoeft dit
+  // toestel ook geen naam te geven.
+  if (naam) jar.set(personCookie(naam));
 
   const next = safeNext(formData.get("verder"));
 
-  // Weten we nog niet wie dit is, dan vragen we het één keer. Zijn er geen
-  // namen ingesteld, dan slaat `currentPerson` dat over en gaat dit niet op.
-  if ((await people()).length > 0 && (await currentPerson()) === null) {
+  // Koos je geen gezicht en kent dit toestel er nog geen, dan vragen we het
+  // alsnog één keer. Zijn er geen namen ingesteld, dan stond die rij er niet
+  // en gaat dit niet op.
+  if (!naam && (await people()).length > 0 && (await currentPerson()) === null) {
     redirect(`/wie?verder=${encodeURIComponent(next)}`);
   }
 

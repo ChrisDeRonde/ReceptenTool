@@ -2675,6 +2675,75 @@ button.add:hover {
 /* --- Wie ben jij ---------------------------------------------------------- */
 
 /* Namen naast elkaar op het keuzescherm; geen wachtwoord, dus geen veld. */
+/* De gezichten op het inlogscherm: kiezen wie je bent en binnenkomen in één
+   handeling, zoals bij een streamingdienst. Het slot zit op het wachtwoord
+   eronder — dit bepaalt alleen wiens sterren er straks in de kooklog staan. */
+.wie-veld {
+  margin: 0 0 0.3rem;
+  padding: 0;
+  border: 0;
+}
+
+.wie-veld legend {
+  /* Een legend hangt van zichzelf in de inkeping van de fieldsetrand. Die rand
+     is er niet, dus hij mag gewoon een kopregel zijn. */
+  display: block;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+.wie-rij {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.wie-tegel {
+  position: relative;
+  flex: 1 1 0;
+  max-width: 8rem;
+  display: grid;
+  place-items: center;
+  padding: 0.85rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  cursor: pointer;
+  transition:
+    background-color var(--vlot) var(--soepel),
+    border-color var(--vlot) var(--soepel);
+}
+
+/* De radioknop zelf is de aanwijzer niet — de tegel is dat. Hij blijft wel een
+   echte radioknop, dus pijltjestoetsen en formulierverzending werken gewoon. */
+.wie-tegel input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Naam onder het rondje in plaats van ernaast: twee tegels naast elkaar zijn
+   smaller dan een regel tekst. */
+.wie-tegel .avatar-naam {
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.wie-tegel:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.wie-tegel:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .who-pick {
   display: flex;
   flex-direction: column;

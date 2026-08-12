@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { bekendeNaam } from "@/lib/people";
 import { personCookie } from "@/lib/who";
 import { people } from "@/lib/settings";
 
@@ -15,11 +16,7 @@ function safeNext(value: FormDataEntryValue | null): string {
 }
 
 export async function chooseWho(formData: FormData): Promise<void> {
-  const wanted = String(formData.get("naam") ?? "");
-  const name = (await people()).find((person) => person === wanted);
-
-  // Alleen namen die in APP_USERS staan. Het koekje is aan te passen door wie
-  // het krijgt, en die waarde belandt in de database en op het scherm.
+  const name = bekendeNaam(formData.get("naam"), await people());
   if (name) (await cookies()).set(personCookie(name));
 
   redirect(safeNext(formData.get("verder")));

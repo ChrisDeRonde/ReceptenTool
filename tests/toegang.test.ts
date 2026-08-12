@@ -6,6 +6,7 @@ import {
   sameSecret,
 } from "@/lib/session";
 import { findDuplicate, normalizeTitle, normalizeUrl } from "@/lib/recipe/duplicate";
+import { bekendeNaam } from "@/lib/people";
 
 /**
  * Het slot en de duplicaatherkenning. Bij het eerste is een fout duur — dan
@@ -56,6 +57,38 @@ describe("het inlogkoekje", () => {
       assert.equal(await isValidSession(waarde, wachtwoord), false, waarde);
     }
     assert.equal(await isValidSession(undefined, wachtwoord), false);
+  });
+});
+
+describe("het naamkaartje", () => {
+  const huis = ["Chris", "Sanne"];
+
+  test("een naam uit het huishouden komt erdoor", () => {
+    assert.equal(bekendeNaam("Chris", huis), "Chris");
+    assert.equal(bekendeNaam("Sanne", huis), "Sanne");
+  });
+
+  test("een verzonnen naam niet", () => {
+    // Dit is de hele reden dat deze functie bestaat: de waarde komt uit een
+    // koekje of een formulierveld en gaat daarna de database in.
+    assert.equal(bekendeNaam("Iemand Anders", huis), null);
+    assert.equal(bekendeNaam("<script>alert(1)</script>", huis), null);
+  });
+
+  test("bijna goed is niet goed", () => {
+    assert.equal(bekendeNaam("chris", huis), null);
+    assert.equal(bekendeNaam(" Chris", huis), null);
+    assert.equal(bekendeNaam("Chris ", huis), null);
+  });
+
+  test("zonder ingestelde namen komt er niets door", () => {
+    assert.equal(bekendeNaam("Chris", []), null);
+  });
+
+  test("rommel levert null in plaats van een crash", () => {
+    for (const waarde of [null, undefined, 42, {}, ["Chris"], ""]) {
+      assert.equal(bekendeNaam(waarde, huis), null, String(waarde));
+    }
   });
 });
 

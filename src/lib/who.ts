@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { bekendeNaam } from "@/lib/people";
 import { people } from "@/lib/settings";
 
 /**
@@ -29,10 +30,7 @@ export async function currentPerson(): Promise<string | null> {
   const namen = await people();
   if (namen.length === 0) return null;
 
-  const value = (await cookies()).get(WHO_COOKIE)?.value;
-  if (!value) return null;
-
-  return namen.find((name) => name === value) ?? null;
+  return bekendeNaam((await cookies()).get(WHO_COOKIE)?.value, namen);
 }
 
 export function personCookie(name: string) {

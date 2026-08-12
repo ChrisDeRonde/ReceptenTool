@@ -28,6 +28,20 @@ export function tintForIn(name: string, lijst: readonly string[]): number {
   return som % TINTEN;
 }
 
+/**
+ * Alleen een naam die jij hebt ingesteld komt hier doorheen.
+ *
+ * De waarde komt uit een koekje of uit een formulierveld — allebei door de
+ * bezoeker te veranderen — en belandt daarna in de database en op het scherm.
+ * Ertegenaan houden van de lijst is dus geen formaliteit. Het staat hier los,
+ * want dezelfde controle geldt op drie plekken (het koekje lezen, een naam
+ * kiezen, en inloggen) en drie kopieën is er twee te veel om te vertrouwen.
+ */
+export function bekendeNaam(waarde: unknown, namen: readonly string[]): string | null {
+  if (typeof waarde !== "string") return null;
+  return namen.find((naam) => naam === waarde) ?? null;
+}
+
 /** Meer dan dit is geen naam meer maar een zin. */
 const NAAM_MAX = 24;
 
