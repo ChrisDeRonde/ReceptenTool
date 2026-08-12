@@ -145,6 +145,14 @@ achteraf bijwerken kan ook.
   erna" de lágere sterren inkleuren.
 - Op het overzicht staat het gemiddelde oordeel als sterren bij de tegel. Wat
   je er zelf van vond weegt zwaarder dan uit welke keuken het komt.
+- Het blok bestaat uit twee lagen. Bovenaan de uitkomst — daarvoor kom je
+  kijken, dus die is het grootst. Daaronder de losse keren, klein en op kolom.
+  Eerder had alles dezelfde maat, en dan roept een oordeel van drie weken
+  geleden even hard als de conclusie. De regels staan in een raster zodat de
+  datums onder elkaar staan en een opmerking onder de náám hangt waar hij bij
+  hoort, en niet links onder de datum als een losse regel tussen twee keren in.
+  De datum krijgt hier geen kalendertje: in een lijst doet de kolom al wat het
+  symbool in een zin doet.
 - Staan er namen in `APP_USERS`, dan splitst de samenvatting per persoon
   ("Chris ★★★★★ · Sanne ★★") in plaats van één gemiddelde te tonen. Zie
   [Wie ben jij](#wie-ben-jij).

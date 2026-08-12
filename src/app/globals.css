@@ -2397,11 +2397,38 @@ button.add:hover {
   fill: currentcolor;
 }
 
-.cooklog-sum {
-  margin: 0 0 0.9rem;
-  color: var(--muted);
-  font-size: 0.85rem;
+/* --- De uitkomst ---------------------------------------------------------- */
+
+/* Waarvoor je hier komt kijken: wat vonden jullie ervan. Dat staat bovenaan en
+   is het grootst; de losse keren eronder zijn de onderbouwing. Eerder had alles
+   dezelfde maat, en dan roept een oordeel van drie weken geleden even hard als
+   de uitkomst. */
+.cooklog-kop {
+  margin-bottom: 1.4rem;
 }
+
+.cooklog-cijfer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.cooklog-cijfer strong {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 560;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.cooklog-sum {
+  margin: 0.4rem 0 0;
+  color: var(--muted);
+  font-size: 0.83rem;
+}
+
+/* --- De losse keren ------------------------------------------------------- */
 
 .cooklog-list {
   list-style: none;
@@ -2409,29 +2436,45 @@ button.add:hover {
   padding: 0;
 }
 
+/* Een raster en geen flexrij: zo staan de datums onder elkaar in plaats van
+   dat elke regel op een andere plek begint, en hangt een opmerking onder de
+   naam waar hij bij hoort in plaats van links onder de datum. */
 .cooklog-list li {
-  padding: 0.55rem 0;
+  display: grid;
+  /* `auto` en niet vast: de kolom groeit mee met de langste datum in de
+     lijst — "24 dec 2025" van vorig jaar past er dan ook in — maar hij is
+     nooit smaller dan dit, zodat er ook bij één regel een kolom staat. */
+  grid-template-columns: minmax(3.5rem, auto) 1fr auto;
+  align-items: center;
+  column-gap: 0.6rem;
+  row-gap: 0.15rem;
+  padding: 0.7rem 0;
   border-top: 1px solid var(--line);
 }
 
-.cooklog-head {
+.cooklog-datum {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.cooklog-wie {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
 }
 
-.cooklog-date {
-  font-size: 0.83rem;
-  color: var(--muted);
+.cooklog-wie .avatar-naam {
+  font-size: 0.88rem;
 }
 
-/* De prullenbak helemaal rechts, los van de rest. */
-.cooklog-head form {
-  margin-left: auto;
-}
-
+/* Onder de naam, niet onder de datum: zo lees je hem als een opmerking bij
+   déze keer en niet als een losse regel tussen twee keren in. */
 .cooklog-note {
-  margin: 0.15rem 0 0;
+  grid-column: 2 / -1;
+  margin: 0;
   color: var(--muted);
   font-size: 0.85rem;
 }
@@ -2598,11 +2641,13 @@ button.add:hover {
 }
 
 /* De oordelen per persoon, als losse blokjes onder de samenvatting. */
+/* Wat ieder ervan vond, als kop van het blok. Twee kolommen naast elkaar zolang
+   het past; daaronder een regel per persoon. */
 .oordelen {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem 0.9rem;
-  margin: -0.5rem 0 0.9rem;
+  gap: 0.35rem 1.4rem;
+  margin: 0;
 }
 
 .per-person {

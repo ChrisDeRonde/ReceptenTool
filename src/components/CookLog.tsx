@@ -71,59 +71,67 @@ export function CookLog({
         </p>
       ) : (
         <>
-          {/* Eén regel met de feiten, en de oordelen eronder als losse
-              blokjes. Alles achter elkaar in één zin brak af met een punt aan
-              het begin van de volgende regel. */}
-          <p className="cooklog-sum">
-            {entries.length === 1 ? "Eén keer gemaakt" : `${entries.length} keer gemaakt`}
-            {perPerson.length <= 1 && average !== null && (
-              <>
-                {" · "}
-                <Stars value={Math.round(average)} /> {average.toFixed(1).replace(".", ",")}
-              </>
+          {/* Twee lagen. Bovenaan het oordeel: dat is waarvoor je hier komt
+              kijken, dus dat mag het grootst. Daaronder de losse keren, klein
+              en op kolom — een oude regel hoort niet even hard te roepen als
+              de uitkomst. */}
+          <div className="cooklog-kop">
+            {perPerson.length > 1 ? (
+              // Twee mensen die het oneens zijn: één gemiddelde is dan een
+              // cijfer waar niemand zich in herkent.
+              <div className="oordelen">
+                {perPerson.map((person) => (
+                  <span key={person.name} className="per-person">
+                    <Avatar name={person.name} size={22} withName />
+                    <Stars value={Math.round(person.average)} size={17} />
+                  </span>
+                ))}
+              </div>
+            ) : (
+              average !== null && (
+                <p className="cooklog-cijfer">
+                  <Stars value={Math.round(average)} size={17} />
+                  <strong>{average.toFixed(1).replace(".", ",")}</strong>
+                </p>
+              )
             )}
-            {" · "}
-            <Moment>laatst {when(entries[0].cookedAt)}</Moment>
-          </p>
 
-          {perPerson.length > 1 && (
-            <div className="oordelen">
-              {perPerson.map((person) => (
-                <span key={person.name} className="per-person">
-                  <Avatar name={person.name} size={20} withName />
-                  <Stars value={Math.round(person.average)} />
-                </span>
-              ))}
-            </div>
-          )}
+            <p className="cooklog-sum">
+              {entries.length === 1 ? "Eén keer gemaakt" : `${entries.length} keer gemaakt`}
+              {" · "}
+              <Moment>laatst {when(entries[0].cookedAt)}</Moment>
+            </p>
+          </div>
 
           <ul className="cooklog-list">
             {entries.map((entry) => (
               <li key={entry.id}>
-                <div className="cooklog-head">
-                  <Moment className="cooklog-date">
-                    {datumKort(entry.cookedAt, new Date())}
-                  </Moment>
-                  {entry.who && <Avatar name={entry.who} size={22} withName />}
-                  {entry.rating !== null && <Stars value={entry.rating} />}
+                {/* Geen kalendertje hier: in een lijst doet de kolom al wat
+                    het symbool in een zin doet, en dan is het ruis. */}
+                <span className="cooklog-datum">
+                  {datumKort(entry.cookedAt, new Date())}
+                </span>
+                <div className="cooklog-wie">
+                  {entry.who && <Avatar name={entry.who} size={18} withName />}
+                  {entry.rating !== null && <Stars value={entry.rating} size={12} />}
                   {entry.again === true && (
                     <span className="again yes">
-                      <Icon icon={icons.again} size={12} />
+                      <Icon icon={icons.again} size={11} />
                       vaker
                     </span>
                   )}
                   {entry.again === false && <span className="again no">eenmalig</span>}
-                  <form action={deleteCookLog}>
-                    <input type="hidden" name="id" value={entry.id} />
-                    <button
-                      type="submit"
-                      className="icon quiet"
-                      aria-label="Deze keer verwijderen"
-                    >
-                      <Icon icon={icons.delete} size={14} />
-                    </button>
-                  </form>
                 </div>
+                <form action={deleteCookLog}>
+                  <input type="hidden" name="id" value={entry.id} />
+                  <button
+                    type="submit"
+                    className="icon quiet"
+                    aria-label="Deze keer verwijderen"
+                  >
+                    <Icon icon={icons.delete} size={14} />
+                  </button>
+                </form>
                 {entry.note && <p className="cooklog-note">{entry.note}</p>}
               </li>
             ))}
