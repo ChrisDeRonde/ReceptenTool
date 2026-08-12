@@ -10,6 +10,7 @@ import { Icon } from "@/components/Icon";
 import { Vastkop } from "@/components/Vastkop";
 import { prisma } from "@/lib/db";
 import { currentPerson } from "@/lib/who";
+import { huishouden } from "@/lib/settings";
 import { icons } from "@/lib/icons";
 import { MEAL_TYPE_LABELS, unpackMealTypes } from "@/lib/recipe/categories";
 import { formatAmount } from "@/lib/recipe/format";
@@ -58,10 +59,16 @@ export default async function RecipePage({
   const mealTypes = unpackMealTypes(row.mealTypes);
 
   // Het aantal porties staat in de URL, niet in de database: jij kookt voor
-  // zes terwijl iemand anders hetzelfde recept voor twee bekijkt.
-  const servings = parseServings(query.porties, base.servings);
+  // zes terwijl iemand anders hetzelfde recept voor twee bekijkt. Staat er
+  // niets in de URL, dan openen we op jullie huishouden.
+  const thuis = await huishouden();
+  const servings = parseServings(query.porties, base.servings, thuis);
   const recipe = servings === null ? base : scaleRecipe(base, servings);
   const scaled = servings !== null && servings !== base.servings;
+  // Uit de URL of vanzelf? Dat scheelt één zinsdeel in de melding hieronder, en
+  // dat is het verschil tussen "wat is hier gebeurd" en "o ja, logisch".
+  const uitUrl = Array.isArray(query.porties) ? query.porties[0] : query.porties;
+  const viaHuishouden = scaled && !uitUrl;
 
   const cookHref = scaled
     ? `/recepten/${row.id}/koken?porties=${servings}`
@@ -217,9 +224,11 @@ export default async function RecipePage({
             // stukmaakt dan je oplost, dus die blijven staan zoals de bron ze
             // gaf. Hier staat waar je op moet letten.
             <p className="notice">
-              Omgerekend van {base.servings} naar {servings} personen. Tijden en
-              getallen in de staptekst zijn niet meegeschaald — houd deze lijst
-              aan.
+              {viaHuishouden
+                ? `Omgerekend naar ${servings} personen, jullie huishouden. De bron ging uit van ${base.servings}.`
+                : `Omgerekend van ${base.servings} naar ${servings} personen.`}{" "}
+              Tijden en getallen in de staptekst zijn niet meegeschaald — houd
+              deze lijst aan.
             </p>
           )}
           {recipe.ingredientGroups.map((group, groupIndex) => (

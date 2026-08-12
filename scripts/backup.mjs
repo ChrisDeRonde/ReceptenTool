@@ -12,6 +12,12 @@
  * er net iets geschreven wordt; `VACUUM INTO` schrijft een samenhangende
  * momentopname en mag gewoon terwijl de app draait.
  *
+ * Naast de database en de foto's schrijft elke run ook een map `recepten/`
+ * met alle recepten als markdown. Die is niet nodig om terug te zetten — dat
+ * doet de database — maar wel om te lézen. Een back-up die je alleen met dit
+ * programma kunt openen is een back-up die van dit programma afhangt, en dat
+ * is precies waar je vanaf wilt als je er een maakt.
+ *
  * Draaien:  npm run db:backup
  * Elke nacht om 03:15 (crontab -e):
  *   15 3 * * * cd /pad/naar/receptentool && /usr/bin/npm run db:backup >> backups/log.txt 2>&1
@@ -32,6 +38,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
 import Database from "better-sqlite3";
+import { exporteer } from "./export.mjs";
 
 const run = promisify(execFile);
 
@@ -228,6 +235,16 @@ async function main() {
     await writeFile(path.join(target, "fotos.lijst"), manifest.join("\n"));
   }
 
+  // De leesbare kopie. Mislukt dit, dan is de back-up zelf niet mislukt — de
+  // database en de foto's staan er al — dus dit mag de run niet omgooien.
+  let markdown = 0;
+  try {
+    const uit = await exporteer(path.join(target, "recepten"), { stil: true });
+    markdown = uit.geschreven;
+  } catch (error) {
+    console.error(`  markdown-export overgeslagen: ${error.message}`);
+  }
+
   const dbSize = (await stat(path.join(target, "recepten.db"))).size;
   const bytes = dbSize + archive.bytes;
 
@@ -246,6 +263,7 @@ async function main() {
     `${new Date().toISOString()}  ${folder}  ` +
       `${recipes} recepten (${human(dbSize)}), ` +
       `${manifest.length} foto's (${human(archive.bytes)}${archive.reused ? ", ongewijzigd" : ""})` +
+      `${markdown > 0 ? `, ${markdown} als markdown` : ""}` +
       `${removed > 0 ? `, ${removed} oude opgeruimd` : ""}`,
   );
 }

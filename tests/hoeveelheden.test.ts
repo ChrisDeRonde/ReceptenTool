@@ -2,7 +2,13 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { ingredientFromFields, parseAmount } from "@/lib/recipe/amount";
 import { formatAmount, formatClock, formatNumber } from "@/lib/recipe/format";
-import { roundQuantity, scaleRecipe } from "@/lib/recipe/scale";
+import {
+  MAX_SERVINGS,
+  MIN_SERVINGS,
+  parseServings,
+  roundQuantity,
+  scaleRecipe,
+} from "@/lib/recipe/scale";
 import type { Recipe } from "@/lib/recipe/schema";
 
 const item = (quantity: number | null, unit: string | null) => ({
@@ -100,6 +106,41 @@ describe("roundQuantity rondt af op iets waarmee je kunt koken", () => {
 
   test("lepels blijven in halve stappen", () => {
     assert.equal(roundQuantity(1.4, "el") % 0.5, 0);
+  });
+});
+
+describe("parseServings kiest voor hoeveel mensen", () => {
+  test("de URL wint van alles", () => {
+    assert.equal(parseServings("6", 4, 2), 6);
+  });
+
+  test("zonder URL het huishouden, niet wat de bron zei", () => {
+    // Een recept voor vier openen op vier terwijl jullie met z'n tweeën zijn,
+    // betekent elke keer twee keer op min tikken.
+    assert.equal(parseServings(undefined, 4, 2), 2);
+  });
+
+  test("zonder huishouden alsnog wat de bron zei", () => {
+    assert.equal(parseServings(undefined, 4, null), 4);
+    assert.equal(parseServings(undefined, 4), 4);
+  });
+
+  test("een recept zonder porties valt niets te schalen", () => {
+    assert.equal(parseServings("6", null, 2), null);
+  });
+
+  test("onzin in de URL valt terug op het huishouden", () => {
+    assert.equal(parseServings("zes", 4, 2), 2);
+  });
+
+  test("de grenzen gelden voor allebei de bronnen", () => {
+    assert.equal(parseServings("999", 4, 2), MAX_SERVINGS);
+    assert.equal(parseServings("0", 4, 2), MIN_SERVINGS);
+    assert.equal(parseServings(undefined, 4, 999), MAX_SERVINGS);
+  });
+
+  test("een lijstje uit de URL: de eerste telt", () => {
+    assert.equal(parseServings(["3", "8"], 4, 2), 3);
   });
 });
 

@@ -12,10 +12,11 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate",
-    "db:backup": "node scripts/backup.mjs",
+    "db:backup": "node --import ./scripts/ts-loader.mjs scripts/backup.mjs",
     "iconen": "node scripts/iconen.mjs",
-    "test": "node --import ./tests/alias.mjs --test tests/*.test.ts",
-    "demo": "node scripts/demo.mjs"
+    "test": "node --import ./scripts/ts-loader.mjs --test tests/*.test.ts",
+    "demo": "node scripts/demo.mjs",
+    "export": "node --import ./scripts/ts-loader.mjs scripts/export.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",

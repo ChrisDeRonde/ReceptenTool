@@ -338,6 +338,52 @@ button.gelukt svg {
   animation-duration: 0s;
 }
 
+/* --- Als het misging ------------------------------------------------------ */
+
+/* Dezelfde opbouw als het inlogscherm: één blok, gecentreerd, niets eromheen.
+   Er valt hier maar één ding te doen, en dat mag je zien. */
+.misgegaan {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  padding: 3.5rem 0 2rem;
+}
+
+.misgegaan h1 {
+  font-size: 1.6rem;
+  margin: 0.9rem 0 0.4rem;
+}
+
+.misgegaan p {
+  margin: 0;
+  max-width: 26rem;
+  font-size: 0.92rem;
+}
+
+.misgegaan .row {
+  justify-content: center;
+  margin-top: 1.6rem;
+}
+
+.misgegaan-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 50%;
+  background: var(--sunken);
+  color: var(--muted);
+}
+
+/* Het nummer waarmee je deze fout in het serverlog terugvindt. Klein, want je
+   hebt het pas nodig als je gaat zoeken. */
+.misgegaan-kenmerk {
+  margin-top: 2rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
 /* --- Wachten -------------------------------------------------------------- */
 
 /* Het skelet dat je ziet terwijl de server de pagina maakt. Zie de

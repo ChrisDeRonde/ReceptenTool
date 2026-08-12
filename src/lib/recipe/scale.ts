@@ -5,18 +5,40 @@ export const MAX_SERVINGS = 24;
 export const MIN_SERVINGS = 1;
 
 /**
- * Het aantal porties uit de URL, teruggevallen op het aantal uit het recept.
- * Geeft null als het recept geen porties kent — dan valt er niets te schalen.
+ * Voor hoeveel personen tonen we dit recept?
+ *
+ * Drie bronnen, in deze volgorde:
+ *
+ *  1. Wat er in de URL staat. Jij zet hem op zes voor als er visite komt; die
+ *     keuze reist mee naar de kookmodus en overleeft een refresh.
+ *  2. Jullie huishouden, als dat is ingesteld. Een recept voor vier openen op
+ *     vier terwijl jullie met z'n tweeën zijn betekent dat je elke keer twee
+ *     keer op min tikt.
+ *  3. Wat de bron zei. Dat is een eigenschap van het recept, niet van jullie,
+ *     maar zonder de andere twee is het het beste dat we hebben.
+ *
+ * Geeft null als het recept helemaal geen porties kent — dan valt er niets te
+ * schalen en heeft de teller ook geen betekenis.
  */
 export function parseServings(
   raw: string | string[] | undefined,
   base: number | null,
+  huishouden?: number | null,
 ): number | null {
   if (base === null || base <= 0) return null;
+
   const value = Array.isArray(raw) ? raw[0] : raw;
   const parsed = Number.parseInt(value ?? "", 10);
-  if (!Number.isFinite(parsed)) return base;
-  return Math.min(MAX_SERVINGS, Math.max(MIN_SERVINGS, parsed));
+  if (Number.isFinite(parsed)) return begrens(parsed);
+
+  if (huishouden !== null && huishouden !== undefined && huishouden > 0) {
+    return begrens(huishouden);
+  }
+  return base;
+}
+
+function begrens(aantal: number): number {
+  return Math.min(MAX_SERVINGS, Math.max(MIN_SERVINGS, aantal));
 }
 
 /**

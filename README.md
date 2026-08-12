@@ -454,6 +454,18 @@ Het gekozen aantal staat in de URL (`?porties=6`), niet in de database — jij
 kookt voor zes terwijl je vriendin hetzelfde recept voor twee bekijkt. Het
 reist mee naar de kookmodus en weer terug.
 
+Staat er niets in de URL, dan opent het recept op **jullie huishouden** en niet
+op het aantal dat de bron toevallig noemde. Dat aantal is een eigenschap van het
+recept, niet van jullie; met een huishouden van twee betekende het elke keer
+twee tikken op min. De melding zegt welke van de twee het is — *"omgerekend naar
+2 personen, jullie huishouden"* tegenover *"omgerekend van 4 naar 6 personen"*.
+
+Eén kanttekening: voor een taart klopt dit minder goed dan voor een pan pasta.
+Bananenbrood voor acht wordt zo bananenbrood voor twee, terwijl je die cake
+gewoon helemaal bakt. De teller staat ernaast en de melding zegt wat de bron
+bedoelde, dus het is één tik terug — maar het is een echte afweging en geen
+oversight.
+
 Wat **niet** meeschaalt: tijden (twee keer zoveel pasta kookt niet twee keer zo
 lang) en de staptekst. Getallen in lopende tekst herschrijven maakt meer stuk
 dan het oplost, dus die blijven staan zoals de bron ze gaf; als je omrekent
@@ -607,6 +619,52 @@ staan — een `sharedBy` van vroeger bijvoorbeeld — vallen terug op een hash.
 Laat je `APP_USERS` leeg, dan is de hele functie uit: geen vraag, geen namen,
 en alles werkt zoals het zonder werkte.
 
+## Als er iets misgaat
+
+Naast de wachtschermen staan de tegenhangers: `error.tsx` vangt een pagina die
+stukliep, `not-found.tsx` een recept dat er niet meer is, en `global-error.tsx`
+het geval dat de hoofdopmaak zelf niet opkomt. Ze delen één component
+(`src/components/Misgegaan.tsx`) en doen alle drie hetzelfde: zeggen dat het aan
+ons ligt, en een weg terug bieden.
+
+Binnen de app blijft de tabbalk staan — dan is er één pagina stuk en niet de app.
+Daarbuiten (kookmodus, inloggen) niet, want daar hoort hij ook niet.
+
+`global-error.tsx` heeft geen enkele import en zijn kleuren staan er los in. Als
+dát scherm nodig is, is er iets mis met de laag die de stylesheet en de letters
+binnenhaalt, en dan wil je niet dat je foutpagina van diezelfde laag afhangt —
+dezelfde redenering als bij het offlinescherm in `public/sw.js`.
+
+In productie krijgt de browser de foutmelding zelf niet te zien; die staat
+alleen in het serverlog. Het korte kenmerk onderaan het scherm (`error.digest`)
+is het enige waarmee je de twee aan elkaar knoopt.
+
+## Recepten eruit krijgen
+
+```bash
+npm run export            # → ./export
+npm run export -- /pad    # ergens anders
+```
+
+Elk recept als een leesbaar markdown-bestand: titel, hoeveelheden, genummerde
+stappen, tips, wat jullie ervan vonden, en onderaan de bron. Opent in elke
+teksteditor, gaat zo in Notities of Obsidian, en print netjes.
+
+Dit staat los van de back-up en heeft een ander doel. De back-up is er om terug
+te zetten en is een SQLite-bestand: prima daarvoor, waardeloos om te lézen. Een
+verzameling waar je alleen via déze app bij kunt is een verzameling die van deze
+app afhangt, en dat is precies waar je vanaf wilt.
+
+Daarom draait de export ook automatisch mee in `npm run db:backup`: elke run
+krijgt een map `recepten/` ernaast. Een export die je moet onthouden is een
+export die je vergeet. Mislukt hij, dan gaat de back-up gewoon door — de
+database en de foto's staan er dan al.
+
+De opmaak zit in `src/lib/recipe/markdown.ts` als pure functie, met tests. Dat
+is hier de helft van het werk: een export die stilletjes de tips of de
+kooklog weglaat is erger dan geen export, want je merkt het pas als je hem nodig
+hebt.
+
 ## Back-up
 
 ```bash
@@ -703,8 +761,10 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/menu/week.ts`       | Weken en dagen; maandag als begin.                          |
 | `src/lib/menu/list.ts`       | Een week aan recepten optellen tot één boodschappenlijst.   |
 | `src/lib/menu/suggest.ts`    | Welke recepten het weekmenu voorstelt, en waarom.           |
-| `tests/`                     | `npm test`; alias-hook plus de tests zelf.                  |
+| `tests/`                     | `npm test`; de tests over de pure functies.                 |
 | `scripts/demo.mjs`           | Proefopstelling: eigen database, eigen foto's, `npm run demo`. |
+| `scripts/export.mjs`         | De recepten als markdown wegschrijven; draait mee in de back-up. |
+| `scripts/ts-loader.mjs`      | App-code rechtstreeks vanuit Node draaien (tests én export). |
 | `src/lib/shopping/units.ts`  | Hoeveelheden optellen en namen gelijktrekken.               |
 | `src/lib/shopping/aisles.ts` | Onder welk kopje een ingrediënt hoort.                      |
 | `src/components/PhotoForm.tsx` | Camera en bibliotheek, met miniaturen en een wachtstand.   |
@@ -727,6 +787,8 @@ op dezelfde endpoint worden aangesloten.
 | `src/components/Vastkop.tsx` | De titelbalk die inschuift zodra je gescrold hebt.          |
 | `src/components/Skelet.tsx`  | De vorm van een pagina die nog moet komen; zie `loading.tsx`. |
 | `src/components/FavorietKnop.tsx` | De ster die alvast vult terwijl de server nog bezig is. |
+| `src/components/Misgegaan.tsx` | Het scherm als er iets stukging; gedeeld door alle foutpagina's. |
+| `src/lib/recipe/markdown.ts` | Een recept als leesbaar bestand. Pure functie, met tests. |
 | `src/app/manifest.ts`        | Naam, kleuren en iconen voor "zet op beginscherm".          |
 | `public/sw.js`               | Service worker: cache en offlinescherm. Hoog `VERSIE` op.   |
 | `scripts/iconen.mjs`         | Alle icoonmaten uit één bron (`npm run iconen`).            |
@@ -774,9 +836,11 @@ Node's eigen testrunner over de pure functies: zoeken, hoeveelheden lezen en
 schrijven, porties omrekenen, boodschappen samenvoegen en indelen, weken en
 categorieën, het inlogkoekje, duplicaatherkenning, de weekmenu-voorstellen en
 het rekenen met kalenderdagen.
-Geen framework, geen bouwstap — `tests/resolve-alias.mjs` vertaalt `@/lib/x`
+Geen framework, geen bouwstap — `scripts/resolve-alias.mjs` vertaalt `@/lib/x`
 naar `src/lib/x` en plakt de ontbrekende `.ts` erachter, en Node 22 streept de
-types zelf af.
+types zelf af. Die hook staat in `scripts/` en niet in `tests/`, want
+`npm run export` gebruikt hem ook: dat commando haalt de markdown-opmaak
+rechtstreeks uit de bron.
 
 De keuze wat er wél in staat: alles wat een oordeel velt over Nederlandse taal
 of over geld. Daar zaten alle bugs die ik met de hand vond, en daar vond deze
@@ -802,3 +866,4 @@ optuigen die groter is dan de app zelf.
 | `npm run iconen`    | App-iconen opnieuw tekenen               |
 | `npm test`          | De testsuite over de pure functies       |
 | `npm run demo`      | Proefopstelling met eigen data, om rond te klikken |
+| `npm run export`    | Alle recepten als markdown naar `export/`          |

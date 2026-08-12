@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CookMode } from "@/components/CookMode";
 import { prisma } from "@/lib/db";
+import { huishouden } from "@/lib/settings";
 import { parseServings, scaleRecipe } from "@/lib/recipe/scale";
 import { recipeSchema } from "@/lib/recipe/schema";
 
@@ -36,7 +37,10 @@ export default async function CookPage({
   // Het aantal personen is op de receptpagina gekozen en reist mee in de URL.
   // Hier omrekenen in plaats van in de client: dan hoeft CookMode niets van
   // schalen te weten en tonen de stappen meteen de juiste hoeveelheden.
-  const servings = parseServings(query.porties, base.servings);
+  // Dezelfde terugval als daar, want deze pagina is ook los te openen — vanuit
+  // een bladwijzer of het beginscherm — en dan mag het aantal niet ineens
+  // anders zijn dan wat je op het recept zag staan.
+  const servings = parseServings(query.porties, base.servings, await huishouden());
   const recipe = servings === null ? base : scaleRecipe(base, servings);
 
   return (

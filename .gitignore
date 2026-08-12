@@ -27,3 +27,6 @@ backups/
 demo.db
 demo.db-journal
 demo-uploads/
+
+# Losse markdown-export van `npm run export`. Hoort bij je data, niet bij de code.
+export/
