@@ -307,6 +307,77 @@ h3 {
 
 /* --- Paginakop ----------------------------------------------------------- */
 
+/* Het streepje waar de kop ophoudt. Eén pixel, en die pixel wordt met een
+   negatieve marge weer teruggegeven, zodat er niets verschuift. */
+.kop-grens {
+  height: 1px;
+  margin-bottom: -1px;
+}
+
+/* De smalle balk die inschuift zodra de echte titel weg is. Zie Vastkop.tsx.
+   Vast en niet plakkend: hij hoort bij het scherm, niet bij de tekst, en zo
+   raakt hij ook niet klem in een container met een eigen context.
+
+   Hetzelfde vlak en dezelfde haarlijn als de tabbalk onderaan, alleen
+   gespiegeld: samen zetten ze de pagina tussen twee randen. Geen matglas met
+   de tekst er halfzichtbaar doorheen — dat leest als een fout, en het hoort
+   ook niet bij een huisstijl van haarlijnen. */
+.vastkop {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 15;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding-top: env(safe-area-inset-top);
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+  /* Er valt niets aan te tikken, en een onzichtbare balk mag nooit een tik
+     opeten die voor de pagina eronder bedoeld was. */
+  pointer-events: none;
+}
+
+.vastkop.op {
+  transform: none;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vastkop {
+    transition: none;
+  }
+}
+
+.vastkop-in {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0.7rem var(--gutter);
+}
+
+.vastkop-titel {
+  font-family: var(--font-display);
+  font-weight: 560;
+  font-size: 1.05rem;
+  letter-spacing: -0.011em;
+  color: var(--ink);
+  /* Eén regel. Een titel die hier over twee regels valt maakt de balk zo hoog
+     dat hij het probleem wordt in plaats van de oplossing. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vastkop-meta {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .page-head {
   margin-bottom: 1.5rem;
 }
@@ -1349,12 +1420,34 @@ form.stack {
   background: var(--bg);
 }
 
+/* De stapbalk plakt bovenaan zolang je scrolt. Bij een stap die langer is dan
+   het scherm — ingrediënten, tekst, timer en een tip — zie je halverwege
+   anders niet meer de hoeveelste van hoeveel dit is.
+
+   De negatieve marges trekken het vlak door tot in de veilige zone en tot aan
+   de schermranden, en de padding zet die ruimte er als eigen vulling weer bij.
+   Zonder dat schuift er een strook tekst naast en boven de balk langs. */
+.cook-top {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: calc(-1 * max(0.75rem, env(safe-area-inset-top)))
+    calc(-1 * var(--gutter)) 1rem;
+  padding: max(0.75rem, env(safe-area-inset-top)) var(--gutter) 0.5rem;
+  background: var(--bg);
+}
+
 .cook-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   font-size: 0.82rem;
+}
+
+.cook-exit,
+.cook-count {
+  flex: 0 0 auto;
 }
 
 .cook-exit {
@@ -1372,10 +1465,39 @@ form.stack {
   font-variant-numeric: tabular-nums;
 }
 
+/* De staptitel in de balk. Hij staat er altijd en wordt alleen zichtbaar
+   gemaakt: zo houdt hij zijn ruimte bezet en verspringt er niets op het moment
+   dat hij verschijnt. Die ruimte zat er toch al — het was de lege middenberm
+   tussen Stoppen en de teller. */
+.cook-bar-titel {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 560;
+  letter-spacing: -0.011em;
+  color: var(--ink);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.cook-bar-titel.op {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cook-bar-titel {
+    transition: none;
+  }
+}
+
 .cook-progress {
   display: flex;
   gap: 3px;
-  margin: 0.5rem 0 1.5rem;
+  margin: 0.5rem 0 0;
 }
 
 .cook-progress span {

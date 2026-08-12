@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
+import { useVoorbijGescrold } from "@/components/Vastkop";
 import { icons } from "@/lib/icons";
 import { formatAmount, formatClock } from "@/lib/recipe/format";
 import { ingredientsForStep, type Recipe } from "@/lib/recipe/schema";
@@ -30,6 +31,7 @@ export function CookMode({
   const [timers, setTimers] = useState<Record<number, TimerState>>({});
   const [now, setNow] = useState(() => Date.now());
   const [showAll, setShowAll] = useState(false);
+  const [titelGrens, voorbijTitel] = useVoorbijGescrold();
 
   const scaled = baseServings !== null && recipe.servings !== baseServings;
   const step = recipe.steps[current];
@@ -38,6 +40,18 @@ export function CookMode({
 
   useKeepScreenAwake();
   const alarm = useAlarm();
+
+  // Een nieuwe stap begin je bovenaan. Zonder dit blijft de pagina staan waar
+  // je hem liet en land je middenin de tekst van de volgende stap — merkbaar
+  // sinds een stap met ingrediënten en een tip langer is dan het scherm.
+  const eersteRender = useRef(true);
+  useEffect(() => {
+    if (eersteRender.current) {
+      eersteRender.current = false;
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [current]);
 
   // Eén tik per seconde voor alle lopende timers samen.
   const hasRunning = Object.values(timers).some((t) => t.endsAt !== null);
@@ -111,6 +125,9 @@ export function CookMode({
     );
   }
 
+  // Alleen zin als er een titel ís; een lege balk hoeft geen ruimte te maken.
+  const toonTitel = voorbijTitel && Boolean(step.title);
+
   const timer = timers[current];
   const remainingSeconds =
     timer?.endsAt !== null && timer?.endsAt !== undefined
@@ -125,21 +142,34 @@ export function CookMode({
 
   return (
     <div className="cook">
-      <header className="cook-bar">
-        <Link href={backHref} className="cook-exit">
-          <Icon icon={icons.close} size={16} />
-          Stoppen
-        </Link>
-        <span className="cook-count">
-          Stap {current + 1} van {recipe.steps.length}
-          {recipe.servings !== null && ` · ${recipe.servings} pers.`}
-        </span>
-      </header>
+      {/* Blijft bovenaan staan zolang je scrolt: bij een lange stap zie je
+          anders halverwege niet meer de hoeveelste van hoeveel dit is. De
+          staptitel schuift erbij zodra de echte kop het beeld uit is; hij zit
+          in de lege ruimte die in deze regel toch al zat, dus er verspringt
+          niets als hij verschijnt. */}
+      <div className="cook-top">
+        <header className="cook-bar">
+          <Link href={backHref} className="cook-exit">
+            <Icon icon={icons.close} size={16} />
+            Stoppen
+          </Link>
+          <span className={`cook-bar-titel ${toonTitel ? "op" : ""}`} aria-hidden>
+            {step.title ?? ""}
+          </span>
+          <span className="cook-count">
+            Stap {current + 1} van {recipe.steps.length}
+            {/* Het aantal personen maakt plaats voor de staptitel. Je leest het
+                één keer bij het begin; welke stap dit is wil je de hele tijd
+                zien, en samen passen ze niet op één telefoonregel. */}
+            {recipe.servings !== null && !toonTitel && ` · ${recipe.servings} pers.`}
+          </span>
+        </header>
 
-      <div className="cook-progress" aria-hidden>
-        {recipe.steps.map((_, index) => (
-          <span key={index} className={index <= current ? "on" : ""} />
-        ))}
+        <div className="cook-progress" aria-hidden>
+          {recipe.steps.map((_, index) => (
+            <span key={index} className={index <= current ? "on" : ""} />
+          ))}
+        </div>
       </div>
 
       {elsewhere.length > 0 && (
@@ -170,6 +200,7 @@ export function CookMode({
         )}
 
         {step.title && <h1>{step.title}</h1>}
+        <div ref={titelGrens} className="kop-grens" aria-hidden />
 
         {stepIngredients.length > 0 && (
           <section className="cook-ingredients">

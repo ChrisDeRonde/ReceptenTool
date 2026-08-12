@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
+import { Vastkop } from "@/components/Vastkop";
 import { icons } from "@/lib/icons";
 import {
   HUISHOUDEN_MAX,
@@ -60,6 +61,7 @@ export default async function InstellingenPagina() {
         <h1>Instellingen</h1>
         <p>Voorkeuren staan in de database, geheimen in een bestand.</p>
       </div>
+      <Vastkop titel="Instellingen" />
 
       <form action={saveSettings} className="editor">
         <section>

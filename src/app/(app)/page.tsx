@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Stars } from "@/components/CookLog";
 import { Icon } from "@/components/Icon";
 import { SearchBox } from "@/components/SearchBox";
+import { Vastkop } from "@/components/Vastkop";
 import { prisma } from "@/lib/db";
 import { icons } from "@/lib/icons";
 import {
@@ -97,6 +98,7 @@ export default async function HomePage({
         <h1>Recepten</h1>
         <p>{summary(scored.length, terms.length, filtering)}</p>
       </div>
+      <Vastkop titel="Recepten" />
 
       <SearchBox initial={rawQuery} />
 

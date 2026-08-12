@@ -234,6 +234,26 @@ voor iconen in de bundel. Welke icoon waarvoor dient staat in `src/lib/icons.ts`
 Alle kleuren en maten zijn variabelen bovenin `src/app/globals.css`, in een
 lichte en een donkere set.
 
+Zodra de titel van een pagina het beeld uit is schuift er bovenaan een smalle
+balk in met diezelfde titel — hetzelfde vlak en dezelfde haarlijn als de
+tabbalk onderaan, alleen gespiegeld. Dat is `src/components/Vastkop.tsx`: een
+streepje van één pixel op de plek waar de kop ophoudt, een
+IntersectionObserver erop, en een balk die zich daarnaar richt. Geen
+scroll-luisteraar, want die vuurt bij elke pixel en dwingt de browser tot
+rekenen op precies het moment dat hij aan het schuiven is. Zonder JavaScript
+blijft de balk buiten beeld en werkt de pagina als altijd.
+
+De echte kop zelf plakken zou simpeler zijn, maar die is twee regels hoog en
+houdt dan een tiende van het scherm bezet terwijl je een ingrediëntenlijst
+leest. De balk is één regel en er alleen als je hem nodig hebt.
+
+In de kookmodus plakt de stapbalk (`.cook-top`) er altijd: bij een stap die
+langer is dan het scherm zie je halverwege anders niet meer de hoeveelste van
+hoeveel dit is. De staptitel schuift daar in de balk mee zodra de echte kop weg
+is, in de lege ruimte die tussen *Stoppen* en de teller toch al zat — het
+aantal personen maakt daarvoor plaats, want samen passen ze niet op één
+telefoonregel. Zo verspringt er niets op het moment dat de titel verschijnt.
+
 ## Dubbel herkennen
 
 Twee mensen die door dezelfde tijdlijn scrollen delen vroeg of laat hetzelfde
@@ -617,6 +637,7 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/people.ts`          | Wie er zijn en welke kleur bij wie hoort.                   |
 | `src/lib/tijd.ts`            | "3 dagen geleden" en "vandaag 21:03", in kalenderdagen.     |
 | `src/components/Avatar.tsx`  | Een naam als rondje met initiaal.                           |
+| `src/components/Vastkop.tsx` | De titelbalk die inschuift zodra je gescrold hebt.          |
 | `src/app/manifest.ts`        | Naam, kleuren en iconen voor "zet op beginscherm".          |
 | `public/sw.js`               | Service worker: cache en offlinescherm. Hoog `VERSIE` op.   |
 | `scripts/iconen.mjs`         | Alle icoonmaten uit één bron (`npm run iconen`).            |

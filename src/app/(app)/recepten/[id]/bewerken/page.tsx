@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icon";
+import { Vastkop } from "@/components/Vastkop";
 import { RecipeEditor } from "@/components/RecipeEditor";
 import { prisma } from "@/lib/db";
 import { icons } from "@/lib/icons";
@@ -45,6 +46,7 @@ export default async function EditRecipePage({
           twee keer koken weet jij het beter.
         </p>
       </div>
+      <Vastkop titel="Bewerken" meta={parsed.data.title} />
 
       <RecipeEditor id={id} recipe={parsed.data} />
     </main>

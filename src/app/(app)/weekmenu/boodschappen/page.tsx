@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CopyList } from "@/components/CopyList";
 import { Icon } from "@/components/Icon";
+import { Vastkop } from "@/components/Vastkop";
 import { icons } from "@/lib/icons";
 import { asText, weekShoppingList } from "@/lib/menu/list";
 import { fromParam, startOfWeek, toParam, weekLabel } from "@/lib/menu/week";
@@ -39,6 +40,7 @@ export default async function WeekShoppingPage({
           {list.count === 1 ? "product" : "producten"}
         </p>
       </div>
+      <Vastkop titel="Boodschappen" meta={weekLabel(monday)} />
 
       {list.count === 0 ? (
         <div className="empty">

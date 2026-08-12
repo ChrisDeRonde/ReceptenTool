@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { Stars } from "@/components/CookLog";
 import { Icon } from "@/components/Icon";
+import { Vastkop } from "@/components/Vastkop";
 import { prisma } from "@/lib/db";
 import { icons } from "@/lib/icons";
 import { people } from "@/lib/settings";
@@ -91,6 +92,7 @@ export default async function ProfielPagina() {
           </p>
         </div>
       </div>
+      <Vastkop titel={wie} />
 
       <div className="facts">
         <div className="fact">

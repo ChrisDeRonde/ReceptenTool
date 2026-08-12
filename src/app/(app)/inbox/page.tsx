@@ -15,6 +15,7 @@ import {
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
 import { PhotoForm } from "@/components/PhotoForm";
+import { Vastkop } from "@/components/Vastkop";
 import { prisma } from "@/lib/db";
 import { currentPerson } from "@/lib/who";
 import { people } from "@/lib/settings";
@@ -49,6 +50,7 @@ export default async function InboxPage() {
         <h1>Inbox</h1>
         <p>Alles wat je deelt komt hier binnen — ook als het misgaat.</p>
       </div>
+      <Vastkop titel="Inbox" />
 
       <section>
         <h2 className="section" style={{ marginTop: 0 }}>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { addToMenu, clearWeek, removeFromMenu, setMenuServings } from "@/app/actions";
 import { Icon } from "@/components/Icon";
+import { Vastkop } from "@/components/Vastkop";
 import { prisma } from "@/lib/db";
 import { icons } from "@/lib/icons";
 import {
@@ -75,6 +76,7 @@ export default async function WeekMenuPage({
             : `${entries.length} ${entries.length === 1 ? "gerecht" : "gerechten"} gepland`}
         </p>
       </div>
+      <Vastkop titel="Weekmenu" meta={weekLabel(monday)} />
 
       <div className="weeknav">
         <Link href={keep(previous)} aria-label="Vorige week">

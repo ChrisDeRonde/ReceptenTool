@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { addToMenu } from "@/app/actions";
 import { Icon } from "@/components/Icon";
+import { Vastkop } from "@/components/Vastkop";
 import { prisma } from "@/lib/db";
 import { icons } from "@/lib/icons";
 import { dayLabel, fromParam, startOfWeek, toParam } from "@/lib/menu/week";
@@ -35,6 +36,7 @@ export default async function PickPage({
         <h1>{dayLabel(day)}</h1>
         <p>Kies wat je die dag maakt.</p>
       </div>
+      <Vastkop titel={dayLabel(day)} meta="Kies een gerecht" />
 
       {recipes.length === 0 ? (
         <div className="empty">

@@ -5,6 +5,7 @@ import { Avatar } from "@/components/Avatar";
 import { CategoryEditor } from "@/components/CategoryEditor";
 import { CookLog } from "@/components/CookLog";
 import { Icon } from "@/components/Icon";
+import { Vastkop } from "@/components/Vastkop";
 import { prisma } from "@/lib/db";
 import { currentPerson } from "@/lib/who";
 import { icons } from "@/lib/icons";
@@ -82,6 +83,10 @@ export default async function RecipePage({
         )}
         <h1>{recipe.title}</h1>
         {recipe.description && <p className="lede">{recipe.description}</p>}
+        {/* Hier het hardst nodig: een receptpagina is lang, en halverwege de
+            ingrediënten weet je niet meer welk gerecht je aan het lezen bent
+            als je net uit de zoekresultaten kwam. */}
+        <Vastkop titel={recipe.title} meta={row.cuisine ?? undefined} />
 
         {(mealTypes.length > 0 || row.cuisine) && (
           <div className="pills">
