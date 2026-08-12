@@ -254,6 +254,63 @@ is, in de lege ruimte die tussen *Stoppen* en de teller toch al zat — het
 aantal personen maakt daarvoor plaats, want samen passen ze niet op één
 telefoonregel. Zo verspringt er niets op het moment dat de titel verschijnt.
 
+## Beweging
+
+Drie snelheden, bovenin `globals.css`: `--tik` (90 ms) is het antwoord op je
+vinger en moet onder de tiende seconde blijven, `--vlot` (180 ms) voor iets dat
+verschijnt of verdwijnt, `--traag` (380 ms) voor iets dat zich verplaatst. Alles
+loopt uit en niets veert terug; dit is gereedschap.
+
+**Antwoord op een aanraking.** Knoppen krimpen 4% bij het indrukken, tegels en
+regels dempen in plaats daarvan — een raster van zes dat gaat wiebelen is erger
+dan geen feedback. iOS' eigen grijze flits staat uit, die komt te laat en valt
+over de onze heen.
+
+**Wachtschermen.** Elke pagina is `force-dynamic`, dus tussen je tik en de
+nieuwe pagina zit een reis naar de server. De `loading.tsx`-bestanden tekenen de
+vórm van wat er komt (`src/components/Skelet.tsx`), niet een tollend rondje: je
+ziet welke pagina er aankomt, en de echte inhoud landt op dezelfde plek. Het
+skelet komt uit de prefetch die Next doet zodra een link in beeld staat; is een
+link nooit voorgeladen, dan blijf je even op de oude pagina met alleen de
+indrukfeedback.
+
+**De foto die meereist.** De foto op de tegel en de foto bovenaan het recept
+dragen via `<ViewTransition>` dezelfde naam, dus de browser laat hem van de ene
+plek naar de andere groeien in plaats van de een te laten verdwijnen en de ander
+op te laten komen. Onderweg even onscherp, want een vlak dat van 4:3 naar 3:2
+rekt laat anders zien dat het uitrekt. Zonder ondersteuning gebeurt er niets.
+
+> **Let op als je hieraan sleutelt.** Dit meegroeien en een `loading.tsx` sluiten
+> elkaar uit. Valt de bestemming eerst in een wachtscherm, dan ziet React geen
+> paar meer en vervalt de overgang — gemeten: mét een `loading.tsx` in de keten
+> wordt `startViewTransition` nul keer aangeroepen, zonder één keer. Daarom
+> staat het wachtscherm van het overzicht in de routegroep
+> `(app)/(overzicht)/`: zo hangt het niet over `/recepten/[id]` heen. En daarom
+> heeft de receptpagina er als enige géén. Die is één query, dus de wachttijd is
+> kort, en zijn tegels zijn vrijwel altijd voorgeladen.
+
+**Richting in de kookmodus.** Vooruit schuift de stap van rechts binnen, terug
+van links. De `key` op `.cook-step` dwingt een nieuwe knoop af zodat de animatie
+opnieuw begint; daardoor wordt ook het streepje van de plakbalk vervangen, en om
+die reden is de ref in `Vastkop.tsx` een functie — een gewone ref met een effect
+dat één keer draait zou daarna naar een losgekoppelde knoop blijven kijken.
+
+**Kleine dingen.** De ster voor favoriet vult zich meteen bij het tikken in
+plaats van na het antwoord van de server: `useFormStatus` weet dat het formulier
+onderweg is, en het formulier blijft een gewoon formulier met een server action,
+dus zonder JavaScript werkt het nog steeds. Verder komt de inhoud van een
+uitklapper omhoog, en springt het vinkje bij *Gekopieerd* even op — het enige
+sprongetje in de app, en ook het enige moment waarop een knop iets áf heeft in
+plaats van iets in gang zet.
+
+Wat er bewust niet in zit: tegels die één voor één inzweven, scroll-onthullingen
+en parallax. Dat vertraagt gereedschap dat je met natte handen bedient.
+
+Eén schakelaar zet alles uit, onderaan `globals.css`: `prefers-reduced-motion`
+knijpt elke duur dicht, inclusief de pagina-overgangen, die buiten de gewone
+boom vallen. Niet op nul maar op een honderdste milliseconde, want een animatie
+die nooit afloopt vuurt ook geen `animationend` af.
+
 ## Dubbel herkennen
 
 Twee mensen die door dezelfde tijdlijn scrollen delen vroeg of laat hetzelfde
@@ -668,6 +725,8 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/tijd.ts`            | "3 dagen geleden" en "vandaag 21:03", in kalenderdagen.     |
 | `src/components/Avatar.tsx`  | Een naam als rondje met initiaal.                           |
 | `src/components/Vastkop.tsx` | De titelbalk die inschuift zodra je gescrold hebt.          |
+| `src/components/Skelet.tsx`  | De vorm van een pagina die nog moet komen; zie `loading.tsx`. |
+| `src/components/FavorietKnop.tsx` | De ster die alvast vult terwijl de server nog bezig is. |
 | `src/app/manifest.ts`        | Naam, kleuren en iconen voor "zet op beginscherm".          |
 | `public/sw.js`               | Service worker: cache en offlinescherm. Hoog `VERSIE` op.   |
 | `scripts/iconen.mjs`         | Alle icoonmaten uit één bron (`npm run iconen`).            |

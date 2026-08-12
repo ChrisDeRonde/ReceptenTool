@@ -48,7 +48,7 @@ export function CopyList({ plain, pretty }: { plain: string; pretty: string }) {
   return (
     <div className="copy-list">
       <div className="row">
-        <button type="button" onClick={copy}>
+        <button type="button" onClick={copy} className={copied ? "gelukt" : ""}>
           <Icon icon={copied ? icons.done : icons.copy} size={17} />
           {copied ? "Gekopieerd" : "Kopieer lijst"}
         </button>

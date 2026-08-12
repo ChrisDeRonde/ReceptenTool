@@ -85,6 +85,18 @@
   --r-lg: 16px;
   --shadow: 0 1px 2px rgb(51 48 43 / 5%);
 
+  /* Drie snelheden, meer niet.
+     --tik is de reactie op je vinger en moet ónder de honderd milliseconden
+     blijven: daarboven voelt het als vertraging in plaats van als antwoord.
+     --vlot is voor iets dat verschijnt of verdwijnt, --traag voor iets dat
+     zich verplaatst — een vorm die reist mag langer doen dan een vlak dat
+     opkomt, anders schiet hij weg. */
+  --tik: 90ms;
+  --vlot: 180ms;
+  --traag: 380ms;
+  /* Uitlopend, nooit veerkrachtig. Dit is gereedschap, geen speelgoed. */
+  --soepel: cubic-bezier(0.22, 0.61, 0.36, 1);
+
   --maxw: 44rem;
   --gutter: 1.35rem;
   --dock: 3.9rem;
@@ -185,6 +197,209 @@ summary:focus-visible,
 .tile:focus-visible,
 .thumb:focus-visible {
   border-radius: var(--r-md);
+}
+
+/* --- Beweging ------------------------------------------------------------- */
+
+/* Antwoord geven op een aanraking.
+   Elke pagina wordt op de server gemaakt, dus tussen jouw tik en de nieuwe
+   pagina zit een reis over de wifi. Zonder deze regels gebeurt er in die tijd
+   niets op het scherm en tik je in de keuken nog een keer. */
+
+/* Eerst iOS zijn eigen grijze flits afnemen; die valt anders óver het onze
+   heen en komt te laat. */
+a,
+button,
+summary,
+label,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+.button,
+.chip,
+.tag,
+.check span,
+.add-day,
+.who-pick button,
+.star-pick label,
+button.round,
+.stepper a {
+  transition:
+    transform var(--tik) var(--soepel),
+    background-color var(--vlot) var(--soepel),
+    border-color var(--vlot) var(--soepel),
+    color var(--vlot) var(--soepel);
+}
+
+/* Indrukken: krimpen. Niet veel — je moet het voelen, niet zien. */
+button:active,
+.button:active,
+.chip:active,
+.tag:active,
+.check:active span,
+.add-day:active,
+.who-pick button:active,
+button.round:active {
+  transform: scale(0.96);
+}
+
+/* Tegels en regels krimpen niet: in een raster van zes gaat dat wiebelen.
+   Die dempen alleen even, wat rustiger leest en net zo duidelijk is. */
+.tile,
+.mijn-lijst a,
+.meal-title,
+.voorstel-titel,
+.back,
+.dock a {
+  transition: opacity var(--tik) var(--soepel);
+}
+
+.tile:active,
+.mijn-lijst a:active,
+.meal-title:active,
+.voorstel-titel:active,
+.back:active,
+.dock a:active {
+  opacity: 0.55;
+}
+
+/* Iets dat na een handeling verschijnt — "Gekopieerd", een melding — komt van
+   onderen op in plaats van er ineens te staan. */
+@keyframes opkomen {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* Een uitklapper geeft zijn inhoud dezelfde entree. Op het element zelf kan
+   het niet: de hoogte van een <details> is niet te animeren zonder trucs die
+   nog niet overal werken. Op wat erin staat wel, en dat is wat je ziet. */
+details[open] > *:not(summary) {
+  animation: opkomen var(--vlot) var(--soepel) both;
+}
+
+/* Een melding die na een handeling verschijnt komt op dezelfde manier op. */
+.form-error,
+.notice {
+  animation: opkomen var(--vlot) var(--soepel) both;
+}
+
+/* Gelukt: het vinkje springt even op de plek van het kopieericoontje.
+   Het enige moment in de app waar iets een sprongetje maakt — dit is ook het
+   enige moment waarop een knop iets af heeft in plaats van iets in gang zet. */
+@keyframes vinkje {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.12);
+  }
+}
+
+button.gelukt svg {
+  animation: vinkje var(--vlot) var(--soepel) both;
+}
+
+/* --- Van tegel naar recept ------------------------------------------------ */
+
+/* De foto op de tegel en de foto bovenaan het recept dragen dezelfde naam, dus
+   de browser weet dat het één ding is en laat hem van de ene plek naar de
+   andere groeien. Zie de `ViewTransition` in page.tsx op allebei de plekken. */
+::view-transition-group(.morph) {
+  animation-duration: var(--traag);
+  animation-timing-function: var(--soepel);
+}
+
+/* Onderweg even onscherp. Een vlak dat van 4:3 naar 3:2 rekt laat anders zien
+   dat het aan het uitrekken is; die halve seconde wazig dekt dat toe. */
+::view-transition-image-pair(.morph) {
+  animation-name: morph-waas;
+}
+
+@keyframes morph-waas {
+  35% {
+    filter: blur(3px);
+  }
+}
+
+/* De tabbalk staat vást op het scherm en is op beide pagina's hetzelfde. Laat
+   je hem meedoen, dan vervaagt hij over zichzelf heen — dat leest als
+   geflikker onderin beeld. Een eigen naam haalt hem uit de paginalaag; de
+   nulduur zorgt dat hij gewoon blijft staan. */
+.dock {
+  view-transition-name: tabbalk;
+}
+
+::view-transition-group(tabbalk) {
+  animation-duration: 0s;
+}
+
+/* --- Wachten -------------------------------------------------------------- */
+
+/* Het skelet dat je ziet terwijl de server de pagina maakt. Zie de
+   loading.tsx-bestanden: die tekenen de vórm van wat er komt, zodat de pagina
+   niet verspringt zodra hij er is.
+
+   Een puls en geen glinstering die overloopt: die laatste trekt de aandacht
+   naar zichzelf, en dit is een wachtkamer, geen attractie. */
+@keyframes ademen {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.skelet {
+  background: var(--sunken);
+  border-radius: var(--r-sm);
+  animation: ademen 1.4s ease-in-out infinite;
+}
+
+/* Vier op een rij lopen niet in de pas; dat oogt als een lijst en niet als
+   één blok dat knippert. */
+.skelet:nth-child(2n) {
+  animation-delay: 0.15s;
+}
+
+.skelet:nth-child(3n) {
+  animation-delay: 0.3s;
+}
+
+.skelet-kop {
+  height: 2.1rem;
+  width: 55%;
+  margin-bottom: 0.55rem;
+  border-radius: var(--r-sm);
+}
+
+.skelet-regel {
+  height: 0.85rem;
+  margin-bottom: 0.55rem;
+}
+
+.skelet-blok {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--r-md);
+}
+
+.skelet-hero {
+  aspect-ratio: 3 / 2;
+  border-radius: var(--r-md);
+  margin-bottom: 1.5rem;
+}
+
+.skelet-lijst {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.75rem;
+}
+
+/* Alleen voor het skelet; de pagina eronder is nog niet ingevuld. */
+.skelet-scherm {
+  animation: opkomen var(--vlot) var(--soepel) both;
 }
 
 /* Koppen in de schreefletter; die geeft het geheel zijn rust en gezicht.
@@ -340,12 +555,6 @@ h3 {
 .vastkop.op {
   transform: none;
   opacity: 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .vastkop {
-    transition: none;
-  }
 }
 
 .vastkop-in {
@@ -1488,12 +1697,6 @@ form.stack {
   opacity: 1;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .cook-bar-titel {
-    transition: none;
-  }
-}
-
 .cook-progress {
   display: flex;
   gap: 3px;
@@ -1528,8 +1731,36 @@ form.stack {
   color: var(--danger);
 }
 
+/* De stap schuift binnen van de kant waar hij vandaan komt: vooruit van
+   rechts, terug van links. Horizontaal en niet verticaal, want links en rechts
+   betekenen hier een plek in de volgorde — net als bladeren in een boek.
+
+   Alleen de nieuwe stap beweegt. De oude laten weglopen zou een tweede laag en
+   een timer kosten, en het levert niets op: je kijkt toch naar wat er komt. */
+@keyframes stap-vooruit {
+  from {
+    opacity: 0;
+    transform: translateX(22px);
+  }
+}
+
+@keyframes stap-terug {
+  from {
+    opacity: 0;
+    transform: translateX(-22px);
+  }
+}
+
 .cook-step {
   flex: 1;
+}
+
+.cook-step.schuif-vooruit {
+  animation: stap-vooruit var(--traag) var(--soepel) both;
+}
+
+.cook-step.schuif-terug {
+  animation: stap-terug var(--traag) var(--soepel) both;
 }
 
 .cook-step h1 {
@@ -1664,12 +1895,6 @@ button.round.primary {
 @keyframes breathe {
   50% {
     opacity: 0.75;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .timer.ringing {
-    animation: none;
   }
 }
 
@@ -2505,4 +2730,35 @@ button.gevaar {
 
 .stip.bad {
   background: var(--danger);
+}
+
+/* ==========================================================================
+   Minder beweging
+   --------------------------------------------------------------------------
+   Eén schakelaar in plaats van een uitzondering per animatie. Die laatste
+   vergeet je bij de volgende die je toevoegt, en dan blijft er precies één
+   ding bewegen voor iemand die heeft aangegeven daar last van te hebben.
+
+   Niet op nul maar op een honderdste milliseconde: een animatie die nooit
+   afloopt vuurt ook geen `animationend` af, en dan blijft code die daarop
+   wacht hangen.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* De overgangen tussen pagina's staan buiten de gewone boom en worden door
+     de sterretjes hierboven niet geraakt. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }

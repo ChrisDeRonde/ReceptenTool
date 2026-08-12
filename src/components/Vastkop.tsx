@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * De kop die blijft staan.
@@ -47,19 +47,25 @@ export function Vastkop({ titel, meta }: { titel: string; meta?: string }) {
  * Het streepje is één pixel hoog en niet nul: een element zonder oppervlak
  * haalt in sommige browsers nooit een verhouding boven nul en zou dus nooit
  * "in beeld" zijn.
+ *
+ * De ref is een functie en geen object. Dat lijkt omslachtig, maar het
+ * streepje in de kookmodus zit in een blok dat bij elke stap opnieuw wordt
+ * opgebouwd; met een gewone ref plus een effect dat één keer draait, zou de
+ * waarnemer daarna naar een losgekoppelde knoop blijven kijken en nooit meer
+ * iets melden. Een functie-ref wordt bij elke wisseling opnieuw geroepen.
  */
 export function useVoorbijGescrold(): [
-  React.RefObject<HTMLDivElement | null>,
+  (knoop: HTMLDivElement | null) => void,
   boolean,
 ] {
-  const grens = useRef<HTMLDivElement>(null);
   const [voorbij, setVoorbij] = useState(false);
+  const kijker = useRef<IntersectionObserver | null>(null);
 
-  useEffect(() => {
-    const element = grens.current;
-    if (!element) return;
+  const grens = useCallback((knoop: HTMLDivElement | null) => {
+    kijker.current?.disconnect();
+    if (!knoop) return;
 
-    const kijker = new IntersectionObserver(
+    kijker.current = new IntersectionObserver(
       ([item]) => {
         // Alleen naar bóven weggescrold telt. Zonder die tweede voorwaarde
         // staat de balk er ook als het streepje nog onder het beeld hangt —
@@ -68,10 +74,11 @@ export function useVoorbijGescrold(): [
       },
       { threshold: 0 },
     );
-
-    kijker.observe(element);
-    return () => kijker.disconnect();
+    kijker.current.observe(knoop);
   }, []);
+
+  // Bij het verlaten van de pagina blijft er anders een waarnemer hangen.
+  useEffect(() => () => kijker.current?.disconnect(), []);
 
   return [grens, voorbij];
 }

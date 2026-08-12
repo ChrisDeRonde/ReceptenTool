@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ViewTransition } from "react";
 import { Stars } from "@/components/CookLog";
 import { Icon } from "@/components/Icon";
 import { SearchBox } from "@/components/SearchBox";
@@ -213,25 +214,32 @@ function Grid({
 
         return (
           <Link key={recipe.id} href={`/recepten/${recipe.id}`} className="tile">
-            <div className={`thumb ${recipe.imageUrl ? "" : "blank"}`}>
-              {recipe.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={recipe.imageUrl} alt="" loading="lazy" />
-              ) : (
-                <Icon icon={icons.plate} size={34} strokeWidth={1.2} />
-              )}
-              {recipe.favorite && (
-                <span className="fav" title="Favoriet">
-                  <Icon icon={icons.favorite} size={14} />
-                </span>
-              )}
-              {recipe.totalMinutes && (
-                <span className="clock">
-                  <Icon icon={icons.clock} size={13} />
-                  {recipe.totalMinutes} min
-                </span>
-              )}
-            </div>
+            {/* Dezelfde naam als de foto bovenaan de receptpagina. De browser
+                herkent daaraan dat het één ding is en laat het vlak van hier
+                naar daar groeien, in plaats van het ene te laten verdwijnen en
+                het andere te laten opkomen. Zo zie je waar je vandaan kwam.
+                Zonder ondersteuning gebeurt er niets bijzonders. */}
+            <ViewTransition name={`foto-${recipe.id}`} share="morph" default="none">
+              <div className={`thumb ${recipe.imageUrl ? "" : "blank"}`}>
+                {recipe.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={recipe.imageUrl} alt="" loading="lazy" />
+                ) : (
+                  <Icon icon={icons.plate} size={34} strokeWidth={1.2} />
+                )}
+                {recipe.favorite && (
+                  <span className="fav" title="Favoriet">
+                    <Icon icon={icons.favorite} size={14} />
+                  </span>
+                )}
+                {recipe.totalMinutes && (
+                  <span className="clock">
+                    <Icon icon={icons.clock} size={13} />
+                    {recipe.totalMinutes} min
+                  </span>
+                )}
+              </div>
+            </ViewTransition>
             <div className="tile-body">
               <h2>{recipe.title}</h2>
 

@@ -32,6 +32,11 @@ export function CookMode({
   const [now, setNow] = useState(() => Date.now());
   const [showAll, setShowAll] = useState(false);
   const [titelGrens, voorbijTitel] = useVoorbijGescrold();
+  // Welke kant je op ging. Vooruit en terug zagen er precies hetzelfde uit:
+  // de inhoud verwisselde en verder niets. Nu schuift de nieuwe stap van de
+  // kant waar hij vandaan komt, en dat is het verschil tussen "er gebeurde
+  // iets" en "ik ben een stap verder".
+  const [richting, setRichting] = useState<"vooruit" | "terug">("vooruit");
 
   const scaled = baseServings !== null && recipe.servings !== baseServings;
   const step = recipe.steps[current];
@@ -128,6 +133,14 @@ export function CookMode({
   // Alleen zin als er een titel ís; een lege balk hoeft geen ruimte te maken.
   const toonTitel = voorbijTitel && Boolean(step.title);
 
+  /** Naar een andere stap, met de richting erbij zodat de schuif klopt. */
+  const naStap = (doel: number) => {
+    const begrensd = Math.max(0, Math.min(recipe.steps.length - 1, doel));
+    if (begrensd === current) return;
+    setRichting(begrensd > current ? "vooruit" : "terug");
+    setCurrent(begrensd);
+  };
+
   const timer = timers[current];
   const remainingSeconds =
     timer?.endsAt !== null && timer?.endsAt !== undefined
@@ -179,7 +192,7 @@ export function CookMode({
               key={entry.index}
               type="button"
               className={`chip ${entry.done ? "ringing" : ""}`}
-              onClick={() => setCurrent(entry.index)}
+              onClick={() => naStap(entry.index)}
             >
               Stap {entry.index + 1}:{" "}
               {entry.done
@@ -190,7 +203,10 @@ export function CookMode({
         </div>
       )}
 
-      <main className="cook-step">
+      {/* De sleutel dwingt een nieuwe knoop af, en daarmee begint de animatie
+          opnieuw. Zonder dat blijft het dezelfde knoop met andere tekst en
+          gebeurt er bij de tweede stap niets meer. */}
+      <main key={current} className={`cook-step schuif-${richting}`}>
         {scaled && current === 0 && (
           <p className="notice">
             Omgerekend van {baseServings} naar {recipe.servings} personen. De
@@ -272,7 +288,7 @@ export function CookMode({
           type="button"
           className="secondary"
           disabled={current === 0}
-          onClick={() => setCurrent((index) => Math.max(0, index - 1))}
+          onClick={() => naStap(current - 1)}
         >
           <Icon icon={icons.back} size={18} />
           Vorige
@@ -289,7 +305,7 @@ export function CookMode({
         ) : (
           <button
             type="button"
-            onClick={() => setCurrent((index) => Math.min(recipe.steps.length - 1, index + 1))}
+            onClick={() => naStap(current + 1)}
           >
             Volgende stap
             <Icon icon={icons.next} size={18} />

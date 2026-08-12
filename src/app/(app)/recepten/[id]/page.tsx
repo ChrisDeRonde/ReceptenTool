@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ViewTransition } from "react";
 import { deleteRecipe, toggleFavorite } from "@/app/actions";
 import { Avatar } from "@/components/Avatar";
 import { CategoryEditor } from "@/components/CategoryEditor";
 import { CookLog } from "@/components/CookLog";
+import { FavorietKnop } from "@/components/FavorietKnop";
 import { Icon } from "@/components/Icon";
 import { Vastkop } from "@/components/Vastkop";
 import { prisma } from "@/lib/db";
@@ -78,8 +80,11 @@ export default async function RecipePage({
 
       <article className="hero">
         {row.imageUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={row.imageUrl} alt="" />
+          // Dezelfde naam als op de tegel in het overzicht; zie daar waarom.
+          <ViewTransition name={`foto-${row.id}`} share="morph" default="none">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={row.imageUrl} alt="" />
+          </ViewTransition>
         )}
         <h1>{recipe.title}</h1>
         {recipe.description && <p className="lede">{recipe.description}</p>}
@@ -132,14 +137,7 @@ export default async function RecipePage({
           </Link>
           <form action={toggleFavorite}>
             <input type="hidden" name="id" value={row.id} />
-            <button
-              type="submit"
-              className={`icon secondary ${row.favorite ? "on" : ""}`}
-              aria-label={row.favorite ? "Uit favorieten halen" : "Favoriet maken"}
-              title={row.favorite ? "Uit favorieten halen" : "Favoriet maken"}
-            >
-              <Icon icon={icons.favorite} size={19} />
-            </button>
+            <FavorietKnop favoriet={row.favorite} />
           </form>
           {row.sourceUrl && (
             <a
