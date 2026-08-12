@@ -14,7 +14,8 @@
     "postinstall": "prisma generate",
     "db:backup": "node scripts/backup.mjs",
     "iconen": "node scripts/iconen.mjs",
-    "test": "node --import ./tests/alias.mjs --test tests/*.test.ts"
+    "test": "node --import ./tests/alias.mjs --test tests/*.test.ts",
+    "demo": "node scripts/demo.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",

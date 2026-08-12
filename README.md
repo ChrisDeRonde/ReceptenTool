@@ -438,6 +438,35 @@ weigert `/api/share` álle verzoeken.
 
 Zonder iOS kun je alles testen via **Inbox → Handmatig toevoegen**.
 
+## Even rondklikken
+
+```bash
+npm install
+npm run demo              # http://localhost:3100, wachtwoord: proefkonijn
+```
+
+Zet een proefopstelling klaar met zeven recepten, negen kooklogregels, een
+gevuld weekmenu en een inbox met een dubbele import erin, en start de app.
+Geen `.env` nodig en geen API-sleutel: het script zet zijn eigen omgeving.
+
+Alles gaat naar `demo.db` en `demo-uploads/`, allebei uit git gehouden. Je
+eigen `dev.db` wordt niet aangeraakt — het script geeft de database-URL
+expliciet aan Prisma mee in plaats van te hopen dat de omgeving klopt. Elke
+start begint met een schone lei, dus je kunt vrij rommelen; opnieuw beginnen is
+nog een keer `npm run demo`.
+
+Wat werkt: zoeken en filteren, porties omrekenen, de kookmodus met de wekker,
+het weekmenu inclusief huishoudgrootte, de boodschappenlijst, de kooklog, je
+profiel, de instellingen en de donkere stand (die volgt je systeeminstelling).
+Wat niet werkt: importeren — dat is het enige dat het model nodig heeft.
+
+De datums schuiven mee met de dag waarop je dit draait. De kooklogregels hangen
+aan vandaag, zodat "2 dagen geleden" ook echt twee dagen geleden is; het
+weekmenu hangt aan de maandag van deze week, want anders zou een start op
+zondag de helft in de week erna zetten en opende de app op een lege week.
+
+Zit poort 3100 al vol, dan kan het ergens anders: `PORT=3200 npm run demo`.
+
 ## Op slot
 
 De app vraagt om één gedeeld wachtwoord (`APP_PASSWORD`, minstens 8 tekens).
@@ -618,6 +647,7 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/menu/list.ts`       | Een week aan recepten optellen tot één boodschappenlijst.   |
 | `src/lib/menu/suggest.ts`    | Welke recepten het weekmenu voorstelt, en waarom.           |
 | `tests/`                     | `npm test`; alias-hook plus de tests zelf.                  |
+| `scripts/demo.mjs`           | Proefopstelling: eigen database, eigen foto's, `npm run demo`. |
 | `src/lib/shopping/units.ts`  | Hoeveelheden optellen en namen gelijktrekken.               |
 | `src/lib/shopping/aisles.ts` | Onder welk kopje een ingrediënt hoort.                      |
 | `src/components/PhotoForm.tsx` | Camera en bibliotheek, met miniaturen en een wachtstand.   |
@@ -712,3 +742,4 @@ optuigen die groter is dan de app zelf.
 | `npm run db:backup` | Database + foto's naar `backups/`        |
 | `npm run iconen`    | App-iconen opnieuw tekenen               |
 | `npm test`          | De testsuite over de pure functies       |
+| `npm run demo`      | Proefopstelling met eigen data, om rond te klikken |

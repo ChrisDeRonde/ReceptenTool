@@ -42,11 +42,17 @@ export function Icon({
     >
       {icon.map(([tag, attrs], index) => {
         const Tag = tag as keyof React.JSX.IntrinsicElements;
+        // De set zet per vorm een eigen `key` in de attributen. Die is als
+        // React-sleutel beter dan de index — hij hoort bij de vorm en niet bij
+        // de plek in de lijst — maar hij moet er wél uit vóór het spreiden:
+        // een key die uit een spread komt telt voor React niet, en als
+        // SVG-attribuut heeft hij niets te zoeken.
+        const { key, ...vorm } = attrs;
         return (
           <Tag
-            key={index}
-            {...attrs}
-            {...("strokeWidth" in attrs ? { strokeWidth } : {})}
+            key={typeof key === "string" ? key : index}
+            {...vorm}
+            {...("strokeWidth" in vorm ? { strokeWidth } : {})}
           />
         );
       })}

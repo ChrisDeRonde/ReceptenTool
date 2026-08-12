@@ -1,0 +1,1042 @@
+{
+  "recepten": [
+    {
+      "id": "r1",
+      "dagen": -3,
+      "title": "Shakshuka met feta",
+      "description": "Eieren gepocheerd in een pittige tomatensaus. Eén pan, en het staat er mooi op.",
+      "sourceUrl": "https://www.leukerecepten.nl/recepten/voorbeeld/",
+      "sourceName": "Leuke Recepten",
+      "foto": "aaaaaaaa-1111-2222-3333-444455556666.jpg",
+      "servings": 2,
+      "prepMinutes": 10,
+      "cookMinutes": 20,
+      "totalMinutes": 30,
+      "data": {
+        "title": "Shakshuka met feta",
+        "description": "Eieren gepocheerd in een pittige tomatensaus. Eén pan, en het staat er mooi op.",
+        "servings": 2,
+        "prepMinutes": 10,
+        "cookMinutes": 20,
+        "totalMinutes": 30,
+        "ingredientGroups": [
+          {
+            "name": null,
+            "items": [
+              {
+                "quantity": 2,
+                "unit": "el",
+                "name": "olijfolie",
+                "note": null
+              },
+              {
+                "quantity": 1,
+                "unit": null,
+                "name": "ui",
+                "note": "gesnipperd"
+              },
+              {
+                "quantity": 2,
+                "unit": null,
+                "name": "rode paprika",
+                "note": "in reepjes"
+              },
+              {
+                "quantity": 2,
+                "unit": "teentje",
+                "name": "knoflook",
+                "note": "fijngehakt"
+              },
+              {
+                "quantity": 1,
+                "unit": "tl",
+                "name": "komijnpoeder",
+                "note": null
+              },
+              {
+                "quantity": 0.5,
+                "unit": "tl",
+                "name": "gerookt paprikapoeder",
+                "note": null
+              },
+              {
+                "quantity": 400,
+                "unit": "g",
+                "name": "tomatenblokjes",
+                "note": null
+              },
+              {
+                "quantity": 4,
+                "unit": null,
+                "name": "eieren",
+                "note": null
+              },
+              {
+                "quantity": 100,
+                "unit": "g",
+                "name": "feta",
+                "note": "verkruimeld"
+              },
+              {
+                "quantity": null,
+                "unit": null,
+                "name": "peper en zout",
+                "note": null
+              }
+            ]
+          }
+        ],
+        "steps": [
+          {
+            "title": "Voorbereiden",
+            "text": "Verhit de olie in een ruime koekenpan en fruit de ui met de paprika tot ze zacht zijn.",
+            "ingredientRefs": [
+              0,
+              1,
+              2
+            ],
+            "timerMinutes": 8,
+            "tip": null
+          },
+          {
+            "title": null,
+            "text": "Voeg de knoflook en de specerijen toe en bak een minuut mee, tot het gaat geuren.",
+            "ingredientRefs": [
+              3,
+              4,
+              5
+            ],
+            "timerMinutes": 1,
+            "tip": "Niet langer: gemalen specerijen worden snel bitter."
+          },
+          {
+            "title": null,
+            "text": "Schenk de tomatenblokjes erbij, breng op smaak en laat inkoken tot een dikke saus.",
+            "ingredientRefs": [
+              6,
+              9
+            ],
+            "timerMinutes": 12,
+            "tip": null
+          },
+          {
+            "title": null,
+            "text": "Maak vier kuiltjes, breek daar de eieren in en leg het deksel erop. Laat garen tot het eiwit gestold is maar de dooier nog loopt.",
+            "ingredientRefs": [
+              7
+            ],
+            "timerMinutes": 7,
+            "tip": "Van het vuur af nagaren scheelt een halve minuut."
+          },
+          {
+            "title": null,
+            "text": "Verkruimel de feta erover en dien op met brood.",
+            "ingredientRefs": [
+              8
+            ],
+            "timerMinutes": null,
+            "tip": null
+          }
+        ],
+        "tips": [
+          "Lekker met een lepel yoghurt erdoor.",
+          "Blijft een dag goed; verwarm zonder de eieren."
+        ],
+        "tags": [
+          "eenpans",
+          "vegetarisch",
+          "snel"
+        ],
+        "mealTypes": [
+          "ontbijt",
+          "lunch",
+          "diner"
+        ],
+        "cuisine": "Midden-Oosters",
+        "sourceName": "Leuke Recepten",
+        "imageUrl": null,
+        "assumptions": []
+      },
+      "tags": "eenpans,vegetarisch,snel",
+      "mealTypes": "ontbijt,lunch,diner",
+      "cuisine": "Midden-Oosters",
+      "favorite": true
+    },
+    {
+      "id": "r2",
+      "dagen": -6,
+      "title": "Spaghetti bolognese",
+      "description": "De versie die twee uur pruttelt. Maak meteen het dubbele.",
+      "sourceUrl": "https://www.leukerecepten.nl/recepten/voorbeeld/",
+      "sourceName": "Allerhande",
+      "foto": "bbbbbbbb-1111-2222-3333-444455556666.jpg",
+      "servings": 4,
+      "prepMinutes": 20,
+      "cookMinutes": 120,
+      "totalMinutes": 140,
+      "data": {
+        "title": "Spaghetti bolognese",
+        "description": "De versie die twee uur pruttelt. Maak meteen het dubbele.",
+        "servings": 4,
+        "prepMinutes": 20,
+        "cookMinutes": 120,
+        "totalMinutes": 140,
+        "ingredientGroups": [
+          {
+            "name": null,
+            "items": [
+              {
+                "quantity": 500,
+                "unit": "g",
+                "name": "rundergehakt",
+                "note": null
+              },
+              {
+                "quantity": 1,
+                "unit": null,
+                "name": "ui",
+                "note": "gesnipperd"
+              },
+              {
+                "quantity": 2,
+                "unit": null,
+                "name": "wortel",
+                "note": "in blokjes"
+              },
+              {
+                "quantity": 2,
+                "unit": null,
+                "name": "bleekselderij",
+                "note": "in blokjes"
+              },
+              {
+                "quantity": 2,
+                "unit": "blik",
+                "name": "tomatenblokjes",
+                "note": null
+              },
+              {
+                "quantity": 200,
+                "unit": "ml",
+                "name": "rode wijn",
+                "note": null
+              },
+              {
+                "quantity": 400,
+                "unit": "g",
+                "name": "spaghetti",
+                "note": null
+              },
+              {
+                "quantity": 50,
+                "unit": "g",
+                "name": "Parmezaanse kaas",
+                "note": null
+              }
+            ]
+          }
+        ],
+        "steps": [
+          {
+            "title": null,
+            "text": "Bak het gehakt rul in een zware pan en schep het eruit.",
+            "ingredientRefs": [
+              0
+            ],
+            "timerMinutes": 10,
+            "tip": null
+          },
+          {
+            "title": null,
+            "text": "Fruit de ui, wortel en bleekselderij in hetzelfde vet tot alles zacht is.",
+            "ingredientRefs": [
+              1,
+              2,
+              3
+            ],
+            "timerMinutes": 12,
+            "tip": null
+          },
+          {
+            "title": null,
+            "text": "Blus af met de wijn, laat inkoken, voeg de tomaten en het gehakt toe en laat twee uur zachtjes pruttelen.",
+            "ingredientRefs": [
+              4,
+              5,
+              0
+            ],
+            "timerMinutes": 120,
+            "tip": "Deksel schuin erop; te strak en de saus wordt waterig."
+          },
+          {
+            "title": null,
+            "text": "Kook de spaghetti beetgaar en schep hem door de saus. Kaas erover.",
+            "ingredientRefs": [
+              6,
+              7
+            ],
+            "timerMinutes": 9,
+            "tip": null
+          }
+        ],
+        "tips": [
+          "Vriest goed in, in porties van twee."
+        ],
+        "tags": [
+          "pasta",
+          "meal prep"
+        ],
+        "mealTypes": [
+          "diner"
+        ],
+        "cuisine": "Italiaans",
+        "sourceName": "Allerhande",
+        "imageUrl": null,
+        "assumptions": []
+      },
+      "tags": "pasta,meal prep",
+      "mealTypes": "diner",
+      "cuisine": "Italiaans",
+      "favorite": false
+    },
+    {
+      "id": "r3",
+      "dagen": -10,
+      "title": "Pasta met truffelroomsaus",
+      "description": "Twintig minuten, en het smaakt naar meer moeite.",
+      "sourceUrl": "https://www.leukerecepten.nl/recepten/voorbeeld/",
+      "sourceName": "Leuke Recepten",
+      "foto": "cccccccc-1111-2222-3333-444455556666.jpg",
+      "servings": 2,
+      "prepMinutes": 5,
+      "cookMinutes": 15,
+      "totalMinutes": 20,
+      "data": {
+        "title": "Pasta met truffelroomsaus",
+        "description": "Twintig minuten, en het smaakt naar meer moeite.",
+        "servings": 2,
+        "prepMinutes": 5,
+        "cookMinutes": 15,
+        "totalMinutes": 20,
+        "ingredientGroups": [
+          {
+            "name": null,
+            "items": [
+              {
+                "quantity": 250,
+                "unit": "g",
+                "name": "tagliatelle",
+                "note": null
+              },
+              {
+                "quantity": 250,
+                "unit": "g",
+                "name": "kastanjechampignons",
+                "note": "in plakjes"
+              },
+              {
+                "quantity": 200,
+                "unit": "ml",
+                "name": "slagroom",
+                "note": null
+              },
+              {
+                "quantity": 2,
+                "unit": "el",
+                "name": "truffeltapenade",
+                "note": null
+              },
+              {
+                "quantity": 50,
+                "unit": "g",
+                "name": "Parmezaanse kaas",
+                "note": null
+              },
+              {
+                "quantity": 1,
+                "unit": "el",
+                "name": "bieslook",
+                "note": "fijngeknipt"
+              }
+            ]
+          }
+        ],
+        "steps": [
+          {
+            "title": null,
+            "text": "Bak de champignons in boter tot al het vocht verdampt is.",
+            "ingredientRefs": [
+              1
+            ],
+            "timerMinutes": 8,
+            "tip": "Niet te vroeg zouten, dan blijven ze vocht geven."
+          },
+          {
+            "title": null,
+            "text": "Room en tapenade erbij, laat een paar minuten indikken.",
+            "ingredientRefs": [
+              2,
+              3
+            ],
+            "timerMinutes": 4,
+            "tip": null
+          },
+          {
+            "title": null,
+            "text": "Kook de pasta beetgaar en schep hem door de saus. Kaas en bieslook erover.",
+            "ingredientRefs": [
+              0,
+              4,
+              5
+            ],
+            "timerMinutes": 8,
+            "tip": null
+          }
+        ],
+        "tips": [],
+        "tags": [
+          "pasta",
+          "snel"
+        ],
+        "mealTypes": [
+          "diner"
+        ],
+        "cuisine": "Italiaans",
+        "sourceName": "Leuke Recepten",
+        "imageUrl": null,
+        "assumptions": []
+      },
+      "tags": "pasta,snel",
+      "mealTypes": "diner",
+      "cuisine": "Italiaans",
+      "favorite": true
+    },
+    {
+      "id": "r4",
+      "dagen": -15,
+      "title": "Groene curry met kip",
+      "description": null,
+      "sourceUrl": "https://www.leukerecepten.nl/recepten/voorbeeld/",
+      "sourceName": "@pastagrannies",
+      "foto": "dddddddd-1111-2222-3333-444455556666.jpg",
+      "servings": 3,
+      "prepMinutes": 15,
+      "cookMinutes": 20,
+      "totalMinutes": 35,
+      "data": {
+        "title": "Groene curry met kip",
+        "description": null,
+        "servings": 3,
+        "prepMinutes": 15,
+        "cookMinutes": 20,
+        "totalMinutes": 35,
+        "ingredientGroups": [
+          {
+            "name": "Voor de curry",
+            "items": [
+              {
+                "quantity": 3,
+                "unit": "el",
+                "name": "groene currypasta",
+                "note": null
+              },
+              {
+                "quantity": 400,
+                "unit": "ml",
+                "name": "kokosmelk",
+                "note": null
+              },
+              {
+                "quantity": 400,
+                "unit": "g",
+                "name": "kipfilet",
+                "note": "in blokjes"
+              },
+              {
+                "quantity": 1,
+                "unit": null,
+                "name": "rode paprika",
+                "note": "in reepjes"
+              },
+              {
+                "quantity": 150,
+                "unit": "g",
+                "name": "sperziebonen",
+                "note": null
+              }
+            ]
+          },
+          {
+            "name": "Erbij",
+            "items": [
+              {
+                "quantity": 250,
+                "unit": "g",
+                "name": "jasmijnrijst",
+                "note": null
+              },
+              {
+                "quantity": 1,
+                "unit": "handje",
+                "name": "Thaise basilicum",
+                "note": null
+              }
+            ]
+          }
+        ],
+        "steps": [
+          {
+            "title": null,
+            "text": "Bak de currypasta kort aan tot hij geurt.",
+            "ingredientRefs": [
+              0
+            ],
+            "timerMinutes": 2,
+            "tip": null
+          },
+          {
+            "title": null,
+            "text": "Kokosmelk erbij, aan de kook brengen, kip erin en gaar laten worden.",
+            "ingredientRefs": [
+              1,
+              2
+            ],
+            "timerMinutes": 10,
+            "tip": null
+          },
+          {
+            "title": null,
+            "text": "Groenten toevoegen en nog even meekoken; ze mogen knapperig blijven.",
+            "ingredientRefs": [
+              3,
+              4
+            ],
+            "timerMinutes": 6,
+            "tip": null
+          },
+          {
+            "title": null,
+            "text": "Serveer met rijst en basilicum.",
+            "ingredientRefs": [
+              5,
+              6
+            ],
+            "timerMinutes": null,
+            "tip": null
+          }
+        ],
+        "tips": [
+          "Met tofu in plaats van kip werkt net zo goed."
+        ],
+        "tags": [
+          "curry",
+          "snel"
+        ],
+        "mealTypes": [
+          "diner"
+        ],
+        "cuisine": "Thais",
+        "sourceName": "@pastagrannies",
+        "imageUrl": null,
+        "assumptions": [
+          "Hoeveelheid rijst zelf ingevuld."
+        ]
+      },
+      "tags": "curry,snel",
+      "mealTypes": "diner",
+      "cuisine": "Thais",
+      "favorite": false
+    },
+    {
+      "id": "r5",
+      "dagen": -21,
+      "title": "Bananenbrood",
+      "description": "Voor de bananen die niemand meer wil.",
+      "sourceUrl": null,
+      "sourceName": null,
+      "foto": "eeeeeeee-1111-2222-3333-444455556666.jpg",
+      "servings": 8,
+      "prepMinutes": 15,
+      "cookMinutes": 55,
+      "totalMinutes": 70,
+      "data": {
+        "title": "Bananenbrood",
+        "description": "Voor de bananen die niemand meer wil.",
+        "servings": 8,
+        "prepMinutes": 15,
+        "cookMinutes": 55,
+        "totalMinutes": 70,
+        "ingredientGroups": [
+          {
+            "name": null,
+            "items": [
+              {
+                "quantity": 3,
+                "unit": null,
+                "name": "rijpe banaan",
+                "note": null
+              },
+              {
+                "quantity": 200,
+                "unit": "g",
+                "name": "bloem",
+                "note": null
+              },
+              {
+                "quantity": 100,
+                "unit": "g",
+                "name": "bruine suiker",
+                "note": null
+              },
+              {
+                "quantity": 100,
+                "unit": "g",
+                "name": "boter",
+                "note": "gesmolten"
+              },
+              {
+                "quantity": 2,
+                "unit": null,
+                "name": "eieren",
+                "note": null
+              },
+              {
+                "quantity": 1,
+                "unit": "tl",
+                "name": "bakpoeder",
+                "note": null
+              },
+              {
+                "quantity": 1,
+                "unit": "tl",
+                "name": "kaneel",
+                "note": null
+              },
+              {
+                "quantity": null,
+                "unit": "snufje",
+                "name": "zout",
+                "note": null
+              }
+            ]
+          }
+        ],
+        "steps": [
+          {
+            "title": "Voorbereiden",
+            "text": "Verwarm de oven voor op 175 graden en bekleed een cakevorm.",
+            "ingredientRefs": [],
+            "timerMinutes": null,
+            "tip": null
+          },
+          {
+            "title": null,
+            "text": "Prak de bananen, roer de boter, suiker en eieren erdoor.",
+            "ingredientRefs": [
+              0,
+              2,
+              3,
+              4
+            ],
+            "timerMinutes": 3,
+            "tip": null
+          },
+          {
+            "title": null,
+            "text": "Spatel de droge ingrediënten erdoor tot het net gemengd is.",
+            "ingredientRefs": [
+              1,
+              5,
+              6,
+              7
+            ],
+            "timerMinutes": null,
+            "tip": "Niet doorroeren; dan wordt het taai."
+          },
+          {
+            "title": null,
+            "text": "Bak in het midden van de oven tot een satéprikker er schoon uitkomt.",
+            "ingredientRefs": [],
+            "timerMinutes": 55,
+            "tip": null
+          }
+        ],
+        "tips": [
+          "Blijft vier dagen goed in folie.",
+          "Met een handvol walnoten erdoor."
+        ],
+        "tags": [
+          "bakken",
+          "zoet"
+        ],
+        "mealTypes": [
+          "ontbijt",
+          "tussendoor"
+        ],
+        "cuisine": null,
+        "sourceName": null,
+        "imageUrl": null,
+        "assumptions": []
+      },
+      "tags": "bakken,zoet",
+      "mealTypes": "ontbijt,tussendoor",
+      "cuisine": null,
+      "favorite": false
+    },
+    {
+      "id": "r6",
+      "dagen": -31,
+      "title": "Boerenkoolstamppot",
+      "description": null,
+      "sourceUrl": null,
+      "sourceName": null,
+      "foto": null,
+      "servings": 4,
+      "prepMinutes": 15,
+      "cookMinutes": 25,
+      "totalMinutes": 40,
+      "data": {
+        "title": "Boerenkoolstamppot",
+        "description": null,
+        "servings": 4,
+        "prepMinutes": 15,
+        "cookMinutes": 25,
+        "totalMinutes": 40,
+        "ingredientGroups": [
+          {
+            "name": null,
+            "items": [
+              {
+                "quantity": 1,
+                "unit": "kg",
+                "name": "kruimige aardappelen",
+                "note": null
+              },
+              {
+                "quantity": 500,
+                "unit": "g",
+                "name": "boerenkool",
+                "note": "gesneden"
+              },
+              {
+                "quantity": 4,
+                "unit": null,
+                "name": "rookworst",
+                "note": null
+              },
+              {
+                "quantity": 100,
+                "unit": "ml",
+                "name": "melk",
+                "note": null
+              },
+              {
+                "quantity": 50,
+                "unit": "g",
+                "name": "boter",
+                "note": null
+              }
+            ]
+          }
+        ],
+        "steps": [
+          {
+            "title": null,
+            "text": "Kook de aardappelen met de boerenkool in twintig minuten gaar.",
+            "ingredientRefs": [
+              0,
+              1
+            ],
+            "timerMinutes": 20,
+            "tip": null
+          },
+          {
+            "title": null,
+            "text": "Verwarm de rookworst mee boven de pan.",
+            "ingredientRefs": [
+              2
+            ],
+            "timerMinutes": 20,
+            "tip": null
+          },
+          {
+            "title": null,
+            "text": "Giet af, stamp met melk en boter, breng op smaak.",
+            "ingredientRefs": [
+              3,
+              4
+            ],
+            "timerMinutes": null,
+            "tip": null
+          }
+        ],
+        "tips": [],
+        "tags": [
+          "stamppot",
+          "winter"
+        ],
+        "mealTypes": [
+          "diner"
+        ],
+        "cuisine": "Nederlands",
+        "sourceName": null,
+        "imageUrl": null,
+        "assumptions": []
+      },
+      "tags": "stamppot,winter",
+      "mealTypes": "diner",
+      "cuisine": "Nederlands",
+      "favorite": false
+    },
+    {
+      "id": "r7",
+      "dagen": -41,
+      "title": "Gevulde paprika met gehakt",
+      "description": "Uit de oven, met rijst en kruiden.",
+      "sourceUrl": null,
+      "sourceName": null,
+      "foto": null,
+      "servings": 4,
+      "prepMinutes": 20,
+      "cookMinutes": 35,
+      "totalMinutes": 55,
+      "data": {
+        "title": "Gevulde paprika met gehakt",
+        "description": "Uit de oven, met rijst en kruiden.",
+        "servings": 4,
+        "prepMinutes": 20,
+        "cookMinutes": 35,
+        "totalMinutes": 55,
+        "ingredientGroups": [
+          {
+            "name": null,
+            "items": [
+              {
+                "quantity": 4,
+                "unit": null,
+                "name": "rode paprika",
+                "note": null
+              },
+              {
+                "quantity": 400,
+                "unit": "g",
+                "name": "rundergehakt",
+                "note": null
+              },
+              {
+                "quantity": 1,
+                "unit": null,
+                "name": "ui",
+                "note": "gesnipperd"
+              },
+              {
+                "quantity": 150,
+                "unit": "g",
+                "name": "rijst",
+                "note": null
+              },
+              {
+                "quantity": 200,
+                "unit": "g",
+                "name": "tomatenblokjes",
+                "note": null
+              },
+              {
+                "quantity": 1,
+                "unit": "tl",
+                "name": "oregano",
+                "note": null
+              }
+            ]
+          }
+        ],
+        "steps": [
+          {
+            "title": null,
+            "text": "Verwarm de oven op 200 graden. Snijd de kapjes van de paprika's.",
+            "ingredientRefs": [
+              0
+            ],
+            "timerMinutes": null,
+            "tip": null
+          },
+          {
+            "title": null,
+            "text": "Bak het gehakt met de ui rul.",
+            "ingredientRefs": [
+              1,
+              2
+            ],
+            "timerMinutes": 8,
+            "tip": null
+          },
+          {
+            "title": null,
+            "text": "Rijst, tomaat en oregano erdoor. Vul de paprika's en zet ze in de oven.",
+            "ingredientRefs": [
+              3,
+              4,
+              5
+            ],
+            "timerMinutes": 35,
+            "tip": null
+          }
+        ],
+        "tips": [],
+        "tags": [
+          "oven",
+          "gehakt"
+        ],
+        "mealTypes": [
+          "lunch",
+          "diner"
+        ],
+        "cuisine": "Spaans",
+        "sourceName": null,
+        "imageUrl": null,
+        "assumptions": []
+      },
+      "tags": "oven,gehakt",
+      "mealTypes": "lunch,diner",
+      "cuisine": "Spaans",
+      "favorite": false
+    }
+  ],
+  "logs": [
+    {
+      "recipeId": "r5",
+      "dagen": -48,
+      "rating": 4,
+      "note": null,
+      "again": null,
+      "who": "Chris"
+    },
+    {
+      "recipeId": "r1",
+      "dagen": -25,
+      "rating": 4,
+      "note": null,
+      "again": null,
+      "who": "Chris"
+    },
+    {
+      "recipeId": "r5",
+      "dagen": -21,
+      "rating": 4,
+      "note": null,
+      "again": true,
+      "who": "Sanne"
+    },
+    {
+      "recipeId": "r4",
+      "dagen": -15,
+      "rating": 3,
+      "note": "Volgende keer minder pasta",
+      "again": null,
+      "who": "Chris"
+    },
+    {
+      "recipeId": "r3",
+      "dagen": -10,
+      "rating": 5,
+      "note": null,
+      "again": true,
+      "who": "Chris"
+    },
+    {
+      "recipeId": "r3",
+      "dagen": -10,
+      "rating": 5,
+      "note": "Deze blijft",
+      "again": true,
+      "who": "Sanne"
+    },
+    {
+      "recipeId": "r2",
+      "dagen": -6,
+      "rating": 4,
+      "note": "Volgende keer meer wijn",
+      "again": true,
+      "who": "Sanne"
+    },
+    {
+      "recipeId": "r1",
+      "dagen": -3,
+      "rating": 5,
+      "note": null,
+      "again": true,
+      "who": "Chris"
+    },
+    {
+      "recipeId": "r1",
+      "dagen": -3,
+      "rating": 3,
+      "note": "Voor mij iets te pittig",
+      "again": true,
+      "who": "Sanne"
+    }
+  ],
+  "menu": [
+    {
+      "recipeId": "r1",
+      "weekdag": 0,
+      "servings": null
+    },
+    {
+      "recipeId": "r2",
+      "weekdag": 2,
+      "servings": 6
+    },
+    {
+      "recipeId": "r3",
+      "weekdag": 4,
+      "servings": null
+    },
+    {
+      "recipeId": "r6",
+      "weekdag": 6,
+      "servings": 4
+    }
+  ],
+  "items": [
+    {
+      "id": "i1",
+      "dagen": -3,
+      "status": "done",
+      "sourceType": "website",
+      "sourceUrl": "https://www.leukerecepten.nl/recepten/shakshuka/",
+      "sharedText": null,
+      "sharedBy": "Chris",
+      "error": null,
+      "strategy": "web-desktop+jsonld",
+      "duplicateOfId": null,
+      "recipeId": "r1"
+    },
+    {
+      "id": "i2",
+      "dagen": -1,
+      "status": "duplicate",
+      "sourceType": "website",
+      "sourceUrl": "https://www.leukerecepten.nl/recepten/pasta-truffel/",
+      "sharedText": null,
+      "sharedBy": "Sanne",
+      "error": "Er staat al een recept met deze titel.",
+      "strategy": "web-desktop+jsonld",
+      "duplicateOfId": "r3",
+      "recipeId": null
+    },
+    {
+      "id": "i3",
+      "dagen": -1,
+      "status": "needs_input",
+      "sourceType": "instagram",
+      "sourceUrl": "https://www.instagram.com/p/Cxyz123/",
+      "sharedText": null,
+      "sharedBy": "Chris",
+      "error": "Instagram gaf geen bijschrift terug — het account is mogelijk privé.",
+      "strategy": "instagram-embed",
+      "duplicateOfId": null,
+      "recipeId": null
+    }
+  ]
+}

@@ -22,3 +22,8 @@ uploads/
 
 # Back-ups van allebei. Die horen op een andere machine, niet in git.
 backups/
+
+# De proefopstelling van `npm run demo`. Wordt bij elke start opnieuw gemaakt.
+demo.db
+demo.db-journal
+demo-uploads/
