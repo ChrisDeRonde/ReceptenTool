@@ -8,6 +8,7 @@
 import {
   ArrowLeft02Icon,
   ArrowRight02Icon,
+  Calendar01Icon,
   Calendar03Icon,
   Camera01Icon,
   Cancel01Icon,
@@ -50,6 +51,9 @@ export const icons = {
   inbox: InboxIcon,
   basket: ShoppingBasket01Icon,
   menu: Calendar03Icon,
+  /** Wanneer iets was. Een andere tekening dan `menu`, anders leest een
+      datum als een link naar het weekmenu. Zie components/Moment.tsx. */
+  date: Calendar01Icon,
   copy: Copy01Icon,
   share: Share08Icon,
   clock: Clock01Icon,

@@ -1,6 +1,7 @@
 import { deleteCookLog, logCook } from "@/app/actions";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
+import { Moment } from "@/components/Moment";
 import { icons } from "@/lib/icons";
 import { toParam } from "@/lib/menu/week";
 import { dagenTussen, datumKort, geleden } from "@/lib/tijd";
@@ -81,7 +82,8 @@ export function CookLog({
                 <Stars value={Math.round(average)} /> {average.toFixed(1).replace(".", ",")}
               </>
             )}
-            {" · "}laatst {when(entries[0].cookedAt)}
+            {" · "}
+            <Moment>laatst {when(entries[0].cookedAt)}</Moment>
           </p>
 
           {perPerson.length > 1 && (
@@ -99,9 +101,9 @@ export function CookLog({
             {entries.map((entry) => (
               <li key={entry.id}>
                 <div className="cooklog-head">
-                  <span className="cooklog-date">
+                  <Moment className="cooklog-date">
                     {datumKort(entry.cookedAt, new Date())}
-                  </span>
+                  </Moment>
                   {entry.who && <Avatar name={entry.who} size={22} withName />}
                   {entry.rating !== null && <Stars value={entry.rating} />}
                   {entry.again === true && (

@@ -224,6 +224,31 @@ Elke kleurcombinatie die tekst draagt haalt minimaal 4,5:1 op zijn eigen
 ondergrond, in beide standen. Dat is geen keurmerk maar praktisch: dit is een
 app die je met een telefoon in de keuken leest, soms met de zon erop.
 
+### Klok of kalender
+
+Een datum midden in een zin lijkt geen datum meer. *"Sanne heeft dit recept
+intussen bijgewerkt, vandaag 13:52"* loopt in elkaar over: je leest één lange
+zin en moet zelf uitzoeken waar de mededeling ophoudt en het tijdstip begint.
+Daarom draagt elk moment een symbool, en is er één regel voor welk:
+
+- **Klok = hoe lang iets duurt.** "30 min" op een tegel, "8 min" bij een stap,
+  de timer in de kookmodus.
+- **Kalender = wanneer iets was.** "vandaag 13:52", "9 aug", "2 dagen geleden".
+
+Zonder dat onderscheid ziet "30 min" eruit als "3 dagen geleden", en dat zijn
+twee heel verschillende dingen om te weten. De kalender is een andere tekening
+dan die van de tabbalk, anders leest een datum als een link naar het weekmenu.
+
+Eén component (`src/components/Moment.tsx`) zodat het overal hetzelfde is: in
+de kooklog, in de inbox, onder aan een recept, bij de back-upregel en in de
+botsingsmelding. Het is gewone inline-tekst en geen flexregel — die neemt zijn
+basislijn van de onderkant van het vakje, en dan zakt alles wat erachter komt
+een paar pixels mee. Zichtbaar aan een dubbele punt die te laag hangt.
+
+Wat er bewust géén symbool krijgt: de dagkoppen in het weekmenu (dat zíjn de
+koppen) en de redenen bij de voorstellen, want die gaan niet allemaal over tijd
+— "wilden jullie vaker eten" met een kalendertje ervoor zou liegen.
+
 Iconen komen uit **Hugeicons**. Het pakket `@hugeicons/core-free-icons` levert
 ze als data (`[tag, attributen][]`); `src/components/Icon.tsx` tekent die zelf.
 Dat is bewust geen `@hugeicons/react`: die component gebruikt `forwardRef` en
@@ -829,6 +854,7 @@ op dezelfde endpoint worden aangesloten.
 | `src/components/Skelet.tsx`  | De vorm van een pagina die nog moet komen; zie `loading.tsx`. |
 | `src/components/FavorietKnop.tsx` | De ster die alvast vult terwijl de server nog bezig is. |
 | `src/components/Misgegaan.tsx` | Het scherm als er iets stukging; gedeeld door alle foutpagina's. |
+| `src/components/Moment.tsx`  | Wanneer iets was, met een kalendertje ervoor.               |
 | `src/lib/recipe/markdown.ts` | Een recept als leesbaar bestand. Pure functie, met tests. |
 | `src/lib/recipe/versie.ts`   | Merkt dat de ander hetzelfde recept ook heeft bijgewerkt.   |
 | `src/app/manifest.ts`        | Naam, kleuren en iconen voor "zet op beginscherm".          |

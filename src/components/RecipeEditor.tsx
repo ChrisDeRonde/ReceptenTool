@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { updateRecipe, type BewerkStand } from "@/app/actions";
 import { Icon } from "@/components/Icon";
+import { Moment } from "@/components/Moment";
 import { icons } from "@/lib/icons";
 import { formatAmount } from "@/lib/recipe/format";
 import { flattenIngredients, type Recipe } from "@/lib/recipe/schema";
@@ -417,12 +418,17 @@ export function RecipeEditor({
           <div className="botsing" role="alert">
             <p>
               <strong>{stand.wie}</strong>
-              {stand.wanneer && `, ${stand.wanneer}`}. Opslaan zou die versie
-              overschrijven.
+              {stand.wanneer && (
+                <>
+                  {" "}
+                  <Moment>{stand.wanneer}</Moment>
+                </>
+              )}
             </p>
             <p className="muted">
-              Wat jij hebt ingevuld staat er nog. Bekijk in een ander tabblad
-              wat er nu staat, of sla het alsnog op.
+              Opslaan zou die versie overschrijven. Wat jij hebt ingevuld staat
+              er nog; bekijk in een ander tabblad wat er nu staat, of sla het
+              alsnog op.
             </p>
             <div className="row">
               {/* Naam en waarde van een verzendknop gaan mee in het formulier;

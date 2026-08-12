@@ -7,10 +7,12 @@ import { CategoryEditor } from "@/components/CategoryEditor";
 import { CookLog } from "@/components/CookLog";
 import { FavorietKnop } from "@/components/FavorietKnop";
 import { Icon } from "@/components/Icon";
+import { Moment } from "@/components/Moment";
 import { Vastkop } from "@/components/Vastkop";
 import { prisma } from "@/lib/db";
 import { currentPerson } from "@/lib/who";
 import { huishouden } from "@/lib/settings";
+import { datumKort } from "@/lib/tijd";
 import { icons } from "@/lib/icons";
 import { MEAL_TYPE_LABELS, unpackMealTypes } from "@/lib/recipe/categories";
 import { formatAmount } from "@/lib/recipe/format";
@@ -313,17 +315,12 @@ export default async function RecipePage({
           <Icon icon={icons.edit} size={13} />
           {row.editedBy ? (
             <>
-              Bijgewerkt door <Avatar name={row.editedBy} size={18} withName /> op{" "}
+              Bijgewerkt door <Avatar name={row.editedBy} size={18} withName />
             </>
           ) : (
-            "Zelf bijgewerkt op "
+            "Zelf bijgewerkt"
           )}
-          {row.editedAt.toLocaleDateString("nl-NL", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })}
-          .
+          <Moment>{datumKort(row.editedAt, new Date())}</Moment>
         </p>
       )}
 

@@ -14,6 +14,7 @@ import {
 } from "@/lib/backup";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
+import { Moment } from "@/components/Moment";
 import { PhotoForm } from "@/components/PhotoForm";
 import { Vastkop } from "@/components/Vastkop";
 import { prisma } from "@/lib/db";
@@ -99,7 +100,7 @@ export default async function InboxPage() {
                 <span className={`status ${status.tone}`}>{status.label}</span>
                 <span className="deler">
                   {item.sharedBy && <Avatar name={item.sharedBy} size={20} />}
-                  {momentTekst(item.createdAt, new Date())}
+                  <Moment>{momentTekst(item.createdAt, new Date())}</Moment>
                 </span>
               </div>
 
@@ -232,16 +233,19 @@ async function WhoLine() {
   return (
     <p className="whoami">
       <Icon icon={icons.people} size={15} />
+      {/* De zin in één span: deze regel is een flexrij, en losse tekstdelen
+          worden daarin eigen kolommen met een gat ertussen — dan staat de punt
+          achter de naam los als "Chris ." */}
       {who ? (
-        <>
-          Je noteert als <Avatar name={who} size={20} withName />.{" "}
+        <span>
+          Je noteert als <Avatar name={who} size={20} withName /> —{" "}
           <Link href="/wie?verder=%2Finbox">Wisselen</Link>
-        </>
+        </span>
       ) : (
-        <>
+        <span>
           Nog geen naam gekozen.{" "}
           <Link href="/wie?verder=%2Finbox">Zeg wie je bent</Link>
-        </>
+        </span>
       )}
     </p>
   );
@@ -302,10 +306,12 @@ async function BackupLine() {
   return (
     <p className={`backup ${stale ? "none" : ""}`}>
       <Icon icon={stale ? icons.settings : icons.done} size={15} />
-      Laatste back-up {relative(days)}: {status.recipes}{" "}
-      {status.recipes === 1 ? "recept" : "recepten"} en {status.photos}{" "}
-      {status.photos === 1 ? "foto" : "foto's"}.
-      {stale && " Dat is langer geleden dan de bedoeling is."}
+      <span>
+        Laatste back-up <Moment>{relative(days)}</Moment>: {status.recipes}{" "}
+        {status.recipes === 1 ? "recept" : "recepten"} en {status.photos}{" "}
+        {status.photos === 1 ? "foto" : "foto's"}.
+        {stale && " Dat is langer geleden dan de bedoeling is."}
+      </span>
     </p>
   );
 }
