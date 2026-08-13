@@ -30,3 +30,9 @@ demo-uploads/
 
 # Losse markdown-export van `npm run export`. Hoort bij je data, niet bij de code.
 export/
+
+# De iOS-schil. `ios/` en `node_modules` van Capacitor worden gegenereerd; het
+# geheimenbestand hoort per definitie niet in git. Wat er wél in moet staat in
+# ios-schil/ en wordt daar met de hand ingeplakt.
+ios/
+ios-schil/Geheimen.swift

@@ -88,3 +88,15 @@ De opzet:
 
 De server hoeft hiervoor niet te veranderen — de extensie praat met dezelfde
 endpoint als de Shortcut.
+
+---
+
+## De code voor optie 2 staat klaar
+
+Sinds deze ronde staat in [`ios-schil/`](../ios-schil/) wat je in Xcode inplakt:
+een complete `ShareViewController.swift`, een sjabloon voor het token en de
+namen, en het fragment voor `Info.plist` dat bepaalt waar Klapper in het
+deelmenu verschijnt. De README daar loopt de Xcode-kant stap voor stap na.
+
+Die Swift is niet gecompileerd — er stond geen Mac naast. De logica klopt; reken
+op een paar rode streepjes bij de eerste build.

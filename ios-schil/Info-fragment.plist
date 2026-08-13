@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Geen compleet bestand: dit is het stuk dat in de Info.plist van het
+  extensie-target hoort, onder de sleutel NSExtension.
+
+  Twee dingen gebeuren hier.
+
+  1. NSExtensionPrincipalClass in plaats van NSExtensionMainStoryboard.
+     Xcode zet standaard een storyboard neer; onze controller bouwt zijn eigen
+     scherm, dus die sleutel moet weg en deze ervoor in de plaats. De naam is
+     met de modulenaam ervoor — heet je target anders dan "Klapper Delen", pas
+     dan het stuk vóór de punt aan (spaties worden underscores).
+
+  2. NSExtensionActivationRule beperkt waar Klapper in het deelmenu opduikt:
+     één link, of geselecteerde tekst. Zonder deze beperking staat hij ook
+     tussen je opties als je een foto of een pdf deelt, en daar kan de app
+     niets mee.
+-->
+<plist version="1.0">
+<dict>
+  <key>NSExtension</key>
+  <dict>
+    <key>NSExtensionPointIdentifier</key>
+    <string>com.apple.share-services</string>
+
+    <key>NSExtensionPrincipalClass</key>
+    <string>Klapper_Delen.ShareViewController</string>
+
+    <key>NSExtensionAttributes</key>
+    <dict>
+      <key>NSExtensionActivationRule</key>
+      <dict>
+        <key>NSExtensionActivationSupportsWebURLWithMaxCount</key>
+        <integer>1</integer>
+        <key>NSExtensionActivationSupportsText</key>
+        <true/>
+      </dict>
+    </dict>
+  </dict>
+</dict>
+</plist>
