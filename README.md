@@ -499,6 +499,78 @@ de enige modelaanroep die niet volgt op iets dat binnenkwam, en die wil je niet
 nog eens betalen omdat iemand vernieuwde. Mislukt het ophalen, dan blijft wat er
 stond staan en komt er een regel boven met wat er misging.
 
+## Een app erop: /api/v1
+
+Naast de website is er een JSON-laag waar een native app op kan zitten. De
+server blijft de ene waarheid; het toestel houdt een kopie zodat alles ook werkt
+zonder bereik. Dat is *route A* uit de begroting — de goedkoopste manier aan een
+echte iOS-app, omdat de scraper, de modelaanroep en de synchronisatie blijven
+waar ze al werken.
+
+### Het slot
+
+De web-UI hangt aan een koekje en de deelextensie aan `INGEST_TOKEN`. Voor een
+app past geen van beide: een koekje is niets waard buiten een browser, en
+`INGEST_TOKEN` is bedoeld voor iets dat alléén mag toevoegen.
+
+Dus een derde weg, maar zonder een derde geheim. De app meldt zich aan met
+hetzelfde wachtwoord als de website en krijgt exact dezelfde zelfdragende
+sessiewaarde terug, alleen als `Authorization: Bearer` in plaats van als koekje.
+Daarmee erft dit slot alles wat er al goed aan was: de handtekening hangt aan
+`APP_PASSWORD`, dus dat wijzigen zet elke telefoon eruit, en er is nog steeds
+geen sessietabel om bij te houden. De pogingenrem is dezelfde teller als het
+inlogscherm — anders zou de API een omweg zijn om dat scherm te ontlopen.
+
+### De aanroepen
+
+| Aanroep | Wat het doet |
+|---|---|
+| `POST /api/v1/aanmelden` | `{wachtwoord}` → `{token, vervalt, versie}` |
+| `GET /api/v1/aanmelden` | Een bestaand token nakijken |
+| `GET /api/v1/stand` | Alle recept-id's met hun `bijgewerkt`, plus de instellingen |
+| `GET /api/v1/recepten?ids=` | Volledige recepten, hooguit 50 per keer |
+| `GET /api/v1/recepten/:id` | Eén recept |
+| `GET /api/v1/weekmenu?week=` | De planning van een week |
+| `POST /api/v1/weekmenu` | `{receptId, dag, porties}` |
+| `DELETE /api/v1/weekmenu/:id` | Van het menu halen |
+| `POST /api/v1/kooklog` | `{receptId, sterren, notitie, vaker, wie}` |
+| `GET /api/v1/boodschappen?week=` | Opgeteld en ingedeeld |
+
+### Een eigen vorm, geen databaserijen
+
+Wat eruit komt is een **contract** (`src/lib/api/vorm.ts`), en dat is bewust iets
+anders dan de rijen uit de database of de blob die het model opleverde. Die twee
+mogen schuiven — er komt een kolom bij, de extractieprompt levert een veld
+anders aan — zonder dat er een telefoon stukgaat die je niet in de hand hebt.
+Vertalen bij de deur kost één keer schrijven en scheelt daarna elke keer.
+
+Nederlandse veldnamen, zoals de rest van de app. Een recept dat in een oudere
+vorm is opgeslagen levert `null` op in plaats van een uitzondering: het id komt
+dan in `onleesbaar` terug, zodat de app het overslaat in plaats van eeuwig
+opnieuw te proberen.
+
+Twee dingen die je aan de vorm ziet: het cijfer is afgerond op één decimaal (het
+gemiddelde van 4 en 5 hoort 4,5 te zijn, niet 4,499999999999999), en een
+kooklogdatum is een dág (`2026-08-16`) en geen tijdstip — als volledige ISO-tijd
+zou een client in een andere tijdzone er de dag ervoor van zien.
+
+### Synchroniseren
+
+`/api/v1/stand` geeft **alle** recept-id's met hun `bijgewerkt`. De app
+vergelijkt die met wat hij lokaal heeft en weet dan drie dingen tegelijk: wat er
+nieuw is, wat er veranderd is, en wat er weg is — namelijk alles wat hij wél
+heeft en wat er niet in staat.
+
+Geen tijdstempel-vraag met een grafveld erbij dus. Dat zou minder bytes schelen
+en een hele klasse bugs opleveren: een verwijderd recept moet je dan bijhouden in
+een tabel die je nooit mag opschonen, en een client die één ronde mist ziet het
+nooit meer. Bij een paar honderd recepten is de hele lijst een paar kilobyte, en
+dan is alles vergelijken simpelweg beter — zoals het zoeken en de
+duplicaatcontrole in deze app dat al doen.
+
+De app-kant staat in `ios-app/`, met een waarschuwing bovenaan: die Swift is
+geschreven zonder dat hij ergens gecompileerd kon worden.
+
 ## Recept weggooien
 
 Onderaan het recept, dichtgeklapt. Openklappen laat zien wat er verdwijnt en
@@ -928,6 +1000,8 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/recipe/search.ts`   | Zoeken op naam en ingrediënt; woordmatching.                |
 | `src/lib/menu/week.ts`       | Weken en dagen; maandag als begin.                          |
 | `src/lib/menu/list.ts`       | Een week aan recepten optellen tot één boodschappenlijst.   |
+| `src/lib/api/vorm.ts`        | Het contract van `/api/v1`: databaserij in, JSON uit.       |
+| `src/lib/api/toegang.ts`     | Het Bearer-slot op `/api/v1`.                               |
 | `src/lib/menu/suggest.ts`    | Welke recepten het weekmenu voorstelt, en waarom.           |
 | `src/lib/menu/seizoen.ts`    | Wat er per maand uit de volle grond komt.                   |
 | `src/lib/menu/ideeen.ts`     | Gerechten die je nog niet hebt, met een echte bron erbij.   |

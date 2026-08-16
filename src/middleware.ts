@@ -11,11 +11,23 @@ import { SESSION_COOKIE, configuredPassword, isValidSession } from "@/lib/sessio
  */
 
 /**
- * Deze hebben hun eigen slot: `INGEST_TOKEN`, gecontroleerd in de route zelf.
- * Ze moeten hier langs kunnen, anders krijgt de iOS-Shortcut een inlogpagina
- * terug in plaats van een nette 401.
+ * Deze hebben hun eigen slot en moeten hier langs kunnen, anders krijgt een
+ * app een inlogpagina terug in plaats van een nette 401.
+ *
+ *  - `/api/share`, `/api/items`, `/api/extract-preview` hangen aan
+ *    `INGEST_TOKEN`, gecontroleerd in de route zelf.
+ *  - `/api/v1` hangt aan een Bearer-token dat dezelfde handtekening draagt als
+ *    het koekje hieronder; zie `src/lib/api/toegang.ts`. Elke route daar
+ *    begint met `controleerToegang`, en `/api/v1/aanmelden` is de enige die
+ *    bewust open staat — dat is de deur zelf, met dezelfde pogingenrem als het
+ *    inlogscherm.
  */
-const TOKEN_ROUTES = ["/api/share", "/api/items", "/api/extract-preview"];
+const TOKEN_ROUTES = [
+  "/api/share",
+  "/api/items",
+  "/api/extract-preview",
+  "/api/v1",
+];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
