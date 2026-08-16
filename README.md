@@ -530,11 +530,19 @@ inlogscherm — anders zou de API een omweg zijn om dat scherm te ontlopen.
 | `GET /api/v1/stand` | Alle recept-id's met hun `bijgewerkt`, plus de instellingen |
 | `GET /api/v1/recepten?ids=` | Volledige recepten, hooguit 50 per keer |
 | `GET /api/v1/recepten/:id` | Eén recept |
+| `PATCH /api/v1/recepten/:id` | Favoriet, keuken, momenten, dieet |
 | `GET /api/v1/weekmenu?week=` | De planning van een week |
 | `POST /api/v1/weekmenu` | `{receptId, dag, porties}` |
+| `PATCH /api/v1/weekmenu/:id` | `{porties}` |
 | `DELETE /api/v1/weekmenu/:id` | Van het menu halen |
+| `GET /api/v1/voorstellen?week=&ligt=` | Wat zullen we eten, met de reden erbij |
 | `POST /api/v1/kooklog` | `{receptId, sterren, notitie, vaker, wie}` |
+| `DELETE /api/v1/kooklog/:id` | Een regel weghalen |
 | `GET /api/v1/boodschappen?week=` | Opgeteld en ingedeeld |
+| `POST /api/v1/delen` | `{url, tekst, door}` — de deelextensie |
+| `GET /api/v1/inbox` | Wat er binnenkwam en hoe het afliep |
+| `POST /api/v1/inbox/:id` | `{doe: "opnieuw"\|"toch", tekst}` |
+| `DELETE /api/v1/inbox/:id` | Item weg, met het recept eraan vast |
 
 ### Een eigen vorm, geen databaserijen
 
@@ -567,6 +575,23 @@ een tabel die je nooit mag opschonen, en een client die één ronde mist ziet he
 nooit meer. Bij een paar honderd recepten is de hele lijst een paar kilobyte, en
 dan is alles vergelijken simpelweg beter — zoals het zoeken en de
 duplicaatcontrole in deze app dat al doen.
+
+### Nakijken
+
+```
+npm run demo        # in een ander venster
+npm run api:check
+```
+
+Zesenveertig controles over echte HTTP: het slot, elke aanroep, de foutcodes, en
+of de synchronisatie convergeert — inclusief een gewijzigd recept en een spook in
+de cache dat opgeruimd hoort te worden. Wijs hem desnoods naar je echte server
+(`npm run api:check -- https://... geheim`); hij schrijft dan wel echt, maar
+ruimt zijn eigen kooklog- en weekmenu-regels weer op en raakt nooit een recept
+aan.
+
+Dit staat bewust buiten `npm test`: die draait pure functies zonder server en
+moet in twee seconden klaar zijn.
 
 De app-kant staat in `ios-app/`, met een waarschuwing bovenaan: die Swift is
 geschreven zonder dat hij ergens gecompileerd kon worden.
@@ -1002,6 +1027,7 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/menu/list.ts`       | Een week aan recepten optellen tot één boodschappenlijst.   |
 | `src/lib/api/vorm.ts`        | Het contract van `/api/v1`: databaserij in, JSON uit.       |
 | `src/lib/api/toegang.ts`     | Het Bearer-slot op `/api/v1`.                               |
+| `src/lib/menu/voorstellen.ts` | Haalt op wat de voorstelmotor nodig heeft; gedeeld met de app. |
 | `src/lib/menu/suggest.ts`    | Welke recepten het weekmenu voorstelt, en waarom.           |
 | `src/lib/menu/seizoen.ts`    | Wat er per maand uit de volle grond komt.                   |
 | `src/lib/menu/ideeen.ts`     | Gerechten die je nog niet hebt, met een echte bron erbij.   |
@@ -1009,6 +1035,7 @@ op dezelfde endpoint worden aangesloten.
 | `tests/`                     | `npm test`; de tests over de pure functies.                 |
 | `scripts/demo.mjs`           | Proefopstelling: eigen database, eigen foto's, `npm run demo`. |
 | `scripts/dieet.mjs`          | Vult het dieetkenmerk aan bij bestaande recepten (`npm run dieet`). |
+| `scripts/api-check.mjs`      | Controleert `/api/v1` over echte HTTP (`npm run api:check`).        |
 | `scripts/export.mjs`         | De recepten als markdown wegschrijven; draait mee in de back-up. |
 | `scripts/ts-loader.mjs`      | App-code rechtstreeks vanuit Node draaien (tests én export). |
 | `src/lib/shopping/units.ts`  | Hoeveelheden optellen en namen gelijktrekken.               |
@@ -1116,3 +1143,4 @@ optuigen die groter is dan de app zelf.
 | `npm run demo`      | Proefopstelling met eigen data, om rond te klikken |
 | `npm run export`    | Alle recepten als markdown naar `export/`          |
 | `npm run dieet`     | Dieetkenmerk aanvullen bij bestaande recepten      |
+| `npm run api:check` | `/api/v1` langs de meetlat, tegen een draaiende server |

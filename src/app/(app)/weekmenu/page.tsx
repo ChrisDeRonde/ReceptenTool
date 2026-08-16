@@ -15,12 +15,9 @@ import {
   weekLabel,
   weekRange,
 } from "@/lib/menu/week";
-import { suggest } from "@/lib/menu/suggest";
+import { haalVoorstellen } from "@/lib/menu/voorstellen";
 import { maandNaam } from "@/lib/menu/seizoen";
-import { unpackDiets } from "@/lib/recipe/categories";
-import { buildHaystack, parseQuery } from "@/lib/recipe/search";
-import { huishouden, people, voorkeuren } from "@/lib/settings";
-import { eisen } from "@/lib/voorkeuren";
+import { huishouden } from "@/lib/settings";
 import { MAX_SERVINGS, MIN_SERVINGS } from "@/lib/recipe/scale";
 
 export const dynamic = "force-dynamic";
@@ -242,56 +239,14 @@ async function Voorstellen({
 }) {
   const vandaag = new Date();
 
-  const [rows, namen, wensen] = await Promise.all([
-    prisma.recipe.findMany({
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        tags: true,
-        cuisine: true,
-        diets: true,
-        data: true,
-        favorite: true,
-        createdAt: true,
-        cookLogs: { select: { cookedAt: true, rating: true, again: true } },
-      },
-      take: 500,
-    }),
-    people(),
-    voorkeuren(),
+  const [aantalRecepten, { voorstellen, termen, gevraagd }] = await Promise.all([
+    prisma.recipe.count(),
+    haalVoorstellen({ gepland, inHuis, vandaag }),
   ]);
-
-  // Iedereen die in het huishouden staat eet mee. Wie er een avond niet is,
-  // haal je niet uit de instellingen — dan is dit voorstel voor die ene keer
-  // te streng, en dat is te overzien.
-  const gevraagd = eisen(wensen, namen);
-  const termen = parseQuery(inHuis).map((term) => term.key);
-
-  const voorstellen = suggest(
-    rows.map((row) => ({
-      id: row.id,
-      title: row.title,
-      cuisine: row.cuisine,
-      favorite: row.favorite,
-      createdAt: row.createdAt,
-      diets: unpackDiets(row.diets),
-      ingredientWoorden: buildHaystack(row).ingredients,
-      cookedAt: row.cookLogs.map((log) => log.cookedAt),
-      ratings: row.cookLogs
-        .map((log) => log.rating)
-        .filter((rating): rating is number => rating !== null),
-      again: {
-        yes: row.cookLogs.filter((log) => log.again === true).length,
-        no: row.cookLogs.filter((log) => log.again === false).length,
-      },
-    })),
-    { gepland, vandaag, wensen: gevraagd, inHuis: termen },
-  );
 
   // Zonder recepten valt er niets te vragen; met recepten maar zonder treffer
   // moet het veld blijven staan, anders kun je je zoekopdracht niet bijstellen.
-  if (rows.length === 0) return null;
+  if (aantalRecepten === 0) return null;
 
   const bewaar = (velden: Record<string, string | null>) =>
     Object.entries(velden)

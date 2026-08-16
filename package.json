@@ -17,7 +17,8 @@
     "test": "node --import ./scripts/ts-loader.mjs --test tests/*.test.ts",
     "demo": "node scripts/demo.mjs",
     "export": "node --import ./scripts/ts-loader.mjs scripts/export.mjs",
-    "dieet": "node --import ./scripts/ts-loader.mjs scripts/dieet.mjs"
+    "dieet": "node --import ./scripts/ts-loader.mjs scripts/dieet.mjs",
+    "api:check": "node scripts/api-check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",

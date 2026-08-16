@@ -13,8 +13,8 @@ teken dat er iets grondig mis is: typefouten, een verkeerd overload, een
 `Sendable`-klacht. Plak ze terug, dan zijn ze zo weg.
 
 Wat er wél is nagekeken: de serverkant. Alle endpoints hieronder zijn met echte
-HTTP-aanroepen tegen een draaiende server getest (31 controles), en de vorm van
-wat ze teruggeven staat in de testsuite van het project.
+HTTP-aanroepen tegen een draaiende server getest — `npm run api:check`, 46
+controles — en de vorm van wat ze teruggeven staat in de testsuite.
 
 ## Wat er staat
 
@@ -63,23 +63,35 @@ dan is elke telefoon eruit — dat is de bedoeling.
 | `GET /api/v1/stand` | Alle recept-id's met hun `bijgewerkt`, plus de instellingen |
 | `GET /api/v1/recepten?ids=` | Volledige recepten, hooguit 50 per keer |
 | `GET /api/v1/recepten/:id` | Eén recept |
+| `PATCH /api/v1/recepten/:id` | Favoriet, keuken, momenten, dieet |
 | `GET /api/v1/weekmenu?week=` | De planning van een week |
 | `POST /api/v1/weekmenu` | `{receptId, dag, porties}` |
+| `PATCH /api/v1/weekmenu/:id` | `{porties}` |
 | `DELETE /api/v1/weekmenu/:id` | Van het menu halen |
+| `GET /api/v1/voorstellen?week=&ligt=` | Wat zullen we eten, met de reden erbij |
 | `POST /api/v1/kooklog` | `{receptId, sterren, notitie, vaker, wie}` |
+| `DELETE /api/v1/kooklog/:id` | Een regel weghalen |
 | `GET /api/v1/boodschappen?week=` | Opgeteld en ingedeeld |
+| `POST /api/v1/delen` | `{url, tekst, door}` — de deelextensie |
+| `GET /api/v1/inbox` | Wat er binnenkwam en hoe het afliep |
+| `POST /api/v1/inbox/:id` | `{doe: "opnieuw"\|"toch", tekst}` |
+| `DELETE /api/v1/inbox/:id` | Item weg, met het recept eraan vast |
 
 Synchroniseren gaat in twee stappen: `/stand` opvragen, dat vergelijken met wat
 er lokaal staat, en dan alleen ophalen wat nieuwer is. Wat lokaal staat en niet
 in de stand voorkomt, is verwijderd. Dat is de reden dat de stand álle id's
 stuurt en niet alleen de wijzigingen: een verwijderd recept laat geen spoor na.
 
+De hele lijst is na te kijken met `npm run api:check` vanuit de projectmap —
+zesenveertig controles over echte HTTP, inclusief de convergentie van de
+synchronisatie.
+
 ## Wat er nog niet is
 
 - De receptpagina, de kookmodus, het weekmenu, de boodschappenlijst en de inbox.
 - De deelextensie. Die wordt bij deze route eenvoudiger dan de variant in
-  `ios-schil/`: hij hoeft alleen naar `/api/share` te posten met het token dat al
-  in de Keychain staat.
+  `ios-schil/`: `POST /api/v1/delen` met het token dat via de App Group al in de
+  Keychain staat. Geen tweede geheim op het toestel dus, en niets in te vullen.
 - Live Activities voor de kookwekkers.
 
 De volgorde die ik zou aanhouden staat in de begroting: eerst dit ene scherm
