@@ -144,6 +144,7 @@ async function main() {
         tags: recept.tags,
         mealTypes: recept.mealTypes,
         cuisine: recept.cuisine,
+        diets: recept.diets ?? "",
         favorite: recept.favorite,
       },
     });
@@ -200,6 +201,15 @@ async function main() {
     data: [
       { key: "huishouden", value: "2" },
       { key: "personen", value: "Chris, Sanne" },
+      // Eén voorkeur per soort, zodat allebei de mechanismen te zien zijn: het
+      // dieet vergelijkt met het etiket, de afkeer met de ingrediënten zelf.
+      {
+        key: "voorkeuren",
+        value: JSON.stringify({
+          Chris: { dieet: [], afkeer: ["koriander"] },
+          Sanne: { dieet: [], afkeer: [] },
+        }),
+      },
     ],
   });
 

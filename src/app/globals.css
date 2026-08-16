@@ -966,6 +966,48 @@ h2.section.near {
   color: var(--muted);
 }
 
+/* Een zin en geen badge. Zie de opmerking op de receptpagina: "Glutenvrij" als
+   pil leest als een keurmerk, en dit is een inschatting uit een
+   ingrediëntenlijst. Het woord "waarschijnlijk" hoort er dus bij, en dan is het
+   lopende tekst. De links zijn wel aantikbaar: 26px, net als een pil. */
+.dieetregel {
+  margin: 0.55rem 0 0;
+  font-size: 0.92rem;
+  color: var(--body);
+}
+
+.dieetregel a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.65rem;
+  color: var(--accent);
+}
+
+.dieetregel .muted {
+  font-size: 0.85em;
+}
+
+/* "Chris eet geen varkensvlees." Geen rode alarmbalk: het is geen fout, het is
+   iets om te weten voor je begint. Wel zwaarder dan de dieetregel erboven,
+   want dit komt niet uit een inschatting maar uit de ingrediëntenlijst. */
+.bezwaar {
+  display: flex;
+  gap: 0.55rem;
+  align-items: start;
+  margin: 0.8rem 0 0;
+  padding: 0.7rem 0.85rem;
+  border-radius: 10px;
+  background: var(--sand);
+  color: var(--ink);
+  font-size: 0.92rem;
+}
+
+.bezwaar svg {
+  flex: none;
+  margin-top: 0.15rem;
+  color: var(--warn);
+}
+
 .actions {
   display: flex;
   gap: 0.6rem;
@@ -2916,6 +2958,85 @@ button.gevaar {
 
 /* --- Voorstellen voor het weekmenu ---------------------------------------- */
 
+/* Iets nieuws: één kaart per idee. Ruimer dan de voorstellen op het weekmenu,
+   want hier staat een gerecht dat je nog niet kent — de reden en de bron zijn
+   het halve verhaal, niet een onderschrift. */
+.ideeen-knop {
+  margin: 1.2rem 0;
+}
+
+.ideeen {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.ideeen li {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+}
+
+.ideeen h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.ideeen .waarom {
+  margin: 0.35rem 0 0;
+  color: var(--body);
+}
+
+.idee-voet {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-top: 0.85rem;
+}
+
+.idee-voet .bron {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.75rem;
+  font-size: 0.9rem;
+  color: var(--accent);
+}
+
+/* "Wat ligt er in huis?" — het veld en de knop op één regel, want samen zijn
+   ze één handeling. Op een smal scherm mag de knop eronder: liever twee regels
+   dan een invoerveld waar drie ingrediënten niet in passen. */
+.ligt {
+  display: flex;
+  gap: 0.6rem;
+  align-items: end;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.ligt .field {
+  flex: 1 1 12rem;
+  margin: 0;
+}
+
+.ligt .field input {
+  width: 100%;
+}
+
+.ligt button {
+  flex: none;
+}
+
+.seizoenregel {
+  margin-top: 0.9rem;
+}
+
 .voorstellen ul {
   list-style: none;
   margin: 0;
@@ -3015,6 +3136,35 @@ button.gevaar {
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
   margin: 0.2rem 0 0.9rem;
+}
+
+/* Eén kader per huisgenoot. De naam staat in de legend, zodat een schermlezer
+   bij elk vinkje hoort van wie het is — met alleen een kop erboven hangt
+   "Vegetarisch" in de lucht. */
+.wensen {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.wens {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.9rem 1rem 1rem;
+  margin: 0;
+  background: var(--surface);
+}
+
+.wens > legend {
+  padding: 0 0.4rem;
+}
+
+.wens .checks {
+  margin-bottom: 0.8rem;
+}
+
+.wens .field {
+  margin: 0;
 }
 
 /* Wat er in .env staat: alleen kijken. */

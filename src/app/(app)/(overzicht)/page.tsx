@@ -7,10 +7,15 @@ import { Vastkop } from "@/components/Vastkop";
 import { prisma } from "@/lib/db";
 import { icons } from "@/lib/icons";
 import {
+  DIETS,
+  DIET_LABELS,
   MEAL_TYPES,
   MEAL_TYPE_LABELS,
+  normalizeDiet,
   normalizeMealType,
+  unpackDiets,
   unpackMealTypes,
+  type Diet,
   type MealType,
 } from "@/lib/recipe/categories";
 import {
@@ -34,6 +39,7 @@ export default async function HomePage({
   const query = await searchParams;
   const mealFilter = readMealFilter(query.maaltijd);
   const cuisineFilter = readOne(query.keuken);
+  const dietFilter = readDietFilter(query.dieet);
   const rawQuery = readOne(query.q) ?? "";
   const terms = parseQuery(rawQuery);
 
@@ -44,14 +50,21 @@ export default async function HomePage({
     where: {
       ...(cuisineFilter ? { cuisine: cuisineFilter } : {}),
       ...(mealFilter ? { mealTypes: { contains: mealFilter } } : {}),
+      ...(dietFilter ? { diets: { contains: dietFilter } } : {}),
     },
     orderBy: [{ favorite: "desc" }, { createdAt: "desc" }],
     take: 500,
   });
 
-  const filtered = mealFilter
-    ? rows.filter((recipe) => unpackMealTypes(recipe.mealTypes).includes(mealFilter))
-    : rows;
+  // `contains` narrowt alleen; hier vallen de deelwoorden af. "vegetarisch"
+  // zit in geen enkele andere waarde, maar "notenvrij" wel in niets en
+  // "glutenvrij" ook niet — toch dezelfde controle als bij de momenten, want
+  // een woordenlijst groeit en dan is dit het gat.
+  const filtered = rows.filter(
+    (recipe) =>
+      (!mealFilter || unpackMealTypes(recipe.mealTypes).includes(mealFilter)) &&
+      (!dietFilter || unpackDiets(recipe.diets).includes(dietFilter)),
+  );
 
   // Zoeken gebeurt in het geheugen: de ingrediënten zitten in de JSON-blob, en
   // bij deze aantallen is alles doorlopen sneller dan een index die kan
@@ -77,24 +90,32 @@ export default async function HomePage({
   const complete = scored.filter((entry) => (entry.hit?.matched ?? 0) === terms.length);
   const partial = scored.filter((entry) => (entry.hit?.matched ?? 0) < terms.length);
 
-  const [usedMealTypes, usedCuisines, ratings] = await Promise.all([
+  const [usedMealTypes, usedCuisines, usedDiets, ratings] = await Promise.all([
     collectMealTypes(),
     collectCuisines(),
+    collectDiets(),
     collectRatings(),
   ]);
 
-  const href = (next: { maaltijd?: MealType | null; keuken?: string | null }) => {
+  const href = (next: {
+    maaltijd?: MealType | null;
+    keuken?: string | null;
+    dieet?: Diet | null;
+  }) => {
     const params = new URLSearchParams();
     const meal = next.maaltijd === undefined ? mealFilter : next.maaltijd;
     const cuisine = next.keuken === undefined ? cuisineFilter : next.keuken;
+    const diet = next.dieet === undefined ? dietFilter : next.dieet;
     if (meal) params.set("maaltijd", meal);
     if (cuisine) params.set("keuken", cuisine);
+    if (diet) params.set("dieet", diet);
     if (rawQuery) params.set("q", rawQuery);
     const qs = params.toString();
     return qs ? `/?${qs}` : "/";
   };
 
-  const filtering = mealFilter !== null || cuisineFilter !== null;
+  const filtering =
+    mealFilter !== null || cuisineFilter !== null || dietFilter !== null;
 
   return (
     <main>
@@ -113,7 +134,10 @@ export default async function HomePage({
       {usedMealTypes.length > 0 && (
         <div className="rail">
           {filtering && (
-            <Link href={href({ maaltijd: null, keuken: null })} className="chip ghost">
+            <Link
+              href={href({ maaltijd: null, keuken: null, dieet: null })}
+              className="chip ghost"
+            >
               Alles
             </Link>
           )}
@@ -124,6 +148,20 @@ export default async function HomePage({
               className={`chip ${mealFilter === type ? "on" : ""}`}
             >
               {MEAL_TYPE_LABELS[type]}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {usedDiets.length > 0 && (
+        <div className="rail">
+          {usedDiets.map((diet) => (
+            <Link
+              key={diet}
+              href={href({ dieet: dietFilter === diet ? null : diet })}
+              className={`chip ${dietFilter === diet ? "on" : ""}`}
+            >
+              {DIET_LABELS[diet]}
             </Link>
           ))}
         </div>
@@ -296,6 +334,11 @@ function readMealFilter(value: string | string[] | undefined): MealType | null {
   return raw ? normalizeMealType(raw) : null;
 }
 
+function readDietFilter(value: string | string[] | undefined): Diet | null {
+  const raw = readOne(value);
+  return raw ? normalizeDiet(raw) : null;
+}
+
 /** Welke maaltijdmomenten komen ergens in de collectie voor. */
 async function collectMealTypes(): Promise<MealType[]> {
   const rows = await prisma.recipe.findMany({
@@ -307,6 +350,24 @@ async function collectMealTypes(): Promise<MealType[]> {
     for (const type of unpackMealTypes(row.mealTypes)) found.add(type);
   }
   return MEAL_TYPES.filter((type) => found.has(type));
+}
+
+/**
+ * Welke dieetkenmerken ergens voorkomen.
+ *
+ * Alleen tonen wat er is: een filterrij met vijf knoppen waarvan er vier niets
+ * opleveren, is een rij die je leert negeren.
+ */
+async function collectDiets(): Promise<Diet[]> {
+  const rows = await prisma.recipe.findMany({
+    select: { diets: true },
+    where: { NOT: { diets: "" } },
+  });
+  const found = new Set<Diet>();
+  for (const row of rows) {
+    for (const diet of unpackDiets(row.diets)) found.add(diet);
+  }
+  return DIETS.filter((diet) => found.has(diet));
 }
 
 async function collectCuisines(): Promise<string[]> {

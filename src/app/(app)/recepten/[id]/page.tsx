@@ -12,11 +12,18 @@ import { Moment } from "@/components/Moment";
 import { Vastkop } from "@/components/Vastkop";
 import { prisma } from "@/lib/db";
 import { currentPerson } from "@/lib/who";
-import { huishouden } from "@/lib/settings";
+import { huishouden, voorkeuren } from "@/lib/settings";
+import { bezwaren } from "@/lib/voorkeuren";
 import { datumKort } from "@/lib/tijd";
 import { icons } from "@/lib/icons";
-import { MEAL_TYPE_LABELS, unpackMealTypes } from "@/lib/recipe/categories";
+import {
+  DIET_LABELS,
+  MEAL_TYPE_LABELS,
+  unpackDiets,
+  unpackMealTypes,
+} from "@/lib/recipe/categories";
 import { formatAmount } from "@/lib/recipe/format";
+import { buildHaystack } from "@/lib/recipe/search";
 import {
   MAX_SERVINGS,
   MIN_SERVINGS,
@@ -78,11 +85,19 @@ export default async function RecipePage({
   }
   const base = parsed.data;
   const mealTypes = unpackMealTypes(row.mealTypes);
+  const diets = unpackDiets(row.diets);
 
   // Het aantal porties staat in de URL, niet in de database: jij kookt voor
   // zes terwijl iemand anders hetzelfde recept voor twee bekijkt. Staat er
   // niets in de URL, dan openen we op jullie huishouden.
   const thuis = await huishouden();
+
+  // Wie eet dit niet? Vergeleken met de ingrediëntnamen zelf, niet met het
+  // dieet-etiket: dít is de kant waar iemand op kan vertrouwen. Dezelfde
+  // woordenlijst als de zoekfunctie, zodat "paprika's" en "paprika" hetzelfde
+  // woord zijn.
+  const tegen = bezwaren(await voorkeuren(), buildHaystack(row).ingredients);
+
   const servings = parseServings(query.porties, base.servings, thuis);
   const recipe = servings === null ? base : scaleRecipe(base, servings);
   const scaled = servings !== null && servings !== base.servings;
@@ -137,6 +152,39 @@ export default async function RecipePage({
               </Link>
             )}
           </div>
+        )}
+
+        {/* Eén regel in plaats van badges naast de keuken: "Glutenvrij" als
+            pil ziet eruit als een feit, en dat is het niet. Het woord
+            "waarschijnlijk" hoort ernaast te staan, en dan is het geen pil
+            meer maar een zin. */}
+        {diets.length > 0 && (
+          <p className="dieetregel">
+            Waarschijnlijk{" "}
+            {diets.map((diet, index) => (
+              <span key={diet}>
+                {index > 0 && (index === diets.length - 1 ? " en " : ", ")}
+                <Link href={`/?dieet=${diet}`}>
+                  {DIET_LABELS[diet].toLowerCase()}
+                </Link>
+              </span>
+            ))}
+            . <span className="muted">Afgeleid uit de ingrediënten, geen garantie.</span>
+          </p>
+        )}
+
+        {tegen.length > 0 && (
+          <p className="bezwaar" role="note">
+            <Icon icon={icons.warning} size={15} />
+            <span>
+              {tegen.map((wie, index) => (
+                <span key={wie.naam}>
+                  {index > 0 && " "}
+                  <strong>{wie.naam}</strong> eet geen {lijstje(wie.woorden)}.
+                </span>
+              ))}
+            </span>
+          </p>
         )}
 
         <div className="actions">
@@ -327,6 +375,7 @@ export default async function RecipePage({
         recipeId={row.id}
         mealTypes={mealTypes}
         cuisine={row.cuisine}
+        diets={diets}
       />
 
       {row.editedAt && (
@@ -377,6 +426,12 @@ export default async function RecipePage({
       </details>
     </main>
   );
+}
+
+/** "koriander en varkensvlees" — een opsomming die als zin leest. */
+function lijstje(woorden: string[]): string {
+  if (woorden.length === 1) return woorden[0];
+  return `${woorden.slice(0, -1).join(", ")} en ${woorden.at(-1)}`;
 }
 
 function readOne(value: string | string[] | undefined): string | null {

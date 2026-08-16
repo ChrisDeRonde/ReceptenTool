@@ -83,6 +83,11 @@ model Recipe {
   /// veld in `data`, omdat er op gefilterd wordt.
   cuisine String?
 
+  /// Dieetkenmerken: komma-gescheiden waarden uit DIETS. Een inschatting op
+  /// basis van de ingrediënten, geen keurmerk — zie src/lib/recipe/categories.ts.
+  /// Leeg betekent "niet vastgesteld", niet "bevat alles".
+  diets String @default("")
+
   favorite Boolean @default(false)
 
   /// Wanneer je het recept zelf hebt bijgewerkt. Null betekent: nog precies

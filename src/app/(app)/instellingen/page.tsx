@@ -3,12 +3,15 @@ import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
 import { Vastkop } from "@/components/Vastkop";
 import { icons } from "@/lib/icons";
+import { DIETS, DIET_HINTS, DIET_LABELS } from "@/lib/recipe/categories";
 import {
   HUISHOUDEN_MAX,
   huishouden,
   people,
   peopleSource,
+  voorkeuren,
 } from "@/lib/settings";
+import { LEEG } from "@/lib/voorkeuren";
 import { saveSettings } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -23,10 +26,11 @@ export const metadata = { title: "Instellingen" };
  * zonder dat dit scherm ze kan wijzigen.
  */
 export default async function InstellingenPagina() {
-  const [thuis, namen, herkomst] = await Promise.all([
+  const [thuis, namen, herkomst, wensen] = await Promise.all([
     huishouden(),
     people(),
     peopleSource(),
+    voorkeuren(),
   ]);
 
   const geheimen = [
@@ -124,6 +128,62 @@ export default async function InstellingenPagina() {
             </div>
           )}
         </section>
+
+        {namen.length > 0 && (
+          <section>
+            <h2 className="section">Wat eet wie niet</h2>
+            <p className="muted hint">
+              Hiermee houden de voorstellen op het weekmenu rekening. Het
+              overzicht blijft alles tonen — dit is een voorkeur, geen slot op
+              je eigen collectie.
+            </p>
+            <p className="muted hint">
+              <strong>Het verschil telt.</strong> Een dieet wordt vergeleken met
+              het etiket dat het model uit de ingrediënten afleidde, en dat is
+              een inschatting. Wat je bij <em>niet in mijn eten</em> zet, wordt
+              vergeleken met de ingrediënten zelf. Wat iemand écht moet
+              vermijden, hoort daar.
+            </p>
+
+            <div className="wensen">
+              {namen.map((naam) => {
+                const wens = wensen[naam] ?? LEEG;
+                return (
+                  <fieldset key={naam} className="wens">
+                    <legend>
+                      <Avatar name={naam} size={26} withName />
+                    </legend>
+
+                    <div className="checks">
+                      {DIETS.map((diet) => (
+                        <label key={diet} className="check" title={DIET_HINTS[diet]}>
+                          <input
+                            type="checkbox"
+                            name={`dieet:${naam}`}
+                            value={diet}
+                            defaultChecked={wens.dieet.includes(diet)}
+                          />
+                          <span>{DIET_LABELS[diet]}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    <label className="field">
+                      <span className="eyebrow">Niet in mijn eten</span>
+                      <input
+                        type="text"
+                        name={`afkeer:${naam}`}
+                        defaultValue={wens.afkeer.join(", ")}
+                        placeholder="varkensvlees, koriander"
+                        autoComplete="off"
+                      />
+                    </label>
+                  </fieldset>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         <div className="editor-bar">
           <button type="submit" className="grow">

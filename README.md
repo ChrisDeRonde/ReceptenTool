@@ -407,8 +407,97 @@ database ernaast zodat hij te testen is. Drie signalen:
   antwoord.
 - **Afwisseling**: staat er al iets uit dezelfde keuken op het menu, dan zakt
   het fors. Zeven dagen pasta is geen weekmenu.
+- **Seizoen**: zit er iets in dat déze maand uit de volle grond komt, dan krijgt
+  het een duwtje. Alleen belonen, nooit straffen — een recept met tomaten in
+  december zakt niet, want dan gaat de motor vertellen wat je niet mag eten. De
+  maandlijst staat in `src/lib/menu/seizoen.ts`.
 
-Wat al gepland staat doet niet mee.
+Wat al gepland staat doet niet mee, en wat niet binnen jullie voorkeuren valt
+ook niet — zie *Wat eet wie niet* hieronder.
+
+### Wat ligt er in huis?
+
+Boven de voorstellen staat een veld waar je intikt wat er in de koelkast ligt.
+Dat is geen bonuspunt maar een **sorteersleutel**: recepten die meer van je
+woorden afdekken staan boven, precies zoals het zoeken op het overzicht al
+werkt. Als bonus zou het niet werken — een recept dat je drie ingrediënten
+gebruikt maar vorige week op tafel stond, verliest dan alsnog van iets van drie
+maanden geleden waar niets van in huis is, en dat is precies het antwoord dat je
+niet zocht.
+
+Het veld is een gewoon GET-formulier, dus wat je intikt staat in de URL: de
+terugknop werkt en je kunt het resultaat doorsturen.
+
+## Dieet en voorkeuren
+
+Elk recept heeft een kolom `diets` met waarden uit een gesloten lijst
+(`vegetarisch`, `veganistisch`, `glutenvrij`, `lactosevrij`, `notenvrij`). Het
+model vult die in tijdens de import, op basis van de ingrediëntenlijst, met de
+opdracht om bij de minste twijfel niets te beweren.
+
+**Dat is een inschatting en geen keurmerk**, en de app schrijft dat er ook bij.
+Op een receptpagina staat *"Waarschijnlijk vegetarisch en notenvrij. Afgeleid
+uit de ingrediënten, geen garantie."* — een zin en geen badge, want "Glutenvrij"
+in een pilletje leest als een feit. Een ingrediëntenlijst is soms onvolledig:
+"bouillon" zegt niets over de kip erin, en een merknaam verzwijgt de melkpoeder.
+
+Wijzig je de ingrediënten in de editor, dan wordt het kenmerk **gewist** in
+plaats van meeverhuisd. Wie de tofu vervangt door kip houdt anders een recept
+over dat zichzelf vegetarisch noemt.
+
+### Wat eet wie niet
+
+In de instellingen staat per huisgenoot een dieet én een vrij veld. Het verschil
+is niet cosmetisch:
+
+- Het **dieet** wordt vergeleken met het etiket hierboven — handig, maar zo
+  betrouwbaar als de inschatting die eronder ligt.
+- Wat je bij **niet in mijn eten** zet, wordt vergeleken met de ingrediënten
+  zelf. Geen model, geen etiket: staat er varkensvlees in de lijst, dan staat
+  het er. Dít is de kant voor wat iemand écht moet vermijden.
+
+De voorstellen op het weekmenu houden zich aan allebei: wat er niet op tafel mag
+valt weg, ook onderaan — een voorstel dat je elke week moet wegkijken is erger
+dan geen voorstel. Het overzicht blijft wél alles tonen; het is een voorkeur,
+geen slot op je eigen collectie. En op een receptpagina waar iets in zit staat
+een zandkleurige regel: *"Chris eet geen feta."*
+
+De vergelijking gebruikt dezelfde woordfunctie als het zoeken, dus "paprika's"
+en "paprika" zijn hetzelfde woord en "gemalen varkensvlees" is varkensvlees. Een
+afkeer van twee woorden ("rode ui") sluit het enkele woord niet uit.
+
+### Bestaande recepten bijwerken
+
+Recepten van vóór dit veld hebben nog niets. `npm run dieet` vult ze aan, in
+twee rondes: eerst wat er al als tag stond (gratis), daarna wat overblijft in
+groepjes van twintig langs het model — alleen titel en ingrediëntnamen, niet het
+hele recept. `npm run dieet -- --droog` laat eerst zien wat het zou doen.
+
+## Iets nieuws
+
+Onder de voorstellen staat een link naar `/weekmenu/ideeen`. Dat is de enige
+plek in de app die naar buiten kijkt: hij geeft de kooklog aan het model — wie
+wat waardeerde, welke keukens jullie draaien, welk dieet, welk seizoen — en
+krijgt vier gerechten terug met een reden.
+
+**Er wordt geen recept verzonnen.** Het model noemt een gerecht en zoekt met de
+webzoek-tool een échte, bestaande receptpagina erbij; die link gaat daarna door
+dezelfde molen als alles wat je vanuit Safari of Instagram deelt. Vindt het
+niets bruikbaars, dan blijft het idee staan zonder link — dat is beter dan een
+knop die kapot is. Een URL die geen gewone http-link is, wordt weggegooid
+voordat je hem te zien krijgt.
+
+Waarom niet een receptendatabase? Omdat het niet mag. Spoonacular staat
+hooguit een uur cachen toe, met schriftelijke toestemming vooraf, en verbiedt
+"any derived, hashed, or transformed data"; bij Edamam mag je de data
+uitsluitend tónen aan degene die de zoekopdracht deed. Klapper is precies
+andersom gebouwd: importeren, bewaren, exporteren naar markdown. Dat valt niet
+te verenigen.
+
+De oogst gaat in de instellingen en niet in het geheugen van de pagina. Dit is
+de enige modelaanroep die niet volgt op iets dat binnenkwam, en die wil je niet
+nog eens betalen omdat iemand vernieuwde. Mislukt het ophalen, dan blijft wat er
+stond staan en komt er een regel boven met wat er misging.
 
 ## Recept weggooien
 
@@ -840,8 +929,12 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/menu/week.ts`       | Weken en dagen; maandag als begin.                          |
 | `src/lib/menu/list.ts`       | Een week aan recepten optellen tot één boodschappenlijst.   |
 | `src/lib/menu/suggest.ts`    | Welke recepten het weekmenu voorstelt, en waarom.           |
+| `src/lib/menu/seizoen.ts`    | Wat er per maand uit de volle grond komt.                   |
+| `src/lib/menu/ideeen.ts`     | Gerechten die je nog niet hebt, met een echte bron erbij.   |
+| `src/lib/voorkeuren.ts`      | Wat ieder van jullie wel en niet eet.                       |
 | `tests/`                     | `npm test`; de tests over de pure functies.                 |
 | `scripts/demo.mjs`           | Proefopstelling: eigen database, eigen foto's, `npm run demo`. |
+| `scripts/dieet.mjs`          | Vult het dieetkenmerk aan bij bestaande recepten (`npm run dieet`). |
 | `scripts/export.mjs`         | De recepten als markdown wegschrijven; draait mee in de back-up. |
 | `scripts/ts-loader.mjs`      | App-code rechtstreeks vanuit Node draaien (tests én export). |
 | `src/lib/shopping/units.ts`  | Hoeveelheden optellen en namen gelijktrekken.               |
@@ -948,3 +1041,4 @@ optuigen die groter is dan de app zelf.
 | `npm test`          | De testsuite over de pure functies       |
 | `npm run demo`      | Proefopstelling met eigen data, om rond te klikken |
 | `npm run export`    | Alle recepten als markdown naar `export/`          |
+| `npm run dieet`     | Dieetkenmerk aanvullen bij bestaande recepten      |

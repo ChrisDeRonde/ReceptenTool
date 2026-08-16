@@ -87,6 +87,7 @@ export async function exporteer(doel, { stil = false } = {}) {
           sourceName: rij.sourceName,
           tags: rij.tags,
           cuisine: rij.cuisine,
+          diets: rij.diets,
           createdAt: rij.createdAt,
           gemaakt: rij.cookLogs,
         }),

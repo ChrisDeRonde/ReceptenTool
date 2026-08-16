@@ -51,7 +51,7 @@ Regels die zwaarder wegen dan de rest:
 - Verzin nooit hoeveelheden of stappen die niet in de bron staan. Ontbreekt er iets essentieels en moet je het aanvullen om het recept kookbaar te maken, doe dat dan en noteer het letterlijk in assumptions.
 - Staat er in de bron iets dat niet klopt (een ontbrekend ingrediënt in de stappen, een tijd die niet kan), volg dan de bron maar zet je correctie in assumptions.
 - Is het bijschrift alleen een sfeerbeschrijving zonder recept, geef dan een titel en een lege ingredientGroups en steps terug. Verzin geen recept.
-- Tags zijn kleine letters, enkelvoud waar dat kan, maximaal zes. Mik op hoofdingrediënt, techniek, gelegenheid en dieet ("pasta", "eenpansgerecht", "doordeweeks", "vegetarisch"). Zet de keuken en het maaltijdmoment níét in de tags — die hebben hun eigen velden.
+- Tags zijn kleine letters, enkelvoud waar dat kan, maximaal zes. Mik op hoofdingrediënt, techniek en gelegenheid ("pasta", "eenpansgerecht", "doordeweeks"). Zet de keuken, het maaltijdmoment en het dieet níét in de tags — die hebben hun eigen velden.
 
 Foto's als bron:
 - Krijg je foto's in plaats van tekst, lees dan alles wat er staat: gedrukte tekst, handschrift, een kaartje, een schoolbord.
@@ -63,7 +63,18 @@ Foto's als bron:
 
 Indeling:
 - mealTypes: wanneer je dit eet, gekozen uit de vaste lijst. Meerdere mag: soep is lunch én diner. Kies wat klopt, niet wat mogelijk is — een stevige stoofpot is geen lunch omdat je hem theoretisch tussen de middag zou kunnen eten. Laat de lijst leeg als niets past.
-- cuisine: uit welke keuken het komt, als eigennaam met hoofdletter: "Italiaans", "Marokkaans", "Midden-Oosters". Eén keuken; kies bij een mengvorm degene die het gerecht het meest bepaalt. Laat het null bij gerechten die nergens specifiek bij horen, zoals een simpele omelet of een smoothie — schrijf dan niet "Internationaal" of "Westers".`;
+- cuisine: uit welke keuken het komt, als eigennaam met hoofdletter: "Italiaans", "Marokkaans", "Midden-Oosters". Eén keuken; kies bij een mengvorm degene die het gerecht het meest bepaalt. Laat het null bij gerechten die nergens specifiek bij horen, zoals een simpele omelet of een smoothie — schrijf dan niet "Internationaal" of "Westers".
+
+Dieet:
+- diets: welke van deze kenmerken op het recept van toepassing zijn, zoals het er staat — zonder vervangingen te bedenken.
+  - vegetarisch: geen vlees, gevogelte, vis of schaaldieren. Ei en zuivel mogen wel.
+  - veganistisch: helemaal geen dierlijke producten, dus ook geen ei, zuivel of honing.
+  - glutenvrij: geen tarwe, spelt, rogge, gerst, couscous, bulgur, paneermeel of gewone pasta.
+  - lactosevrij: geen melk, room, boter, kaas, yoghurt of karnemelk.
+  - notenvrij: geen noten en geen pinda's. Zaden en pitten tellen niet mee.
+- Meerdere mag; veganistisch impliceert vegetarisch en lactosevrij, dus noem die er dan gewoon bij.
+- **Bij de minste twijfel laat je het kenmerk weg.** Een verzwegen ingrediënt in een kant-en-klaar product, een bouillon waarvan niet blijkt of hij van kip is, een saus met een merknaam — dat zijn allemaal redenen om niets te beweren. Een gemist kenmerk kost hooguit een filtertreffer; een verkeerd kenmerk zet iemand iets voor waar hij niet tegen kan.
+- Dit veld is geen advies en geen keurmerk: schrijf niet in de tips dat het gerecht ergens vrij van is.`;
 
 export function buildUserMessage(params: {
   sourceUrl: string | null;

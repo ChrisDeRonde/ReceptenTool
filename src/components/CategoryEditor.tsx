@@ -1,10 +1,15 @@
+import Link from "next/link";
 import { updateCategories } from "@/app/actions";
 import { Icon } from "@/components/Icon";
 import { icons } from "@/lib/icons";
 import {
   CUISINE_SUGGESTIONS,
+  DIETS,
+  DIET_HINTS,
+  DIET_LABELS,
   MEAL_TYPES,
   MEAL_TYPE_LABELS,
+  type Diet,
   type MealType,
 } from "@/lib/recipe/categories";
 
@@ -19,10 +24,12 @@ export function CategoryEditor({
   recipeId,
   mealTypes,
   cuisine,
+  diets,
 }: {
   recipeId: string;
   mealTypes: MealType[];
   cuisine: string | null;
+  diets: Diet[];
 }) {
   return (
     <details className="category-editor">
@@ -70,6 +77,31 @@ export function CategoryEditor({
               <option key={suggestion} value={suggestion} />
             ))}
           </datalist>
+        </fieldset>
+
+        <fieldset>
+          <legend className="eyebrow">Dieet</legend>
+          {/* De waarschuwing staat vóór de vinkjes en niet erna: wie hier iets
+              aanzet moet weten wat hij aanzet voordat hij het doet. */}
+          <p className="muted hint">
+            Het model leidt dit af uit de ingrediënten, dus het is een
+            inschatting. Prima om op te filteren, niet goed genoeg voor een
+            allergie — zet wat iemand écht moet vermijden bij zijn naam in de{" "}
+            <Link href="/instellingen">instellingen</Link>.
+          </p>
+          <div className="checks">
+            {DIETS.map((diet) => (
+              <label key={diet} className="check" title={DIET_HINTS[diet]}>
+                <input
+                  type="checkbox"
+                  name="diets"
+                  value={diet}
+                  defaultChecked={diets.includes(diet)}
+                />
+                <span>{DIET_LABELS[diet]}</span>
+              </label>
+            ))}
+          </div>
         </fieldset>
 
         <div className="row">

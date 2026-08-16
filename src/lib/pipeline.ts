@@ -5,7 +5,9 @@ import { storeRemoteImage } from "@/lib/images";
 import { parsePhotos, readPhotoBase64 } from "@/lib/photos";
 import {
   normalizeCuisine,
+  normalizeDiets,
   normalizeMealTypes,
+  packDiets,
   packMealTypes,
 } from "@/lib/recipe/categories";
 import { parseRecipe } from "@/lib/recipe/parse";
@@ -207,6 +209,7 @@ async function saveRecipe(params: {
     // zonder dat we de modeloutput hoeven te herschrijven.
     mealTypes: packMealTypes(normalizeMealTypes(recipe.mealTypes)),
     cuisine: normalizeCuisine(recipe.cuisine),
+    diets: packDiets(normalizeDiets(recipe.diets)),
   };
 
   // Eén transactie: een item mag nooit op `done` staan zonder recept.

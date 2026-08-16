@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { suggest, type Kandidaat } from "@/lib/menu/suggest";
+import type { Diet } from "@/lib/recipe/categories";
 
 const VANDAAG = new Date(2026, 7, 11);
 const dagenTerug = (n: number) => new Date(2026, 7, 11 - n);
@@ -153,5 +154,142 @@ describe("de vorm van het antwoord", () => {
   test("gelijke score sorteert op naam, zodat de volgorde niet wiebelt", () => {
     const uit = doe([maak("b", { title: "Bami" }), maak("a", { title: "Andijvie" })]);
     assert.deepEqual(uit.map((v) => v.title), ["Andijvie", "Bami"]);
+  });
+});
+
+describe("wat er in huis ligt", () => {
+  const kast = (id: string, woorden: string[], over: Partial<Kandidaat> = {}) =>
+    maak(id, { ingredientWoorden: woorden, ...over });
+
+  test("een recept dat je ingrediënten gebruikt komt bovenaan", () => {
+    const uit = suggest(
+      [
+        kast("prei-taart", ["prei", "kaas", "bladerdeeg"], { cookedAt: [dagenTerug(2)] }),
+        kast("iets-anders", ["rijst", "kip"], { cookedAt: [dagenTerug(85)] }),
+      ],
+      { gepland: [], vandaag: VANDAAG, inHuis: ["prei", "kaas"], seizoen: false },
+    );
+    assert.equal(uit[0].id, "prei-taart");
+    assert.equal(uit[0].reason, "Gebruikt prei en kaas");
+  });
+
+  test("meer treffers gaat voor minder", () => {
+    const uit = suggest(
+      [kast("een", ["prei"]), kast("twee", ["prei", "kaas"])],
+      { gepland: [], vandaag: VANDAAG, inHuis: ["prei", "kaas"], seizoen: false },
+    );
+    assert.equal(uit[0].id, "twee");
+  });
+
+  test("bij evenveel treffers beslist de gewone afweging weer", () => {
+    // Allebei vier treffers; dan wint wat het langst niet op tafel stond, niet
+    // het recept met de langste ingrediëntenlijst.
+    const veel = Array.from({ length: 20 }, (_, i) => `spul${i}`);
+    const uit = suggest(
+      [
+        kast("kruidenrek", [...veel, "prei", "kaas", "ui", "boter"], { cookedAt: [dagenTerug(1)] }),
+        kast("simpel", ["prei", "kaas", "ui", "boter"], { cookedAt: [dagenTerug(60)] }),
+      ],
+      {
+        gepland: [],
+        vandaag: VANDAAG,
+        inHuis: ["prei", "kaas", "ui", "boter"],
+        seizoen: false,
+      },
+    );
+    assert.equal(uit[0].id, "simpel");
+  });
+
+  test("een treffer gaat vóór lang niet gemaakt", () => {
+    // Zonder dit is "wat ligt er in huis" een suggestie in plaats van een
+    // vraag: het antwoord gaat dan over iets waar niets van in de kast staat.
+    const uit = suggest(
+      [
+        kast("met-prei", ["prei", "kaas"], { cookedAt: [dagenTerug(1)] }),
+        kast("stoffig", ["rijst", "kip"], { cookedAt: [dagenTerug(200)] }),
+      ],
+      { gepland: [], vandaag: VANDAAG, inHuis: ["prei"], seizoen: false },
+    );
+    assert.equal(uit[0].id, "met-prei");
+  });
+
+  test("een ingrediëntnaam buigt mee, net als bij zoeken", () => {
+    const uit = suggest([kast("a", ["rundergehakt"])], {
+      gepland: [],
+      vandaag: VANDAAG,
+      inHuis: ["gehakt"],
+      seizoen: false,
+    });
+    assert.equal(uit[0].reason, "Gebruikt gehakt");
+  });
+});
+
+describe("het seizoen", () => {
+  test("wat er deze maand is krijgt een duwtje", () => {
+    // VANDAAG is 11 augustus: tomaat wel, boerenkool niet.
+    const uit = suggest(
+      [
+        maak("zomer", { ingredientWoorden: ["tomaat", "basilicum"], cookedAt: [dagenTerug(25)] }),
+        maak("winter", { ingredientWoorden: ["boerenkool"], cookedAt: [dagenTerug(30)] }),
+      ],
+      { gepland: [], vandaag: VANDAAG },
+    );
+    assert.equal(uit[0].id, "zomer");
+    assert.match(uit[0].reason, /op zijn best/);
+  });
+
+  test("uit het seizoen zakt niets — het duwt alleen", () => {
+    const uit = suggest([maak("winter", { ingredientWoorden: ["boerenkool"] })], {
+      gepland: [],
+      vandaag: VANDAAG,
+    });
+    assert.equal(uit.length, 1);
+  });
+
+  test("wat er ligt gaat voor het seizoen in de reden", () => {
+    const uit = suggest([maak("a", { ingredientWoorden: ["tomaat", "prei"] })], {
+      gepland: [],
+      vandaag: VANDAAG,
+      inHuis: ["prei"],
+    });
+    assert.equal(uit[0].reason, "Gebruikt prei");
+  });
+});
+
+describe("wat er niet op tafel mag", () => {
+  const vega: Diet[] = ["vegetarisch"];
+
+  test("een dieet-eis sluit uit wat het kenmerk niet heeft", () => {
+    const uit = suggest(
+      [maak("vlees", { diets: [] }), maak("vega", { diets: vega })],
+      { gepland: [], vandaag: VANDAAG, wensen: { dieet: vega }, seizoen: false },
+    );
+    assert.deepEqual(uit.map((v) => v.id), ["vega"]);
+  });
+
+  test("een afkeer kijkt naar de ingrediënten, niet naar het etiket", () => {
+    const uit = suggest(
+      [
+        maak("met", { ingredientWoorden: ["varkensvlees", "ui"] }),
+        maak("zonder", { ingredientWoorden: ["kip", "ui"] }),
+      ],
+      { gepland: [], vandaag: VANDAAG, wensen: { afkeer: ["varkensvlees"] }, seizoen: false },
+    );
+    assert.deepEqual(uit.map((v) => v.id), ["zonder"]);
+  });
+
+  test("een afkeer van twee woorden sluit niet het enkele woord uit", () => {
+    const uit = suggest([maak("gewone-ui", { ingredientWoorden: ["ui", "prei"] })], {
+      gepland: [],
+      vandaag: VANDAAG,
+      wensen: { afkeer: ["rode ui"] },
+      seizoen: false,
+    });
+    assert.equal(uit.length, 1);
+  });
+
+  test("zonder wensen valt er niets af", () => {
+    const uit = suggest([maak("a"), maak("b")], { gepland: [], vandaag: VANDAAG });
+    assert.equal(uit.length, 2);
   });
 });

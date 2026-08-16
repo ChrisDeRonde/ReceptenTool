@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MEAL_TYPES } from "./categories";
+import { DIETS, MEAL_TYPES } from "./categories";
 
 /**
  * De vorm van een verwerkt recept.
@@ -72,6 +72,13 @@ export const recipeSchema = z.object({
   mealTypes: z.array(z.string()).default([]),
   /** Uit welke keuken het komt, bijv. "Italiaans". Null als het nergens bij hoort. */
   cuisine: z.string().nullable().default(null),
+  /**
+   * Dieetkenmerken uit DIETS in categories.ts, alleen wat je aan de
+   * ingrediëntenlijst kunt zien. Bij twijfel leeg — een gemist etiket kost een
+   * filtertreffer, een verkeerd etiket kost vertrouwen.
+   * Default omdat recepten van vóór dit veld het niet hebben.
+   */
+  diets: z.array(z.string()).default([]),
   /** Waar dit vandaan komt: "Allerhande", "@pastagrannies", "Leuke Recepten". */
   sourceName: z.string().nullable(),
   /** Directe URL naar een foto van het gerecht, als de bron er een had. */
@@ -124,6 +131,7 @@ export const recipeJsonSchema = {
     "tags",
     "mealTypes",
     "cuisine",
+    "diets",
     "sourceName",
     "imageUrl",
     "assumptions",
@@ -179,6 +187,7 @@ export const recipeJsonSchema = {
     tags: { type: "array", items: { type: "string" } },
     mealTypes: { type: "array", items: { type: "string", enum: [...MEAL_TYPES] } },
     cuisine: nullableString,
+    diets: { type: "array", items: { type: "string", enum: [...DIETS] } },
     sourceName: nullableString,
     imageUrl: nullableString,
     assumptions: { type: "array", items: { type: "string" } },

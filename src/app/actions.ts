@@ -6,7 +6,9 @@ import { prisma } from "@/lib/db";
 import { detectSourceType } from "@/lib/extract";
 import {
   normalizeCuisine,
+  normalizeDiets,
   normalizeMealTypes,
+  packDiets,
   packMealTypes,
 } from "@/lib/recipe/categories";
 import { localImageName, storeRemoteImage } from "@/lib/images";
@@ -15,6 +17,7 @@ import { ingredientFromFields } from "@/lib/recipe/amount";
 import { MAX_SERVINGS, MIN_SERVINGS } from "@/lib/recipe/scale";
 import { isVerouderd } from "@/lib/recipe/versie";
 import {
+  flattenIngredients,
   recipeSchema,
   type Ingredient,
   type IngredientGroup,
@@ -148,10 +151,13 @@ export async function updateCategories(formData: FormData): Promise<void> {
     formData.getAll("mealTypes").filter((value) => typeof value === "string"),
   );
   const cuisine = normalizeCuisine(readField(formData, "cuisine"));
+  const diets = normalizeDiets(
+    formData.getAll("diets").filter((value) => typeof value === "string"),
+  );
 
   await prisma.recipe.update({
     where: { id },
-    data: { mealTypes: packMealTypes(mealTypes), cuisine },
+    data: { mealTypes: packMealTypes(mealTypes), cuisine, diets: packDiets(diets) },
   });
 
   revalidatePath("/");
@@ -390,6 +396,15 @@ export async function updateRecipe(
       .filter(Boolean),
   };
 
+  // Verander je de ingrediënten, dan slaat het dieetkenmerk nergens meer op:
+  // wie de tofu vervangt door kip houdt anders een recept over dat zichzelf
+  // vegetarisch noemt. Het kenmerk gaat er dus af in plaats van mee te
+  // verhuizen — een leeg kenmerk kost een filtertreffer, een verkeerd kenmerk
+  // zet iemand iets voor waar hij niet tegen kan. Aanvinken kan meteen weer,
+  // onder "Indeling aanpassen" op de receptpagina.
+  const ingredientenGewijzigd =
+    namenVan(recipe) !== namenVan(before) ? { diets: "" } : {};
+
   await prisma.recipe.update({
     where: { id },
     data: {
@@ -401,6 +416,7 @@ export async function updateRecipe(
       totalMinutes: recipe.totalMinutes,
       data: JSON.stringify(recipe),
       tags: recipe.tags.join(","),
+      ...ingredientenGewijzigd,
       editedAt: new Date(),
       editedBy: ik,
     },
@@ -409,6 +425,13 @@ export async function updateRecipe(
   revalidatePath(`/recepten/${id}`);
   revalidatePath("/");
   redirect(`/recepten/${id}`);
+}
+
+/** De ingrediëntnamen als één string, om twee versies te kunnen vergelijken. */
+function namenVan(recipe: Recipe): string {
+  return flattenIngredients(recipe)
+    .map((item) => item.name.trim().toLowerCase())
+    .join("\u0000");
 }
 
 /**

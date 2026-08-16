@@ -16,7 +16,11 @@ import {
   weekRange,
 } from "@/lib/menu/week";
 import { suggest } from "@/lib/menu/suggest";
-import { huishouden } from "@/lib/settings";
+import { maandNaam } from "@/lib/menu/seizoen";
+import { unpackDiets } from "@/lib/recipe/categories";
+import { buildHaystack, parseQuery } from "@/lib/recipe/search";
+import { huishouden, people, voorkeuren } from "@/lib/settings";
+import { eisen } from "@/lib/voorkeuren";
 import { MAX_SERVINGS, MIN_SERVINGS } from "@/lib/recipe/scale";
 
 export const dynamic = "force-dynamic";
@@ -182,6 +186,9 @@ export default async function WeekMenuPage({
       <Voorstellen
         gepland={entries.map((e) => ({ id: e.recipe.id, cuisine: e.recipe.cuisine }))}
         week={weekParam}
+        inHuis={readOne(query.ligt) ?? ""}
+        holding={holdingId}
+        holdingServings={holdingServings}
       />
 
       {entries.length > 0 && (
@@ -222,21 +229,44 @@ function voorWie(servings: number, thuis: number): string {
 async function Voorstellen({
   gepland,
   week,
+  inHuis,
+  holding,
+  holdingServings,
 }: {
   gepland: Array<{ id: string; cuisine: string | null }>;
   week: string;
+  /** Wat er in de koelkast ligt, zoals je het intypte. */
+  inHuis: string;
+  holding: string | null;
+  holdingServings: string | null;
 }) {
-  const rows = await prisma.recipe.findMany({
-    select: {
-      id: true,
-      title: true,
-      cuisine: true,
-      favorite: true,
-      createdAt: true,
-      cookLogs: { select: { cookedAt: true, rating: true, again: true } },
-    },
-    take: 500,
-  });
+  const vandaag = new Date();
+
+  const [rows, namen, wensen] = await Promise.all([
+    prisma.recipe.findMany({
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        tags: true,
+        cuisine: true,
+        diets: true,
+        data: true,
+        favorite: true,
+        createdAt: true,
+        cookLogs: { select: { cookedAt: true, rating: true, again: true } },
+      },
+      take: 500,
+    }),
+    people(),
+    voorkeuren(),
+  ]);
+
+  // Iedereen die in het huishouden staat eet mee. Wie er een avond niet is,
+  // haal je niet uit de instellingen — dan is dit voorstel voor die ene keer
+  // te streng, en dat is te overzien.
+  const gevraagd = eisen(wensen, namen);
+  const termen = parseQuery(inHuis).map((term) => term.key);
 
   const voorstellen = suggest(
     rows.map((row) => ({
@@ -245,6 +275,8 @@ async function Voorstellen({
       cuisine: row.cuisine,
       favorite: row.favorite,
       createdAt: row.createdAt,
+      diets: unpackDiets(row.diets),
+      ingredientWoorden: buildHaystack(row).ingredients,
       cookedAt: row.cookLogs.map((log) => log.cookedAt),
       ratings: row.cookLogs
         .map((log) => log.rating)
@@ -254,31 +286,76 @@ async function Voorstellen({
         no: row.cookLogs.filter((log) => log.again === false).length,
       },
     })),
-    { gepland, vandaag: new Date() },
+    { gepland, vandaag, wensen: gevraagd, inHuis: termen },
   );
 
-  if (voorstellen.length === 0) return null;
+  // Zonder recepten valt er niets te vragen; met recepten maar zonder treffer
+  // moet het veld blijven staan, anders kun je je zoekopdracht niet bijstellen.
+  if (rows.length === 0) return null;
+
+  const bewaar = (velden: Record<string, string | null>) =>
+    Object.entries(velden)
+      .filter(([, waarde]) => waarde)
+      .map(([naam, waarde]) => (
+        <input key={naam} type="hidden" name={naam} value={waarde as string} />
+      ));
 
   return (
     <section className="voorstellen">
       <h2 className="section">Misschien iets?</h2>
-      <ul>
-        {voorstellen.map((voorstel) => (
-          <li key={voorstel.id}>
-            <Link href={`/recepten/${voorstel.id}`} className="voorstel-titel">
-              {voorstel.title}
-            </Link>
-            <span className="voorstel-reden">{voorstel.reason}</span>
-            <Link
-              href={`/weekmenu?week=${week}&kies=${voorstel.id}`}
-              className="chip"
-              aria-label={`${voorstel.title} inplannen`}
-            >
-              Inplannen
-            </Link>
-          </li>
-        ))}
-      </ul>
+
+      {/* Een GET-formulier: wat je intypt komt in de URL, dus je kunt het
+          resultaat delen en de terugknop werkt zoals hij hoort. */}
+      <form className="ligt" action="/weekmenu" method="get">
+        {bewaar({ week, kies: holding, porties: holdingServings })}
+        <label className="field">
+          <span className="eyebrow">Wat ligt er in huis?</span>
+          <input
+            type="search"
+            name="ligt"
+            defaultValue={inHuis}
+            placeholder="prei, gehakt, kaas"
+            autoComplete="off"
+            enterKeyHint="search"
+          />
+        </label>
+        <button type="submit" className="secondary">
+          Zoek
+        </button>
+      </form>
+
+      {voorstellen.length === 0 ? (
+        <p className="muted hint">
+          {termen.length > 0
+            ? "Niets dat daarop past. Laat een ingrediënt weg, of kijk of er nog iets anders ligt."
+            : gevraagd.dieet.length > 0 || gevraagd.afkeer.length > 0
+              ? "Niets dat binnen jullie voorkeuren valt. Die staan in de instellingen."
+              : "Nog niets voor te stellen."}
+        </p>
+      ) : (
+        <ul>
+          {voorstellen.map((voorstel) => (
+            <li key={voorstel.id}>
+              <Link href={`/recepten/${voorstel.id}`} className="voorstel-titel">
+                {voorstel.title}
+              </Link>
+              <span className="voorstel-reden">{voorstel.reason}</span>
+              <Link
+                href={`/weekmenu?week=${week}&kies=${voorstel.id}`}
+                className="chip"
+                aria-label={`${voorstel.title} inplannen`}
+              >
+                Inplannen
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <p className="muted hint seizoenregel">
+        Wat er in {maandNaam(vandaag)} uit de volle grond komt, telt mee.{" "}
+        <Link href="/weekmenu/ideeen">Iets nieuws proberen?</Link>
+      </p>
     </section>
   );
 }

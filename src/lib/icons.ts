@@ -6,6 +6,8 @@
  * van `Timer02Icon`, en kun je een icoon vervangen zonder de rest aan te raken.
  */
 import {
+  Alert02Icon,
+  AiMagicIcon,
   ArrowLeft02Icon,
   ArrowRight02Icon,
   Calendar01Icon,
@@ -76,4 +78,6 @@ export const icons = {
   settings: Settings01Icon,
   favorite: StarIcon,
   people: UserMultiple02Icon,
+  warning: Alert02Icon,
+  ideas: AiMagicIcon,
 } satisfies Record<string, IconData>;

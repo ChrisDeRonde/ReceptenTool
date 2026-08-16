@@ -26,6 +26,8 @@ export type Omslag = {
   /** Komma-gescheiden, zoals de kolom. */
   tags?: string | null;
   cuisine?: string | null;
+  /** Komma-gescheiden dieetkenmerken, zoals de kolom. */
+  diets?: string | null;
   /** Wanneer het in de collectie kwam. */
   createdAt?: Date | null;
   /** De keren dat het gemaakt is, met wat jullie ervan vonden. */
@@ -100,6 +102,7 @@ export function receptNaarMarkdown(recept: Recipe, omslag: Omslag = {}): string 
   const voet: string[] = [];
   const etiketten = [
     omslag.cuisine,
+    ...(omslag.diets ?? "").split(",").map((t) => t.trim()).filter(Boolean),
     ...(omslag.tags ?? "").split(",").map((t) => t.trim()).filter(Boolean),
   ].filter((x): x is string => Boolean(x));
   if (etiketten.length > 0) voet.push(etiketten.map((t) => `#${slug(t)}`).join(" "));

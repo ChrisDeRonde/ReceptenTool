@@ -16,7 +16,8 @@
     "iconen": "node scripts/iconen.mjs",
     "test": "node --import ./scripts/ts-loader.mjs --test tests/*.test.ts",
     "demo": "node scripts/demo.mjs",
-    "export": "node --import ./scripts/ts-loader.mjs scripts/export.mjs"
+    "export": "node --import ./scripts/ts-loader.mjs scripts/export.mjs",
+    "dieet": "node --import ./scripts/ts-loader.mjs scripts/dieet.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",

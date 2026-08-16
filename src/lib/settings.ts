@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { schoon } from "@/lib/people";
 import { MAX_SERVINGS } from "@/lib/recipe/scale";
+import { leesVoorkeuren, type Voorkeuren } from "@/lib/voorkeuren";
+import type { Ideeenblad } from "@/lib/menu/ideeen";
 
 /**
  * Instellingen die je vanuit de app kunt wijzigen.
@@ -15,6 +17,8 @@ import { MAX_SERVINGS } from "@/lib/recipe/scale";
 
 export const HUISHOUDEN = "huishouden";
 export const PERSONEN = "personen";
+export const VOORKEUREN = "voorkeuren";
+export const IDEEEN = "ideeen";
 
 /** Twee mensen: het huishouden waar deze app voor gebouwd is. */
 export const HUISHOUDEN_STANDAARD = 2;
@@ -70,6 +74,35 @@ export async function huishouden(): Promise<number> {
 export async function people(): Promise<string[]> {
   const uitDatabase = await readSetting(PERSONEN);
   return schoon(uitDatabase ?? process.env.APP_USERS ?? "");
+}
+
+/**
+ * Wat ieder van jullie wel en niet eet.
+ *
+ * Gefilterd op wie er nu in het huishouden staat; zie `leesVoorkeuren` voor
+ * waarom een naam die je weghaalt niet stilletjes mee blijft sturen.
+ */
+export async function voorkeuren(): Promise<Voorkeuren> {
+  const [ruw, namen] = await Promise.all([readSetting(VOORKEUREN), people()]);
+  return leesVoorkeuren(ruw, namen);
+}
+
+/**
+ * De laatste oogst van de ideeën-voorsteller.
+ *
+ * In de instellingen en niet in het geheugen van de pagina: dit is de enige
+ * modelaanroep in de app die niet volgt op iets dat binnenkwam, en die wil je
+ * niet nog eens betalen omdat iemand de pagina vernieuwde.
+ */
+export async function ideeenblad(): Promise<Ideeenblad | null> {
+  const ruw = await readSetting(IDEEEN);
+  if (!ruw) return null;
+  try {
+    const blob = JSON.parse(ruw) as Ideeenblad;
+    return Array.isArray(blob?.ideeen) ? blob : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Waar de namen vandaan komen — de instellingenpagina laat dat zien. */

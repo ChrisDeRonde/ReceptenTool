@@ -97,6 +97,21 @@ function wordMatches(word: string, term: string): boolean {
   return word.endsWith(term) && word.length - term.length >= 3;
 }
 
+/**
+ * Komt deze term voor in een lijst losse woorden?
+ *
+ * De tegenhanger van `wordMatches` voor een term die zelf uit meer woorden kan
+ * bestaan: dan moeten ze er allemaal in zitten, anders sluit "rode ui" ook elk
+ * recept met een gewone ui in. Gedeeld met de voorkeuren van het huishouden en
+ * met de seizoenslijst, zodat een afkeer op precies hetzelfde woord aanslaat
+ * als waarop je het recept kunt vinden.
+ */
+export function bevatTerm(woorden: readonly string[], term: string): boolean {
+  const delen = term.split(" ").filter(Boolean);
+  if (delen.length === 0) return false;
+  return delen.every((deel) => woorden.some((woord) => wordMatches(woord, deel)));
+}
+
 export function buildHaystack(row: {
   title: string;
   description: string | null;

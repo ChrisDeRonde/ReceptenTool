@@ -157,10 +157,11 @@
         "imageUrl": null,
         "assumptions": []
       },
-      "tags": "eenpans,vegetarisch,snel",
+      "tags": "eenpans,snel",
       "mealTypes": "ontbijt,lunch,diner",
       "cuisine": "Midden-Oosters",
-      "favorite": true
+      "favorite": true,
+      "diets": "vegetarisch,notenvrij"
     },
     {
       "id": "r2",
@@ -297,7 +298,8 @@
       "tags": "pasta,meal prep",
       "mealTypes": "diner",
       "cuisine": "Italiaans",
-      "favorite": false
+      "favorite": false,
+      "diets": "notenvrij"
     },
     {
       "id": "r3",
@@ -409,7 +411,8 @@
       "tags": "pasta,snel",
       "mealTypes": "diner",
       "cuisine": "Italiaans",
-      "favorite": true
+      "favorite": true,
+      "diets": "vegetarisch"
     },
     {
       "id": "r4",
@@ -545,7 +548,8 @@
       "tags": "curry,snel",
       "mealTypes": "diner",
       "cuisine": "Thais",
-      "favorite": false
+      "favorite": false,
+      "diets": ""
     },
     {
       "id": "r5",
@@ -681,7 +685,8 @@
       "tags": "bakken,zoet",
       "mealTypes": "ontbijt,tussendoor",
       "cuisine": null,
-      "favorite": false
+      "favorite": false,
+      "diets": "vegetarisch"
     },
     {
       "id": "r6",
@@ -786,7 +791,8 @@
       "tags": "stamppot,winter",
       "mealTypes": "diner",
       "cuisine": "Nederlands",
-      "favorite": false
+      "favorite": false,
+      "diets": ""
     },
     {
       "id": "r7",
@@ -899,7 +905,8 @@
       "tags": "oven,gehakt",
       "mealTypes": "lunch,diner",
       "cuisine": "Spaans",
-      "favorite": false
+      "favorite": false,
+      "diets": "notenvrij"
     }
   ],
   "logs": [
