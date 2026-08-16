@@ -40,9 +40,7 @@ actor Kast {
         geladen = true
 
         guard let data = try? Data(contentsOf: bestand) else { return }
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        guard let inhoud = try? decoder.decode(Inhoud.self, from: data) else {
+        guard let inhoud = try? JSONDecoder.klapper.decode(Inhoud.self, from: data) else {
             // Onleesbaar bestand: weggooien en opnieuw ophalen is beter dan de
             // app laten struikelen over een kapotte cache. Er gaat niets
             // verloren wat niet op de server staat.
@@ -90,9 +88,7 @@ actor Kast {
     }
 
     private func schrijf() throws {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        let data = try encoder.encode(
+        let data = try JSONEncoder.klapper.encode(
             Inhoud(recepten: Array(recepten.values), instellingen: instellingen)
         )
         try FileManager.default.createDirectory(at: map, withIntermediateDirectories: true)

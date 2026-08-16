@@ -590,8 +590,18 @@ de cache dat opgeruimd hoort te worden. Wijs hem desnoods naar je echte server
 ruimt zijn eigen kooklog- en weekmenu-regels weer op en raakt nooit een recept
 aan.
 
-Dit staat bewust buiten `npm test`: die draait pure functies zonder server en
-moet in twee seconden klaar zijn.
+En omdat er geen Swift-compiler in de buurt is:
+
+```
+npm run swift:vorm
+```
+
+Die trekt de veldnamen uit `ios-app/Klapper/Model/Contract.swift` en legt ze
+naast de echte JSON. Een noodgreep — normaal doet de compiler dit — maar hij
+vangt wel de klasse fouten die je anders pas op je eerste Xcode-avond vindt.
+
+Allebei staan ze bewust buiten `npm test`: die draait pure functies zonder
+server en moet in twee seconden klaar zijn.
 
 De app-kant staat in `ios-app/`, met een waarschuwing bovenaan: die Swift is
 geschreven zonder dat hij ergens gecompileerd kon worden.
@@ -1036,6 +1046,7 @@ op dezelfde endpoint worden aangesloten.
 | `scripts/demo.mjs`           | Proefopstelling: eigen database, eigen foto's, `npm run demo`. |
 | `scripts/dieet.mjs`          | Vult het dieetkenmerk aan bij bestaande recepten (`npm run dieet`). |
 | `scripts/api-check.mjs`      | Controleert `/api/v1` over echte HTTP (`npm run api:check`).        |
+| `scripts/swift-vorm.mjs`     | Legt de Swift-structs naast de echte JSON (`npm run swift:vorm`).   |
 | `scripts/export.mjs`         | De recepten als markdown wegschrijven; draait mee in de back-up. |
 | `scripts/ts-loader.mjs`      | App-code rechtstreeks vanuit Node draaien (tests én export). |
 | `src/lib/shopping/units.ts`  | Hoeveelheden optellen en namen gelijktrekken.               |
@@ -1144,3 +1155,4 @@ optuigen die groter is dan de app zelf.
 | `npm run export`    | Alle recepten als markdown naar `export/`          |
 | `npm run dieet`     | Dieetkenmerk aanvullen bij bestaande recepten      |
 | `npm run api:check` | `/api/v1` langs de meetlat, tegen een draaiende server |
+| `npm run swift:vorm` | Klopt `Contract.swift` nog met wat de server stuurt   |

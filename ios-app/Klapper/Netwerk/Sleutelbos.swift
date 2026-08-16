@@ -12,6 +12,12 @@ import Security
 /// moet er ook bij kunnen, en die kan draaien terwijl het scherm op slot zit.
 /// De toegangsgroep is dezelfde App Group als de gedeelde map, zodat app en
 /// extensie hetzelfde token zien.
+///
+/// `@unchecked Sendable` en niet zomaar: dit ding wordt vanuit twee kanten
+/// aangeraakt — de `Klant`-actor en de hoofddraad — en houdt zelf geen
+/// veranderlijke staat vast. Alles gaat rechtstreeks naar `UserDefaults` en de
+/// Keychain, en die zijn allebei draadveilig. Komt er ooit een veld bij dat
+/// wél in het geheugen blijft staan, dan klopt deze belofte niet meer.
 final class Sleutelbos: @unchecked Sendable {
     static let standaard = Sleutelbos()
 

@@ -60,7 +60,7 @@ actor Klant {
         var verzoek = URLRequest(url: basis.appending(path: "api/v1/aanmelden"))
         verzoek.httpMethod = "POST"
         verzoek.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        verzoek.httpBody = try JSONEncoder().encode(["wachtwoord": wachtwoord])
+        verzoek.httpBody = try JSONEncoder.klapper.encode(["wachtwoord": wachtwoord])
 
         let (data, antwoord) = try await sessie.data(for: verzoek)
         let status = (antwoord as? HTTPURLResponse)?.statusCode ?? 0
@@ -147,27 +147,30 @@ actor Klant {
         )
     }
 
+    /// Wat er terugkomt als je een gerecht inplant.
+    ///
+    /// Geen `Weekmenu.Regel`: die draagt een titel en die stuurt de server hier
+    /// niet mee — die weet de app al. Er een lege string in zetten zou een
+    /// leugen zijn die pas opvalt als hij op het scherm staat.
+    struct Ingepland: Decodable, Sendable {
+        let id: String
+        let dag: String
+        let receptId: String
+        let porties: Int?
+        let week: String
+    }
+
     @discardableResult
-    func planIn(receptId: String, dag: String, porties: Int?) async throws -> Weekmenu.Regel {
+    func planIn(receptId: String, dag: String, porties: Int?) async throws -> Ingepland {
         struct Invoer: Encodable {
             let receptId: String
             let dag: String
             let porties: Int?
         }
-        struct Gezet: Decodable {
-            let id: String
-            let dag: String
-            let receptId: String
-            let porties: Int?
-        }
-        let gezet: Gezet = try await stuur(
+        return try await stuur(
             "api/v1/weekmenu",
             methode: "POST",
             body: Invoer(receptId: receptId, dag: dag, porties: porties)
-        )
-        return Weekmenu.Regel(
-            id: gezet.id, dag: gezet.dag, receptId: gezet.receptId,
-            titel: "", porties: gezet.porties
         )
     }
 
@@ -207,7 +210,7 @@ actor Klant {
         verzoek.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         if !(body is Optioneel) {
             verzoek.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            verzoek.httpBody = try JSONEncoder().encode(body)
+            verzoek.httpBody = try JSONEncoder.klapper.encode(body)
         }
         return try await voerUit(verzoek)
     }
@@ -239,11 +242,9 @@ actor Klant {
         try? decoder.decode(Serverfout.self, from: data).uitleg
     }
 
-    private let decoder: JSONDecoder = {
-        let d = JSONDecoder()
-        d.dateDecodingStrategy = .iso8601
-        return d
-    }()
+    /// Zie `Codering.swift`: de kale `.iso8601` weigert de milliseconden die
+    /// de server in elk tijdstempel zet.
+    private let decoder = JSONDecoder.klapper
 }
 
 /// Voor verzoeken zonder body. Een `nil` als generieke waarde meegeven kan niet

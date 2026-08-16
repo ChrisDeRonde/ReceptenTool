@@ -12,9 +12,37 @@ je `⌘B` drukt, komt er waarschijnlijk een lijst met fouten. Dat is verwacht, g
 teken dat er iets grondig mis is: typefouten, een verkeerd overload, een
 `Sendable`-klacht. Plak ze terug, dan zijn ze zo weg.
 
-Wat er wél is nagekeken: de serverkant. Alle endpoints hieronder zijn met echte
-HTTP-aanroepen tegen een draaiende server getest — `npm run api:check`, 46
-controles — en de vorm van wat ze teruggeven staat in de testsuite.
+Wat er wél is nagekeken:
+
+- **De serverkant.** `npm run api:check` — 46 controles over echte HTTP, en de
+  vorm van wat er teruggegeven wordt staat in de testsuite.
+- **Of `Contract.swift` klopt met wat de server werkelijk stuurt.**
+  `npm run swift:vorm` trekt de veldnamen uit de Swift-bron en legt ze naast de
+  echte JSON: 18 structs, allemaal goed. Dat vangt niet alles — typen ziet het
+  niet, dus `Int` waar `Double` hoort komt er nog steeds doorheen — maar wel de
+  klasse fouten die je anders pas in Xcode vindt.
+
+### Wat die controle al opleverde
+
+Drie dingen zaten er fout, en die zijn hier al gerepareerd:
+
+1. **De datums.** `JSONDecoder.dateDecodingStrategy = .iso8601` weigert
+   fractionele seconden, en Node zet ze in élk tijdstempel
+   (`2026-08-16T21:23:20.756Z`). Elke decodering zou zijn mislukt — de app had
+   geen enkel recept binnengekregen, met als enige spoor een foutmelding die
+   nergens naar wijst. Staat nu in `Netwerk/Codering.swift`.
+2. **De foto's.** Die komen als pad binnen (`/api/foto/abc.jpg`), niet als
+   volledig adres. `AsyncImage` had er stil een leeg vlak van gemaakt.
+3. **Een ontbrekende `import UIKit`** in `Stijl.swift`.
+
+### Waar ik nog steeds in het duister tast
+
+Concurrency. Swift 6 is streng over wat er tussen actors door mag, en dat is
+precies wat een compiler je vertelt en een leesronde niet. Als er iets gaat
+klagen, is het waarschijnlijk `@State private var voorraad = Voorraad()` in
+`KlapperApp.swift` (een `@MainActor`-type in een `App`-struct) of het doorgeven
+van `Sleutelbos` aan de `Klant`-actor. Allebei gangbare patronen, maar ik heb ze
+niet kunnen laten controleren.
 
 ## Wat er staat
 
