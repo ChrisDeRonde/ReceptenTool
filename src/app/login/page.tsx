@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Avatar } from "@/components/Avatar";
-import { Icon } from "@/components/Icon";
-import { icons } from "@/lib/icons";
+import { Merk } from "@/components/Merk";
 import { MIN_PASSWORD_LENGTH, configuredPassword } from "@/lib/session";
 import { people } from "@/lib/settings";
 import { bekendeNaam } from "@/lib/people";
@@ -43,9 +42,9 @@ export default async function LoginPage({
     <main className="gate">
       <div className="gate-card">
         <span className="gate-mark" aria-hidden>
-          <Icon icon={icons.plate} size={30} strokeWidth={1.2} />
+          <Merk size={30} />
         </span>
-        <h1>Recepten</h1>
+        <h1>Klapper</h1>
 
         {configured ? (
           <>

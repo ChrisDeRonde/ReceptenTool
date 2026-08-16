@@ -23,9 +23,8 @@ import {
 
 export const dynamic = "force-dynamic";
 
-// `absolute` zodat het sjabloon uit de hoofdopmaak er niet nóg eens "Recepten"
-// achter plakt.
-export const metadata = { title: { absolute: "Recepten" } };
+// Geen eigen titel: de thuispagina draagt gewoon de naam van de app, en die
+// staat als standaard in de hoofdopmaak.
 
 export default async function HomePage({
   searchParams,

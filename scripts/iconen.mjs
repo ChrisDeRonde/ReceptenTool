@@ -2,9 +2,9 @@
 /**
  * De app-iconen tekenen.
  *
- * Eén bron — het bordje dat ook in de app staat (Hugeicons Dish01) — en
- * daaruit alle maten die iOS, Android en straks Xcode willen. Zo hoef je bij
- * een nieuw icoon niet in acht bestanden te knippen.
+ * Eén bron — het merk van Klapper: een kookboek met een koksmuts en een lint —
+ * en daaruit alle maten die iOS, Android en Xcode willen. Zo hoef je bij een
+ * wijziging niet in zes bestanden te knippen.
  *
  * Draaien: npm run iconen
  */
@@ -15,12 +15,16 @@ import sharp from "sharp";
 
 const OUT = path.join(process.cwd(), "public", "icoon");
 
-/** Dezelfde salie en hetzelfde papier als in globals.css. */
-const INK = "#fffefa";
-const BG = "#477060";
+/** Dezelfde salie en hetzelfde papier als in globals.css, plus het lint. */
+const PAPIER = "#fffefa";
+const SALIE = "#477060";
+const LINT = "#d8a441";
 
 /**
- * Het bordje uit de app, op een vierkant vlak.
+ * Het merk op een vierkant vlak, omgekeerd: een papieren boek op salie.
+ *
+ * Zo is de tegel zelf de kleurvlek tussen de andere iconen op een beginscherm,
+ * in plaats van een klein merkje op een lichte achtergrond.
  *
  * `inset` is de kantlijn: bij een maskable icoon knipt het systeem er een
  * willekeurige vorm uit, en dan moet de tekening ruim binnen de veilige cirkel
@@ -29,19 +33,17 @@ const BG = "#477060";
 function svg(size, inset) {
   const glyph = size * (1 - inset * 2);
   const offset = size * inset;
-  // Lijndikte meeschalen: het bronicoon is 24 breed met 1.5 lijn, maar dat
-  // wordt dun op een klein icoon. Iets steviger tekent beter op 48px.
-  const stroke = 1.9;
 
   return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  <rect width="${size}" height="${size}" fill="${BG}"/>
-  <g transform="translate(${offset} ${offset}) scale(${glyph / 24})"
-     fill="none" stroke="${INK}" stroke-width="${stroke}"
-     stroke-linecap="round" stroke-linejoin="round">
-    <path d="M2 17H22"/>
-    <path d="M12 7C12 7 13.5 5.96638 13.5 4.69135C13.5 2.43622 10.5 2.43622 10.5 4.69135C10.5 5.96638 12 7 12 7Z"/>
-    <path d="M3 17L3.62127 19.4851C3.84385 20.3754 4.64382 21 5.56155 21H18.4384C19.3562 21 20.1561 20.3754 20.3787 19.4851L21 17"/>
-    <path d="M20.5 14.5C20.0017 10.2768 16.3861 7 12 7C7.61386 7 3.99834 10.2768 3.5 14.5"/>
+  <rect width="${size}" height="${size}" fill="${SALIE}"/>
+  <g transform="translate(${offset} ${offset}) scale(${glyph / 24})">
+    <rect x="3.2" y="1.8" width="17.6" height="19.6" rx="2.6" fill="${PAPIER}"/>
+    <path d="M10 15.6 H13.8 V23.4 L11.9 21.6 L10 23.4 Z" fill="${LINT}"/>
+    <rect x="5.9" y="15.9" width="12.2" height="3" rx="1.3" fill="${SALIE}"/>
+    <circle cx="8.9" cy="8.1" r="2.85" fill="${SALIE}"/>
+    <circle cx="15.1" cy="8.1" r="2.85" fill="${SALIE}"/>
+    <circle cx="12" cy="6.7" r="3.45" fill="${SALIE}"/>
+    <rect x="8.7" y="10.1" width="6.6" height="3.3" rx="0.8" fill="${SALIE}"/>
   </g>
 </svg>`);
 }
@@ -49,8 +51,7 @@ function svg(size, inset) {
 /**
  * Wat er gemaakt wordt.
  *
- * De 1024 is er voor later: dat is precies wat Xcode vraagt als je er ooit een
- * Capacitor-schil omheen zet, en dan hoef je niets opnieuw te tekenen.
+ * De 1024 is wat Xcode vraagt voor de app-schil; die staat in `ios-schil/`.
  */
 const TARGETS = [
   { file: "icoon-192.png", size: 192, inset: 0.2 },

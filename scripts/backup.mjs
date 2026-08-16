@@ -20,7 +20,7 @@
  *
  * Draaien:  npm run db:backup
  * Elke nacht om 03:15 (crontab -e):
- *   15 3 * * * cd /pad/naar/receptentool && /usr/bin/npm run db:backup >> backups/log.txt 2>&1
+ *   15 3 * * * cd /pad/naar/klapper && /usr/bin/npm run db:backup >> backups/log.txt 2>&1
  */
 
 import { execFile } from "node:child_process";

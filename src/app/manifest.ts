@@ -13,8 +13,8 @@ import type { MetadataRoute } from "next";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Recepten",
-    short_name: "Recepten",
+    name: "Klapper",
+    short_name: "Klapper",
     description: "Recepten van Instagram, AH en websites, netjes opgeslagen.",
     lang: "nl",
     // Volledig scherm zonder Safari-balk. Precies wat de schil straks ook doet.

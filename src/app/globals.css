@@ -75,6 +75,11 @@
   --warn: #87672a;
   /* Sterren. Amber uit dezelfde warme familie als --sand, geen markeerstift. */
   --ster: #a97b1c;
+  /* Het lint van het merk. Lichter dan --ster, want die haalt naast salie
+     maar 1,4:1 en verdwijnt dan in de kaft. Leeft alleen in het merkteken. */
+  --lint: #d8a441;
+  /* Waar het merk uit gesneden lijkt: standaard het papier eronder. */
+  --merk-tegen: var(--surface);
 
   /* Een streepje dat over een gekleurd vlak loopt (de balk van de timer).
      Niet --line: die is voor papier, niet voor pastel. */
@@ -2138,6 +2143,9 @@ button.round.primary {
   border-radius: 50%;
   background: var(--accent-soft);
   color: var(--accent);
+  /* Het merk lijkt uit het vlak eronder gesneden, en dat is hier het
+     pastelrondje en niet het papier. */
+  --merk-tegen: var(--accent-soft);
 }
 
 .gate-card button[type="submit"] {

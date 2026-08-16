@@ -1,8 +1,13 @@
-# ReceptenTool
+# Klapper
 
 Recepten van Instagram, de AH-app en willekeurige websites via de iOS-share
 sheet opslaan, en ze automatisch laten uitschrijven tot één helder,
 kookbaar recept.
+
+Vernoemd naar de receptenklapper die vroeger in elke keukenla lag: geen
+archief van alles wat er bestaat, maar een selectie van wat jullie echt
+maken. En een klapper is ook een voltreffer — dat is precies wat de kooklog
+met sterren bijhoudt.
 
 ## Hoe het werkt
 
@@ -748,7 +753,7 @@ npm run db:backup
 Zet hem in de cron — één keer per nacht is genoeg:
 
 ```
-15 3 * * * cd /pad/naar/receptentool && /usr/bin/npm run db:backup >> backups/log.txt 2>&1
+15 3 * * * cd /pad/naar/klapper && /usr/bin/npm run db:backup >> backups/log.txt 2>&1
 ```
 
 Elke run maakt één map `backups/2026-08-11_031500/` met daarin `recepten.db`,

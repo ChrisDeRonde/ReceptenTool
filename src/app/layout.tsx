@@ -4,11 +4,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   // Elke pagina vult alleen zijn eigen stuk in. Zonder dit heette elk tabblad
-  // "Recepten" — in je geschiedenis, in de tabbladenlijst en als eerste wat een
+  // "Klapper" — in je geschiedenis, in de tabbladenlijst en als eerste wat een
   // schermlezer voorleest, en dan weet je van geen van de acht welke het is.
-  title: { default: "Recepten", template: "%s — Recepten" },
+  title: { default: "Klapper", template: "%s — Klapper" },
   description: "Recepten van Instagram, AH en websites, netjes opgeslagen.",
-  applicationName: "Recepten",
+  applicationName: "Klapper",
   icons: {
     icon: [
       { url: "/icoon/icoon-192.png", sizes: "192x192", type: "image/png" },
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     // Zonder dit opent "Zet op beginscherm" alsnog een Safari-venster met balk.
     capable: true,
-    title: "Recepten",
+    title: "Klapper",
     // Doorzichtige statusbalk: de klok staat over onze eigen achtergrond, en
     // de veilige zones vangen we in CSS op.
     statusBarStyle: "default",
