@@ -4,6 +4,33 @@ Een SwiftUI-app die praat met de Klapper-server die je al draait. De server
 blijft de ene waarheid; dit toestel houdt een kopie zodat alles ook werkt als er
 even geen bereik is.
 
+## Doe je dit met Claude Code op je Mac?
+
+Begin dan hier. Open een terminal in de projectmap en start `claude`. Plak dit
+als eerste bericht — dan begint hij niet koud:
+
+> Ik wil de iOS-app in `ios-app/` aan de praat krijgen. Lees eerst
+> `ios-app/README.md` helemaal; daar staat wat er is, wat er nagekeken is en
+> waar de valkuilen zitten.
+>
+> Het Xcode-project heb ik al aangemaakt (`../Klapper/Klapper.xcodeproj`) met de
+> bestanden uit `ios-app/Klapper` erin. Die Swift is nog nooit gecompileerd.
+>
+> Doe dit: bouw met `xcodebuild`, lees de fouten, repareer ze in de bronbestanden
+> onder `ios-app/Klapper`, en herhaal tot het bouwt. Start daarna de simulator en
+> laat me een schermafdruk zien van het overzicht.
+>
+> Draai `npm run demo` in een tweede venster zodat de app een server heeft
+> (`http://localhost:3100`, wachtwoord `proefkonijn`).
+
+Twee dingen die hij moet weten en die verderop in dit bestand staan uitgelegd:
+**verander de datum-decodering niet terug naar `.iso8601`**, en **maak van de
+`Kast` geen SwiftData** — allebei zijn het bewuste keuzes met een reden die in
+de code staat. Wat er verder omgegooid moet worden mag hij zelf beslissen.
+
+Nakijken kan met `npm run api:check` (de serverkant) en `npm run swift:vorm`
+(of de Swift-structs nog kloppen met wat de server stuurt).
+
 ## Lees dit eerst
 
 **Deze Swift-code is nooit gecompileerd.** Er staat geen Xcode op de machine
@@ -75,7 +102,9 @@ niet kunnen laten controleren.
    `.ttf`-varianten van Google Fonts. Zet de bestandsnamen in Info.plist onder
    `UIAppFonts`. Zonder deze stap valt alles terug op het systeemfont, en dat
    zegt de app tegen je in de console.
-6. **Bouwen.** Fouten terugkoppelen.
+6. **Bouwen.** Draait Claude Code op je Mac, laat hem dan `xcodebuild` doen en
+   de fouten zelf oplossen — zie bovenaan. Anders: <kbd>⌘B</kbd> en de lijst
+   terugkoppelen.
 
 ## De server
 
