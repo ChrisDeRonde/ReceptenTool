@@ -179,6 +179,28 @@ actor Klant {
         let _: Weg = try await stuur("api/v1/weekmenu/\(regelId)", methode: "DELETE", body: Optioneel.geen)
     }
 
+    /// Voor de deelextensie: een link of stuk tekst binnenbrengen. Antwoordt
+    /// meteen met 202 — het ophalen en verwerken gebeurt op de server, dus dit
+    /// hoeft niet te wachten tot er een recept uit komt.
+    struct Gedeeld: Decodable, Sendable {
+        let id: String
+        let status: String
+    }
+
+    @discardableResult
+    func deel(url: String?, tekst: String?, door: String?) async throws -> Gedeeld {
+        struct Invoer: Encodable {
+            let url: String?
+            let tekst: String?
+            let door: String?
+        }
+        return try await stuur(
+            "api/v1/delen",
+            methode: "POST",
+            body: Invoer(url: url, tekst: tekst, door: door)
+        )
+    }
+
     // MARK: - Het gewone werk
 
     private func haal<T: Decodable>(_ pad: String, query: [URLQueryItem] = []) async throws -> T {

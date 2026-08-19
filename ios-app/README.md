@@ -146,10 +146,72 @@ synchronisatie.
 ## Wat er nog niet is
 
 - De receptpagina, de kookmodus, het weekmenu, de boodschappenlijst en de inbox.
-- De deelextensie. Die wordt bij deze route eenvoudiger dan de variant in
-  `ios-schil/`: `POST /api/v1/delen` met het token dat via de App Group al in de
-  Keychain staat. Geen tweede geheim op het toestel dus, en niets in te vullen.
 - Live Activities voor de kookwekkers.
 
 De volgorde die ik zou aanhouden staat in de begroting: eerst dit ene scherm
 helemaal af, want daarna weet je of de rest van de schatting klopt.
+
+## De deelextensie (`KlapperDelen`)
+
+De Swift ervoor staat al in `ios-app/KlapperDelen/`:
+
+| Bestand | Wat het doet |
+|---|---|
+| `DeelExtensieController.swift` | De `NSExtensionPrincipalClass` — vervangt het storyboard dat Xcode neerzet. |
+| `DeelModel.swift` | Leest de gedeelde link/tekst uit `NSExtensionContext`, de huisgenoten uit `Kast`, en stuurt naar de server. |
+| `DeelScherm.swift` | Het kaartje zelf, in dezelfde SwiftUI-huisstijl als de rest van de app (`Stijl.swift` — geen eigen kleuren). |
+
+Eenvoudiger dan de variant in `ios-schil/`: `POST /api/v1/delen` met het token
+dat via de Keychain al gedeeld wordt tussen app en extensie. Geen tweede
+geheim op het toestel dus, en niets in te vullen — wel nog een naamkaartje als
+er meer dan één huisgenoot is, want dat weet de server niet uit zichzelf.
+
+**Dit is nog nooit gecompileerd**, net als de rest — dezelfde reden als
+hierboven. Zet Claude Code op je Mac er weer op met dit bericht:
+
+> De deelextensie staat in `ios-app/KlapperDelen/` (`DeelExtensieController`,
+> `DeelModel`, `DeelScherm`) en moet nog aan het Xcode-project. Lees eerst
+> `ios-app/README.md` vanaf "De deelextensie" — daar staat de opzet en wat er
+> nog moet gebeuren.
+>
+> Het `KlapperDelen`-target bestaat al, met App Groups en Keychain Sharing
+> (groep `nl.klapper.gedeeld` op allebei) aangezet. Doe dit:
+>
+> 1. Voeg de drie nieuwe bestanden toe aan het `KlapperDelen`-target.
+> 2. Voeg ook `Model/Contract.swift`, `Netwerk/Klant.swift`,
+>    `Netwerk/Sleutelbos.swift`, `Netwerk/Codering.swift`, `Opslag/Kast.swift`
+>    en `Stijl.swift` toe aan het `KlapperDelen`-target (target membership
+>    aanvinken in het bestandsinspector-paneel) — die heeft de extensie nodig
+>    en ze staan nu alleen op het `Klapper`-target.
+> 3. Verwijder het standaard-sjabloon dat Xcode bij het aanmaken van het target
+>    neerzette (`ShareViewController.swift`/`.storyboard` of
+>    `MainInterface.storyboard`, afhankelijk van wat er staat) — die wordt niet
+>    meer gebruikt.
+> 4. Pas de Info.plist van het `KlapperDelen`-target aan: `NSExtensionMainStoryboard`
+>    weg, `NSExtensionPrincipalClass` erbij met de waarde
+>    `$(PRODUCT_MODULE_NAME).DeelExtensieController`, en een
+>    `NSExtensionActivationRule` die één weblink of geselecteerde tekst
+>    toestaat (`NSExtensionActivationSupportsWebURLWithMaxCount = 1`,
+>    `NSExtensionActivationSupportsText = true`). Het precieze stuk plist staat
+>    als voorbeeld in `ios-schil/Info-fragment.plist` — zelfde sleutels, andere
+>    klassenaam.
+> 5. Zet de Minimum Deployment van `KlapperDelen` gelijk aan die van `Klapper`
+>    (18.0) als dat nog niet zo is.
+> 6. Bouw met `xcodebuild`, los fouten op in de bronbestanden, en herhaal tot
+>    het bouwt.
+> 7. Test in de Simulator via Safari's deelmenu op een willekeurige pagina:
+>    zoek "Klapper" (of "Bewaren in Klapper") in de lijst, tik erop, en
+>    controleer of het kaartje verschijnt en "Bewaard" teruggeeft. Werkt het
+>    niet meteen, kijk dan eerst of `Sleutelbos.serveradres` en `.token` in de
+>    extensie hetzelfde zijn als in de app — dat loopt via de Keychain Sharing-
+>    groep, en als die per ongeluk verschilt op de twee targets krijg je een
+>    stille login-vraag in plaats van een bouwfout.
+>
+> Laat me daarna een schermafdruk zien van het deelkaartje in de Simulator.
+
+Wat ik niet heb kunnen nakijken, want daar heb je Xcode voor nodig: of
+`Kast()` in de extensie hetzelfde bestand vindt als de app (moet, via de App
+Group), en of het `kSecAttrAccessGroup` in `Sleutelbos.swift` er expliciet bij
+moet — met precies één Keychain-groep in de entitlements van beide targets
+hoort de impliciete standaardgroep al te werken, maar dat is iets om in de
+gegenereerde `.entitlements`-bestanden na te kijken, niet om te gokken.
