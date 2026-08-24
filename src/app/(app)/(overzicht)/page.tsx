@@ -25,6 +25,8 @@ import {
   score,
   type Hit,
 } from "@/lib/recipe/search";
+import { voorkeuren } from "@/lib/settings";
+import { beoordeelRecept, iemandZwanger, type Niveau } from "@/lib/zwanger";
 
 export const dynamic = "force-dynamic";
 
@@ -90,12 +92,29 @@ export default async function HomePage({
   const complete = scored.filter((entry) => (entry.hit?.matched ?? 0) === terms.length);
   const partial = scored.filter((entry) => (entry.hit?.matched ?? 0) < terms.length);
 
-  const [usedMealTypes, usedCuisines, usedDiets, ratings] = await Promise.all([
+  const [usedMealTypes, usedCuisines, usedDiets, ratings, wensen] = await Promise.all([
     collectMealTypes(),
     collectCuisines(),
     collectDiets(),
     collectRatings(),
+    voorkeuren(),
   ]);
+
+  // Staat het zwangerschapsvinkje aan, dan hoort een tegel het al te verraden —
+  // anders klik je een gerecht open dat toch niet kan. Alleen het zwaarste
+  // niveau per recept; de uitleg staat op de receptpagina zelf.
+  const zwangerAan = iemandZwanger(wensen).length > 0;
+  const zwangerPer = new Map<string, Niveau>();
+  if (zwangerAan) {
+    for (const recipe of filtered) {
+      const zwaarste = beoordeelRecept(buildHaystack(recipe).ingredientNamen).zwaarste;
+      // Alleen rood en oranje op een tegel. Een groen vlaggetje op de helft van
+      // de collectie zegt niets en maakt de andere helft juist minder zichtbaar.
+      if (zwaarste === "onveilig" || zwaarste === "pasop") {
+        zwangerPer.set(recipe.id, zwaarste);
+      }
+    }
+  }
 
   const href = (next: {
     maaltijd?: MealType | null;
@@ -231,12 +250,12 @@ export default async function HomePage({
         </div>
       ) : (
         <>
-          <Grid entries={complete} terms={terms.length} ratings={ratings} />
+          <Grid entries={complete} terms={terms.length} ratings={ratings} zwangerPer={zwangerPer} />
 
           {partial.length > 0 && (
             <>
               <h2 className="section near">Bijna</h2>
-              <Grid entries={partial} terms={terms.length} ratings={ratings} />
+              <Grid entries={partial} terms={terms.length} ratings={ratings} zwangerPer={zwangerPer} />
             </>
           )}
         </>
@@ -262,10 +281,12 @@ function Grid({
   entries,
   terms,
   ratings,
+  zwangerPer,
 }: {
   entries: Entry[];
   terms: number;
   ratings: Map<string, number>;
+  zwangerPer: Map<string, Niveau>;
 }) {
   if (entries.length === 0) return null;
 
@@ -307,6 +328,12 @@ function Grid({
                   <span className="clock">
                     <Icon icon={icons.clock} size={13} />
                     {recipe.totalMinutes} min
+                  </span>
+                )}
+                {zwangerPer.get(recipe.id) && (
+                  <span className={`zw-tegel ${zwangerPer.get(recipe.id)}`}>
+                    {zwangerPer.get(recipe.id) === "onveilig" ? "Niet eten" : "Pas op"}
+                    <span className="sr"> tijdens de zwangerschap</span>
                   </span>
                 )}
               </div>

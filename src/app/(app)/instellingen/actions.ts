@@ -43,7 +43,10 @@ export async function saveSettings(formData: FormData): Promise<void> {
       formData.getAll(`dieet:${naam}`).filter((value) => typeof value === "string"),
     );
     const afkeer = schoonAfkeer(String(formData.get(`afkeer:${naam}`) ?? ""));
-    if (dieet.length > 0 || afkeer.length > 0) voorkeuren[naam] = { dieet, afkeer };
+    const zwanger = formData.get(`zwanger:${naam}`) === "aan";
+    if (dieet.length > 0 || afkeer.length > 0 || zwanger) {
+      voorkeuren[naam] = { dieet, afkeer, zwanger };
+    }
   }
   // Samenvoegen en niet overschrijven: het formulier kent alleen de namen die
   // erop stonden, dus alles overschrijven wist de voorkeur van wie je er net

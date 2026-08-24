@@ -24,6 +24,14 @@ export type Voorkeur = {
   dieet: Diet[];
   /** Wat deze persoon niet eet, in eigen woorden. Genormaliseerd opgeslagen. */
   afkeer: string[];
+  /**
+   * Staat het zwangerschapsvinkje aan.
+   *
+   * Een vlag en geen dieet: het is tijdelijk, het gaat over de bereiding zo
+   * goed als over het ingrediënt, en het kent drie uitkomsten in plaats van
+   * "mag wel" en "mag niet". Zie `lib/zwanger.ts`.
+   */
+  zwanger: boolean;
 };
 
 export type Voorkeuren = Record<string, Voorkeur>;
@@ -34,7 +42,7 @@ const AFKEER_MAX = 12;
 /** Losse letters passen overal op; twee tekens is de ondergrens. */
 const AFKEER_MIN_LENGTE = 2;
 
-export const LEEG: Voorkeur = { dieet: [], afkeer: [] };
+export const LEEG: Voorkeur = { dieet: [], afkeer: [], zwanger: false };
 
 /**
  * De opgeslagen JSON terug naar voorkeuren, gefilterd op wie er nu is.
@@ -63,7 +71,7 @@ export function leesVoorkeuren(
     const rij = (blob as Record<string, unknown>)[naam];
     if (!rij || typeof rij !== "object") continue;
     const voorkeur = maakVoorkeur(rij as Record<string, unknown>);
-    if (voorkeur.dieet.length > 0 || voorkeur.afkeer.length > 0) uit[naam] = voorkeur;
+    if (ietsIngevuld(voorkeur)) uit[naam] = voorkeur;
   }
   return uit;
 }
@@ -102,7 +110,7 @@ export function voegSamen(
 
   for (const naam of namen) {
     const voorkeur = bijgewerkt[naam];
-    if (voorkeur && (voorkeur.dieet.length > 0 || voorkeur.afkeer.length > 0)) {
+    if (voorkeur && ietsIngevuld(voorkeur)) {
       blob[naam] = voorkeur;
     } else {
       delete blob[naam];
@@ -115,7 +123,16 @@ export function voegSamen(
 function maakVoorkeur(rij: Record<string, unknown>): Voorkeur {
   const dieet = Array.isArray(rij.dieet) ? rij.dieet.map(String) : [];
   const afkeer = Array.isArray(rij.afkeer) ? rij.afkeer.map(String) : [];
-  return { dieet: normalizeDiets(dieet), afkeer: schoonAfkeer(afkeer.join(",")) };
+  return {
+    dieet: normalizeDiets(dieet),
+    afkeer: schoonAfkeer(afkeer.join(",")),
+    zwanger: rij.zwanger === true,
+  };
+}
+
+/** Een voorkeur zonder inhoud hoeft niet bewaard te worden. */
+function ietsIngevuld(voorkeur: Voorkeur): boolean {
+  return voorkeur.dieet.length > 0 || voorkeur.afkeer.length > 0 || voorkeur.zwanger;
 }
 
 /**

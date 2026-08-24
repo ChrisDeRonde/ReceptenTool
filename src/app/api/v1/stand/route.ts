@@ -54,7 +54,7 @@ export async function GET(request: Request): Promise<Response> {
       voorkeuren: Object.fromEntries(
         Object.entries(wensen).map(([naam, wens]) => [
           naam,
-          { dieet: wens.dieet, afkeer: wens.afkeer },
+          { dieet: wens.dieet, afkeer: wens.afkeer, zwanger: wens.zwanger },
         ]),
       ),
     },

@@ -14,6 +14,13 @@ import { prisma } from "@/lib/db";
 import { currentPerson } from "@/lib/who";
 import { huishouden, voorkeuren } from "@/lib/settings";
 import { bezwaren } from "@/lib/voorkeuren";
+import {
+  BRON,
+  beoordeelIngredient,
+  beoordeelRecept,
+  iemandZwanger,
+  NIVEAU_LABEL,
+} from "@/lib/zwanger";
 import { datumKort, opsomming } from "@/lib/tijd";
 import { icons } from "@/lib/icons";
 import {
@@ -96,7 +103,15 @@ export default async function RecipePage({
   // dieet-etiket: dít is de kant waar iemand op kan vertrouwen. Dezelfde
   // woordenlijst als de zoekfunctie, zodat "paprika's" en "paprika" hetzelfde
   // woord zijn.
-  const tegen = bezwaren(await voorkeuren(), buildHaystack(row).ingredientNamen);
+  const wensen = await voorkeuren();
+  const namenVanHetRecept = buildHaystack(row).ingredientNamen;
+  const tegen = bezwaren(wensen, namenVanHetRecept);
+
+  // Het zwangerschapsvinkje. Staat het bij niemand aan, dan kost dit niets en
+  // verandert er niets aan de pagina.
+  const zwangeren = iemandZwanger(wensen);
+  const zwangerAan = zwangeren.length > 0;
+  const oordeel = beoordeelRecept(zwangerAan ? namenVanHetRecept : []);
 
   const servings = parseServings(query.porties, base.servings, thuis);
   const recipe = servings === null ? base : scaleRecipe(base, servings);
@@ -171,6 +186,56 @@ export default async function RecipePage({
             ))}
             . <span className="muted">Afgeleid uit de ingrediënten, geen garantie.</span>
           </p>
+        )}
+
+        {/* Bovenaan en niet onderaan: dit moet je gelezen hebben vóór je
+            boodschappen doet, niet nadat je het gekookt hebt. */}
+        {zwangerAan && oordeel.zwaarste !== null && (
+          <div className={`zw-kaart ${oordeel.zwaarste}`} role="note">
+            <p className="zw-kop">
+              <Icon
+                icon={oordeel.onveilig.length > 0 ? icons.warning : icons.done}
+                size={16}
+              />
+              <strong>
+                {oordeel.onveilig.length > 0
+                  ? "Hier zit iets in dat nu beter kan wachten"
+                  : oordeel.pasop.length > 0
+                    ? "Let op de bereiding"
+                    : "Niets op aan te merken"}
+              </strong>
+              <span className="muted">
+                {zwangeren.length === 1 ? ` voor ${zwangeren[0]}` : ""}
+              </span>
+            </p>
+
+            {(["onveilig", "pasop", "veilig"] as const)
+              .filter((niveau) => oordeel[niveau].length > 0)
+              .map((niveau) => (
+                <ul key={niveau} className={`zw-lijst ${niveau}`}>
+                  {oordeel[niveau].map((bevinding) => (
+                    <li key={bevinding.ingredient}>
+                      <span className={`zw-vlag ${niveau}`}>
+                        {NIVEAU_LABEL[niveau]}
+                      </span>
+                      <span>
+                        <strong>{bevinding.ingredient}</strong> — {bevinding.waarom}
+                        {bevinding.tenzij && (
+                          <span className="zw-tenzij"> {bevinding.tenzij}</span>
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ))}
+
+            <p className="zw-voet muted">
+              Dit is de lijst van het {BRON.split(",")[0]} naast de ingrediënten
+              gelegd — geen medisch advies, en geen goedkeuring van het gerecht
+              als geheel. Wat er niet bij staat, is niet gecontroleerd maar
+              alleen niet herkend.
+            </p>
+          </div>
         )}
 
         {tegen.length > 0 && (
@@ -304,17 +369,38 @@ export default async function RecipePage({
             <div key={groupIndex}>
               {group.name && <h3 className="group">{group.name}</h3>}
               <ul className="ingredients">
-                {group.items.map((item, itemIndex) => (
-                  <li key={itemIndex}>
-                    <span className="amount">{formatAmount(item)}</span>
-                    <span>
-                      {item.name}
-                      {item.note && (
-                        <span className="muted">, {item.note}</span>
-                      )}
-                    </span>
-                  </li>
-                ))}
+                {group.items.map((item, itemIndex) => {
+                  const let_op = zwangerAan ? beoordeelIngredient(item.name) : null;
+                  return (
+                    <li key={itemIndex} className={let_op ? `zw-${let_op.niveau}` : undefined}>
+                      <span className="amount">{formatAmount(item)}</span>
+                      <span>
+                        {item.name}
+                        {item.note && (
+                          <span className="muted">, {item.note}</span>
+                        )}
+                        {let_op && (
+                          <>
+                            {" "}
+                            <span className={`zw-vlag ${let_op.niveau}`}>
+                              {NIVEAU_LABEL[let_op.niveau]}
+                            </span>
+                            {/* De reden alleen bij rood en oranje. Bij groen is
+                                het vlaggetje de hele boodschap, en een zin
+                                erachter maakt de twee die er wél toe doen
+                                moeilijker te vinden. */}
+                            {let_op.niveau !== "veilig" && (
+                              <span className="zw-waarom">
+                                {let_op.waarom}
+                                {let_op.tenzij && ` ${let_op.tenzij}`}
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}

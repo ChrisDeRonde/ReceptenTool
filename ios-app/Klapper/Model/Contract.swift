@@ -47,6 +47,10 @@ struct Instellingen: Codable, Sendable {
     struct Voorkeur: Codable, Sendable {
         let dieet: [String]
         let afkeer: [String]
+        /// Staat het zwangerschapsvinkje aan. Zie `src/lib/zwanger.ts`; de app
+        /// toont er nog niets mee, maar het hoort in het contract omdat de
+        /// server het meestuurt.
+        let zwanger: Bool
     }
 
     static let leeg = Instellingen(huishouden: 2, personen: [], voorkeuren: [:])

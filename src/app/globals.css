@@ -3238,3 +3238,185 @@ button.gevaar {
     animation: none !important;
   }
 }
+
+/* --- Zwangerschap ---------------------------------------------------------
+   Drie niveaus, en één regel die de vorm bepaalt: rood mag niet verdrinken in
+   groen. Daarom krijgt "veilig" alleen een vlaggetje en geen zin erachter, en
+   staat de kaart bovenaan het recept in plaats van onderaan.
+
+   Wel steviger dan `.bezwaar` hierboven, die bewust geen alarmbalk is. Het
+   verschil: een afkeer overtreden levert een chagrijnige eter op, dit niet. */
+
+.zw-kaart {
+  margin: 0.9rem 0 0;
+  padding: 0.85rem 1rem;
+  border-radius: var(--r-sm, 10px);
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  font-size: 0.92rem;
+}
+
+.zw-kaart.pasop {
+  border-left-color: var(--warn);
+  background: var(--sand);
+}
+
+.zw-kaart.onveilig {
+  border-left-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.zw-kop {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  margin: 0 0 0.6rem;
+  color: var(--ink);
+}
+
+.zw-kop svg {
+  flex: none;
+  color: var(--warn);
+}
+
+.zw-kaart.onveilig .zw-kop svg {
+  color: var(--danger);
+}
+
+.zw-kaart.veilig .zw-kop svg {
+  color: var(--accent);
+}
+
+.zw-lijst {
+  margin: 0 0 0.5rem;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.zw-lijst li {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  color: var(--ink);
+}
+
+/* Het vlaggetje. Klein, maar met genoeg contrast om te scannen zonder te
+   lezen — dat is het hele punt van deze functie. */
+.zw-vlag {
+  flex: none;
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.zw-vlag.pasop {
+  background: var(--warn);
+  color: var(--accent-ink);
+}
+
+.zw-vlag.onveilig {
+  background: var(--danger);
+  color: var(--accent-ink);
+}
+
+.zw-tenzij {
+  color: var(--muted);
+}
+
+.zw-voet {
+  margin: 0.6rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+/* In de ingrediëntenlijst zelf. Een streepje links in plaats van een gekleurd
+   vlak: de lijst blijft een lijst, en je ziet in één blik welke regels eruit
+   springen. */
+.ingredients li.zw-onveilig,
+.ingredients li.zw-pasop,
+.ingredients li.zw-veilig {
+  padding-left: 0.6rem;
+  border-left: 2px solid var(--accent);
+}
+
+.ingredients li.zw-pasop {
+  border-left-color: var(--warn);
+}
+
+.ingredients li.zw-onveilig {
+  border-left-color: var(--danger);
+}
+
+.zw-waarom {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+/* Het vinkje in de instellingen. Bewust géén `.check`-chip zoals de
+   dieetvinkjes: die is gemaakt voor één woord, en dit heeft een zin met uitleg
+   nodig. Een echt zichtbaar vakje past hier ook beter — het is een schakelaar
+   met gevolgen, geen etiket dat je aan- of uitzet. */
+.zwanger-schakelaar {
+  display: flex;
+  gap: 0.6rem;
+  align-items: start;
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.zwanger-schakelaar input {
+  flex: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+  accent-color: var(--accent);
+}
+
+.zwanger-tekst {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.zwanger-tekst strong {
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.zwanger-tekst .muted {
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+/* Het vlaggetje op de tegel in het overzicht. Rechtsonder, tegenover de klok
+   linksonder — zodat de twee elkaar nooit overlappen. */
+.thumb .zw-tegel {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+  background: var(--warn);
+  color: var(--accent-ink);
+}
+
+.thumb .zw-tegel.onveilig {
+  background: var(--danger);
+}

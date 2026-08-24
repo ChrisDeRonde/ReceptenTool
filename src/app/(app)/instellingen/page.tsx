@@ -12,6 +12,7 @@ import {
   voorkeuren,
 } from "@/lib/settings";
 import { LEEG } from "@/lib/voorkeuren";
+import { BRON } from "@/lib/zwanger";
 import { saveSettings } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -144,6 +145,14 @@ export default async function InstellingenPagina() {
               vergeleken met de ingrediënten zelf. Wat iemand écht moet
               vermijden, hoort daar.
             </p>
+            <p className="muted hint">
+              <strong>Het zwangerschapsvinkje</strong> zet bij elk recept een
+              waarschuwing aan voor ingrediënten die dan beter kunnen wachten.
+              Het filtert niets weg en het is geen medisch advies — het is de
+              lijst van het {BRON.split(",")[0]} naast je ingrediënten gelegd,
+              zodat je niet elke keer hoeft te zoeken. Twijfel je, vraag het je
+              verloskundige.
+            </p>
 
             <div className="wensen">
               {namen.map((naam) => {
@@ -177,6 +186,25 @@ export default async function InstellingenPagina() {
                         placeholder="varkensvlees, koriander"
                         autoComplete="off"
                       />
+                    </label>
+
+                    {/* Apart van de dieetvinkjes, want het is iets anders: het
+                        is tijdelijk, en het zet een waarschuwing áán in plaats
+                        van recepten weg te filteren. */}
+                    <label className="zwanger-schakelaar">
+                      <input
+                        type="checkbox"
+                        name={`zwanger:${naam}`}
+                        value="aan"
+                        defaultChecked={wens.zwanger}
+                      />
+                      <span className="zwanger-tekst">
+                        <strong>Ik ben zwanger</strong>
+                        <span className="muted">
+                          Zet bij elk recept een waarschuwing aan bij
+                          ingrediënten die dan beter kunnen wachten.
+                        </span>
+                      </span>
                     </label>
                   </fieldset>
                 );
