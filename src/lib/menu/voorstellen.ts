@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { suggest, type Voorstel } from "@/lib/menu/suggest";
 import { unpackDiets } from "@/lib/recipe/categories";
 import { buildHaystack, parseQuery } from "@/lib/recipe/search";
-import { people, voorkeuren } from "@/lib/settings";
+import { voorkeuren } from "@/lib/settings";
 import { eisen } from "@/lib/voorkeuren";
 
 /**
@@ -23,7 +23,7 @@ export async function haalVoorstellen(opties: {
   vandaag?: Date;
   aantal?: number;
 }): Promise<{ voorstellen: Voorstel[]; termen: string[]; gevraagd: ReturnType<typeof eisen> }> {
-  const [rows, namen, wensen] = await Promise.all([
+  const [rows, wensen] = await Promise.all([
     prisma.recipe.findMany({
       select: {
         id: true,
@@ -39,14 +39,13 @@ export async function haalVoorstellen(opties: {
       },
       take: 500,
     }),
-    people(),
     voorkeuren(),
   ]);
 
   // Iedereen die in het huishouden staat eet mee. Wie er een avond niet is,
   // haal je niet uit de instellingen — dan is dit voorstel voor die ene keer te
   // streng, en dat is te overzien.
-  const gevraagd = eisen(wensen, namen);
+  const gevraagd = eisen(wensen);
   const termen = parseQuery(opties.inHuis ?? "").map((term) => term.key);
 
   const voorstellen = suggest(
@@ -57,7 +56,7 @@ export async function haalVoorstellen(opties: {
       favorite: row.favorite,
       createdAt: row.createdAt,
       diets: unpackDiets(row.diets),
-      ingredientWoorden: buildHaystack(row).ingredients,
+      ingredientNamen: buildHaystack(row).ingredientNamen,
       cookedAt: row.cookLogs.map((log) => log.cookedAt),
       ratings: row.cookLogs
         .map((log) => log.rating)

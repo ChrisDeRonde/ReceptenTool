@@ -117,6 +117,28 @@ export default async function HomePage({
   const filtering =
     mealFilter !== null || cuisineFilter !== null || dietFilter !== null;
 
+  // De weg terug hoort in de éérste rail die er werkelijk staat, niet vast aan
+  // de maaltijdrail. Een collectie zonder maaltijdsoorten maar mét dieetlabels
+  // — precies wat `npm run dieet` van een oudere verzameling maakt — kon anders
+  // wel op dieet filteren, maar had geen "Alles" om het weer los te laten.
+  const alles = filtering ? (
+    <Link
+      href={href({ maaltijd: null, keuken: null, dieet: null })}
+      className="chip ghost"
+    >
+      Alles
+    </Link>
+  ) : null;
+
+  const eersteRail =
+    usedMealTypes.length > 0
+      ? "maaltijd"
+      : usedDiets.length > 0
+        ? "dieet"
+        : usedCuisines.length > 0
+          ? "keuken"
+          : null;
+
   return (
     <main>
       <div className="page-head">
@@ -131,16 +153,13 @@ export default async function HomePage({
 
       <SearchBox initial={rawQuery} />
 
+      {/* Filtert er iets terwijl er geen enkele rail staat — een dieet uit de
+          URL dat geen enkel recept heeft — dan is dit de enige uitweg. */}
+      {eersteRail === null && alles && <div className="rail">{alles}</div>}
+
       {usedMealTypes.length > 0 && (
         <div className="rail">
-          {filtering && (
-            <Link
-              href={href({ maaltijd: null, keuken: null, dieet: null })}
-              className="chip ghost"
-            >
-              Alles
-            </Link>
-          )}
+          {eersteRail === "maaltijd" && alles}
           {usedMealTypes.map((type) => (
             <Link
               key={type}
@@ -155,6 +174,7 @@ export default async function HomePage({
 
       {usedDiets.length > 0 && (
         <div className="rail">
+          {eersteRail === "dieet" && alles}
           {usedDiets.map((diet) => (
             <Link
               key={diet}
@@ -169,6 +189,7 @@ export default async function HomePage({
 
       {usedCuisines.length > 0 && (
         <div className="rail">
+          {eersteRail === "keuken" && alles}
           {usedCuisines.map((cuisine) => (
             <Link
               key={cuisine}

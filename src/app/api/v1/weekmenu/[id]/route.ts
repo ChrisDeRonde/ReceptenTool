@@ -49,8 +49,11 @@ export async function PATCH(
     return Response.json({ fout: "ongeldige_body" }, { status: 400 });
   }
 
-  const gevraagd = Number(invoer.porties);
-  if (!Number.isInteger(gevraagd)) {
+  // `typeof` erbij: `Number(null)`, `Number("")` en `Number([])` zijn allemaal
+  // 0, en dat komt door `Number.isInteger` heen. Zonder deze controle wordt
+  // `{"porties": null}` stil MIN_SERVINGS in plaats van een nette 400.
+  const gevraagd = invoer.porties;
+  if (typeof gevraagd !== "number" || !Number.isInteger(gevraagd)) {
     return Response.json(
       { fout: "porties_ontbreekt", uitleg: "Geef porties mee als heel getal." },
       { status: 400 },

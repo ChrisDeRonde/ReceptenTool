@@ -68,9 +68,18 @@ async function main() {
     // Ronde 1: wat als tag is blijven staan.
     const rest = [];
     for (const rij of rijen) {
-      const uitTags = normalizeDiets((rij.tags ?? "").split(","));
+      const losseTags = (rij.tags ?? "").split(",").map((t) => t.trim()).filter(Boolean);
+      const uitTags = normalizeDiets(losseTags);
       if (uitTags.length > 0) {
-        uitkomst.set(rij.id, { diets: uitTags, bron: "tags" });
+        // De tag verhuist en blijft niet óók staan. Anders staat het kenmerk
+        // twee keer in de collectie — één keer als kolom, één keer als vrije
+        // tag — en dan exporteert `npm run export` er ook twee hekjes van.
+        const blijft = losseTags.filter((tag) => normalizeDiets([tag]).length === 0);
+        uitkomst.set(rij.id, {
+          diets: uitTags,
+          bron: "tags",
+          tags: blijft.length === losseTags.length ? null : blijft.join(","),
+        });
       } else {
         rest.push(rij);
       }
@@ -113,8 +122,13 @@ async function main() {
       return;
     }
 
-    for (const [id, { diets }] of uitkomst) {
-      await prisma.recipe.update({ where: { id }, data: { diets: packDiets(diets) } });
+    for (const [id, { diets, tags }] of uitkomst) {
+      await prisma.recipe.update({
+        where: { id },
+        // `tags` alleen meesturen als er werkelijk iets af ging; anders raakt
+        // een recept dat via het model een dieet kreeg zijn tags kwijt.
+        data: { diets: packDiets(diets), ...(tags === null || tags === undefined ? {} : { tags }) },
+      });
     }
     console.log(`\n  ${uitkomst.size} recepten bijgewerkt. ${rijen.length - uitkomst.size} bleven leeg.\n`);
   } finally {

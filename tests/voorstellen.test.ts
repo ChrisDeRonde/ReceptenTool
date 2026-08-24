@@ -159,7 +159,7 @@ describe("de vorm van het antwoord", () => {
 
 describe("wat er in huis ligt", () => {
   const kast = (id: string, woorden: string[], over: Partial<Kandidaat> = {}) =>
-    maak(id, { ingredientWoorden: woorden, ...over });
+    maak(id, { ingredientNamen: woorden, ...over });
 
   test("een recept dat je ingrediënten gebruikt komt bovenaan", () => {
     const uit = suggest(
@@ -229,8 +229,8 @@ describe("het seizoen", () => {
     // VANDAAG is 11 augustus: tomaat wel, boerenkool niet.
     const uit = suggest(
       [
-        maak("zomer", { ingredientWoorden: ["tomaat", "basilicum"], cookedAt: [dagenTerug(25)] }),
-        maak("winter", { ingredientWoorden: ["boerenkool"], cookedAt: [dagenTerug(30)] }),
+        maak("zomer", { ingredientNamen: ["tomaat", "basilicum"], cookedAt: [dagenTerug(25)] }),
+        maak("winter", { ingredientNamen: ["boerenkool"], cookedAt: [dagenTerug(30)] }),
       ],
       { gepland: [], vandaag: VANDAAG },
     );
@@ -239,7 +239,7 @@ describe("het seizoen", () => {
   });
 
   test("uit het seizoen zakt niets — het duwt alleen", () => {
-    const uit = suggest([maak("winter", { ingredientWoorden: ["boerenkool"] })], {
+    const uit = suggest([maak("winter", { ingredientNamen: ["boerenkool"] })], {
       gepland: [],
       vandaag: VANDAAG,
     });
@@ -247,7 +247,7 @@ describe("het seizoen", () => {
   });
 
   test("wat er ligt gaat voor het seizoen in de reden", () => {
-    const uit = suggest([maak("a", { ingredientWoorden: ["tomaat", "prei"] })], {
+    const uit = suggest([maak("a", { ingredientNamen: ["tomaat", "prei"] })], {
       gepland: [],
       vandaag: VANDAAG,
       inHuis: ["prei"],
@@ -270,8 +270,8 @@ describe("wat er niet op tafel mag", () => {
   test("een afkeer kijkt naar de ingrediënten, niet naar het etiket", () => {
     const uit = suggest(
       [
-        maak("met", { ingredientWoorden: ["varkensvlees", "ui"] }),
-        maak("zonder", { ingredientWoorden: ["kip", "ui"] }),
+        maak("met", { ingredientNamen: ["varkensvlees", "ui"] }),
+        maak("zonder", { ingredientNamen: ["kip", "ui"] }),
       ],
       { gepland: [], vandaag: VANDAAG, wensen: { afkeer: ["varkensvlees"] }, seizoen: false },
     );
@@ -279,7 +279,7 @@ describe("wat er niet op tafel mag", () => {
   });
 
   test("een afkeer van twee woorden sluit niet het enkele woord uit", () => {
-    const uit = suggest([maak("gewone-ui", { ingredientWoorden: ["ui", "prei"] })], {
+    const uit = suggest([maak("gewone-ui", { ingredientNamen: ["ui", "prei"] })], {
       gepland: [],
       vandaag: VANDAAG,
       wensen: { afkeer: ["rode ui"] },

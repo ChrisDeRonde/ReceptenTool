@@ -5,6 +5,7 @@ import {
   fromParam,
   midnight,
   startOfWeek,
+  strikteDag,
   toParam,
   weekDays,
   weekRange,
@@ -148,5 +149,40 @@ describe("de namenlijst opschonen", () => {
 
   test("nooit meer dan acht", () => {
     assert.equal(schoon("a,b,c,d,e,f,g,h,i,j").length, 8);
+  });
+});
+
+describe("een dag die echt moet kloppen", () => {
+  // `fromParam` valt terug op vandaag, en op een webpagina is dat prima. Bij
+  // POST /api/v1/weekmenu niet: dan staat het gerecht op de verkeerde dag en
+  // krijg je er een 201 bij.
+  test("de gewone vorm komt erdoor", () => {
+    assert.equal(toParam(strikteDag("2026-08-16") as Date), "2026-08-16");
+  });
+
+  test("zonder voorloopnul telt niet", () => {
+    assert.equal(strikteDag("2026-8-3"), null);
+  });
+
+  test("een maand die niet bestaat rolt niet stilletjes door", () => {
+    // `new Date(2026, 12, 45)` wordt 2027-02-14 zonder een kik te geven.
+    assert.equal(strikteDag("2026-13-45"), null);
+    assert.equal(strikteDag("2026-02-30"), null);
+  });
+
+  test("een schrikkeldag bestaat wel", () => {
+    assert.equal(toParam(strikteDag("2028-02-29") as Date), "2028-02-29");
+  });
+
+  test("iets dat geen tekst is levert niets op", () => {
+    assert.equal(strikteDag(null), null);
+    assert.equal(strikteDag(20260816), null);
+    assert.equal(strikteDag(""), null);
+  });
+
+  test("de tijd valt eraf", () => {
+    const dag = strikteDag("2026-08-16") as Date;
+    assert.equal(dag.getHours(), 0);
+    assert.equal(dag.getMinutes(), 0);
   });
 });

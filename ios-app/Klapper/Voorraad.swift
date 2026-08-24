@@ -84,7 +84,11 @@ final class Voorraad {
             await klant.stelServerIn(adres)
             try await klant.meldAan(wachtwoord: wachtwoord)
             aangemeld = true
-            await synchroniseer()
+            // `haalOp()` en niet `synchroniseer()`: die laatste zet zelf de
+            // `bezig`-vlag en keert meteen om als hij al aanstaat — wat hier zo
+            // is. Eén eigenaar van de vlag per beurt, anders is de eerste
+            // synchronisatie na het aanmelden een lege kast.
+            await haalOp()
             return true
         } catch {
             laatsteFout = error.localizedDescription
@@ -102,8 +106,17 @@ final class Voorraad {
     func synchroniseer() async {
         guard !bezig else { return }
         bezig = true
-        laatsteFout = nil
         defer { bezig = false }
+        await haalOp()
+    }
+
+    /// Het eigenlijke gelijktrekken, zonder de `bezig`-vlag aan te raken.
+    ///
+    /// Apart van `synchroniseer()` omdat het aanmelden er ook doorheen moet,
+    /// en dat zet de vlag al zelf. Wie dit aanroept, is er verantwoordelijk
+    /// voor dat er niet al een andere ronde loopt.
+    private func haalOp() async {
+        laatsteFout = nil
 
         do {
             let stand = try await klant.stand()

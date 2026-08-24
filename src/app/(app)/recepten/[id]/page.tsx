@@ -14,7 +14,7 @@ import { prisma } from "@/lib/db";
 import { currentPerson } from "@/lib/who";
 import { huishouden, voorkeuren } from "@/lib/settings";
 import { bezwaren } from "@/lib/voorkeuren";
-import { datumKort } from "@/lib/tijd";
+import { datumKort, opsomming } from "@/lib/tijd";
 import { icons } from "@/lib/icons";
 import {
   DIET_LABELS,
@@ -96,7 +96,7 @@ export default async function RecipePage({
   // dieet-etiket: dít is de kant waar iemand op kan vertrouwen. Dezelfde
   // woordenlijst als de zoekfunctie, zodat "paprika's" en "paprika" hetzelfde
   // woord zijn.
-  const tegen = bezwaren(await voorkeuren(), buildHaystack(row).ingredients);
+  const tegen = bezwaren(await voorkeuren(), buildHaystack(row).ingredientNamen);
 
   const servings = parseServings(query.porties, base.servings, thuis);
   const recipe = servings === null ? base : scaleRecipe(base, servings);
@@ -180,7 +180,7 @@ export default async function RecipePage({
               {tegen.map((wie, index) => (
                 <span key={wie.naam}>
                   {index > 0 && " "}
-                  <strong>{wie.naam}</strong> eet geen {lijstje(wie.woorden)}.
+                  <strong>{wie.naam}</strong> eet geen {opsomming(wie.woorden)}.
                 </span>
               ))}
             </span>
@@ -426,12 +426,6 @@ export default async function RecipePage({
       </details>
     </main>
   );
-}
-
-/** "koriander en varkensvlees" — een opsomming die als zin leest. */
-function lijstje(woorden: string[]): string {
-  if (woorden.length === 1) return woorden[0];
-  return `${woorden.slice(0, -1).join(", ")} en ${woorden.at(-1)}`;
 }
 
 function readOne(value: string | string[] | undefined): string | null {

@@ -10,8 +10,22 @@ import Security
 ///
 /// `kSecAttrAccessibleAfterFirstUnlock` en niet `WhenUnlocked`: de deelextensie
 /// moet er ook bij kunnen, en die kan draaien terwijl het scherm op slot zit.
-/// De toegangsgroep is dezelfde App Group als de gedeelde map, zodat app en
-/// extensie hetzelfde token zien.
+///
+/// **Een App Group deelt de Keychain niet.** Die deelt een map en een
+/// `UserDefaults`-suite, en verder niets — een misverstand dat hier eerder in
+/// het commentaar stond en dat je pas ontdekt als de deelextensie om een
+/// wachtwoord blijft vragen dat je net hebt ingevuld. Wat de Keychain wél
+/// deelt is de aparte capability *Keychain Sharing*, met op beide targets
+/// dezelfde groep (`nl.klapper.gedeeld`, zonder `group.`-voorvoegsel).
+///
+/// We zetten `kSecAttrAccessGroup` hier bewust níét: zonder die sleutel kiest
+/// het systeem de eerste groep uit `keychain-access-groups`, en dat is precies
+/// de gedeelde groep zolang die als enige in de capability staat (de eigen
+/// app-groep hangt het systeem er achteraan, niet ervoor). Hem hard invullen
+/// zou betekenen dat het team-voorvoegsel — `ABCD123456.nl.klapper.gedeeld` —
+/// in de broncode komt, en dat is per Apple-account anders. Blijft het bij één
+/// groep, dan klopt dit; komt er ooit een tweede bij, lees dan `groepInGebruik`
+/// hieronder en zet hem alsnog expliciet.
 ///
 /// `@unchecked Sendable` en niet zomaar: dit ding wordt vanuit twee kanten
 /// aangeraakt — de `Klant`-actor en de hoofddraad — en houdt zelf geen
@@ -89,5 +103,34 @@ final class Sleutelbos: @unchecked Sendable {
 
     private func wis() {
         SecItemDelete(basis as CFDictionary)
+    }
+
+    // MARK: - Nakijken
+
+    /// In welke Keychain-groep het token werkelijk staat.
+    ///
+    /// Bedoeld om te vergelijken tussen de app en de deelextensie: staat hier
+    /// aan beide kanten dezelfde tekst, dan is de Keychain Sharing goed
+    /// ingesteld. Verschilt hij, dan ziet de extensie het token van de app niet
+    /// en blijft hij om aanmelden vragen — zonder bouwfout, zonder melding.
+    var groepInGebruik: String? {
+        var vraag = basis
+        vraag[kSecReturnAttributes as String] = true
+        vraag[kSecMatchLimit as String] = kSecMatchLimitOne
+
+        var uit: CFTypeRef?
+        guard SecItemCopyMatching(vraag as CFDictionary, &uit) == errSecSuccess,
+              let kenmerken = uit as? [String: Any]
+        else { return nil }
+        return kenmerken[kSecAttrAccessGroup as String] as? String
+    }
+
+    /// Roept dit aan bij het opstarten van de extensie: als het token er niet
+    /// is terwijl de app wél is aangemeld, staat het bijna altijd aan de
+    /// Keychain Sharing.
+    func meldGroep(_ waar: String) {
+        #if DEBUG
+        print("🔑 \(waar): groep=\(groepInGebruik ?? "geen"), token=\(token == nil ? "ontbreekt" : "aanwezig")")
+        #endif
     }
 }

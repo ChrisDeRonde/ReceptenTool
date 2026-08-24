@@ -7,10 +7,11 @@ import {
   HUISHOUDEN,
   HUISHOUDEN_MAX,
   PERSONEN,
+  readSetting,
   VOORKEUREN,
   writeSetting,
 } from "@/lib/settings";
-import { schoonAfkeer, schrijfVoorkeuren, type Voorkeuren } from "@/lib/voorkeuren";
+import { schoonAfkeer, voegSamen, type Voorkeuren } from "@/lib/voorkeuren";
 
 /**
  * Instellingen opslaan.
@@ -32,9 +33,10 @@ export async function saveSettings(formData: FormData): Promise<void> {
 
   // De velden heten `dieet:Chris` en `afkeer:Chris`. Ze horen bij de namen
   // zoals ze wáren toen het formulier werd getekend; hernoem je iemand in
-  // dezelfde beurt, dan valt zijn voorkeur weg omdat de nieuwe naam nog geen
-  // velden heeft. Dat is de eerlijke uitkomst: de app kan niet weten of "Sanne"
-  // en "San" dezelfde persoon zijn.
+  // dezelfde beurt, dan staat de nieuwe naam leeg omdat die nog geen velden
+  // heeft. De app kan immers niet weten of "Sanne" en "San" dezelfde persoon
+  // zijn. Wat er onder de oude naam stond blijft wél bewaard, dus tik je hem
+  // terug, dan komt de voorkeur mee.
   const voorkeuren: Voorkeuren = {};
   for (const naam of namen) {
     const dieet = normalizeDiets(
@@ -43,7 +45,11 @@ export async function saveSettings(formData: FormData): Promise<void> {
     const afkeer = schoonAfkeer(String(formData.get(`afkeer:${naam}`) ?? ""));
     if (dieet.length > 0 || afkeer.length > 0) voorkeuren[naam] = { dieet, afkeer };
   }
-  await writeSetting(VOORKEUREN, schrijfVoorkeuren(voorkeuren));
+  // Samenvoegen en niet overschrijven: het formulier kent alleen de namen die
+  // erop stonden, dus alles overschrijven wist de voorkeur van wie je er net
+  // uit haalde. Zie `voegSamen`.
+  const bestaand = await readSetting(VOORKEUREN);
+  await writeSetting(VOORKEUREN, voegSamen(bestaand, voorkeuren, namen));
 
   revalidatePath("/instellingen");
   revalidatePath("/weekmenu");

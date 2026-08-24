@@ -100,12 +100,17 @@ export function receptNaarMarkdown(recept: Recipe, omslag: Omslag = {}): string 
   // De herkomst onderaan, achter een streep: het hoort bij het recept maar het
   // is niet waarom je het openslaat.
   const voet: string[] = [];
+  // Ontdubbeld op de slug, want dieet en tags overlappen: `npm run dieet` haalt
+  // "vegetarisch" uit de tags naar de dieetkolom maar laat de tag staan, en dan
+  // stond er twee keer #vegetarisch onder het recept. Op de slug en niet op de
+  // tekst zelf, zodat "Vegetarisch" en "vegetarisch" ook samenvallen.
   const etiketten = [
     omslag.cuisine,
     ...(omslag.diets ?? "").split(",").map((t) => t.trim()).filter(Boolean),
     ...(omslag.tags ?? "").split(",").map((t) => t.trim()).filter(Boolean),
   ].filter((x): x is string => Boolean(x));
-  if (etiketten.length > 0) voet.push(etiketten.map((t) => `#${slug(t)}`).join(" "));
+  const hekjes = [...new Set(etiketten.map((t) => slug(t)).filter(Boolean))];
+  if (hekjes.length > 0) voet.push(hekjes.map((t) => `#${t}`).join(" "));
   if (omslag.sourceUrl) {
     voet.push(`Bron: [${omslag.sourceName || omslag.sourceUrl}](${omslag.sourceUrl})`);
   }

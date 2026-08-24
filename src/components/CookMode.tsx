@@ -7,6 +7,7 @@ import { useVoorbijGescrold } from "@/components/Vastkop";
 import { icons } from "@/lib/icons";
 import { formatAmount, formatClock } from "@/lib/recipe/format";
 import { ingredientsForStep, type Recipe } from "@/lib/recipe/schema";
+import { opsomming } from "@/lib/tijd";
 
 type TimerState = {
   /** Tijdstip waarop hij afgaat, als hij loopt. */
@@ -200,7 +201,7 @@ export function CookMode({
           ? ""
           : afgegaan.length === 1
             ? `De tijd voor stap ${afgegaan[0]} is om.`
-            : `De tijd voor stap ${afgegaan.slice(0, -1).join(", ")} en ${afgegaan.at(-1)} is om.`}
+            : `De tijd voor stap ${opsomming(afgegaan.map(String))} is om.`}
       </p>
 
       {elsewhere.length > 0 && (

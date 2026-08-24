@@ -16,7 +16,7 @@
  */
 
 import { normalizeDiets, type Diet } from "@/lib/recipe/categories";
-import { bevatTerm } from "@/lib/recipe/search";
+import { bevatIngredient } from "@/lib/recipe/search";
 import { canonicalName } from "@/lib/shopping/units";
 
 export type Voorkeur = {
@@ -72,6 +72,46 @@ export function schrijfVoorkeuren(voorkeuren: Voorkeuren): string {
   return JSON.stringify(voorkeuren);
 }
 
+/**
+ * De voorkeuren van wie er nú staat bijwerken, zonder de rest weg te gooien.
+ *
+ * Het formulier kent alleen de namen die erop staan. Zou je met die kennis de
+ * hele JSON overschrijven, dan is de voorkeur van iemand die je even uit het
+ * huishouden haalt — of van wie je een typefout in de naam herstelt — voorgoed
+ * weg. Dat is precies wat `leesVoorkeuren` hierboven belooft dat níét gebeurt,
+ * en het valt niet op: het weekmenu begint gewoon weer vlees voor te stellen.
+ *
+ * Dus: wat er stond blijft staan, en alleen de namen uit `namen` worden
+ * vervangen door wat er nu is ingevuld — of gewist, als het veld leeg is.
+ */
+export function voegSamen(
+  ruw: string | null | undefined,
+  bijgewerkt: Voorkeuren,
+  namen: readonly string[],
+): string {
+  let blob: Record<string, unknown> = {};
+  try {
+    const gelezen = ruw ? JSON.parse(ruw) : null;
+    if (gelezen && typeof gelezen === "object" && !Array.isArray(gelezen)) {
+      blob = gelezen as Record<string, unknown>;
+    }
+  } catch {
+    // Onleesbaar: dan begint deze opslag met een schone lei. Er valt niets te
+    // bewaren wat we niet kunnen lezen.
+  }
+
+  for (const naam of namen) {
+    const voorkeur = bijgewerkt[naam];
+    if (voorkeur && (voorkeur.dieet.length > 0 || voorkeur.afkeer.length > 0)) {
+      blob[naam] = voorkeur;
+    } else {
+      delete blob[naam];
+    }
+  }
+
+  return JSON.stringify(blob);
+}
+
 function maakVoorkeur(rij: Record<string, unknown>): Voorkeur {
   const dieet = Array.isArray(rij.dieet) ? rij.dieet.map(String) : [];
   const afkeer = Array.isArray(rij.afkeer) ? rij.afkeer.map(String) : [];
@@ -105,17 +145,17 @@ export function schoonAfkeer(waarde: string): string[] {
  * vegetarisch mee, dan is het gerecht vegetarisch, ook al is de rest alleseter.
  * `normalizeDiets` vult de impliciete kenmerken aan, dus veganistisch plus
  * glutenvrij levert vanzelf ook vegetarisch en lactosevrij op.
+ *
+ * Zonder namenlijst, net als `bezwaren` hieronder: `leesVoorkeuren` heeft die
+ * filtering al gedaan, en hem hier herhalen betekende dat elke aanroeper
+ * `people()` een tweede keer moest ophalen terwijl `voorkeuren()` dat intern
+ * al deed — twee extra database-leesbeurten per pagina, voor niets.
  */
-export function eisen(
-  voorkeuren: Voorkeuren,
-  namen: readonly string[],
-): { dieet: Diet[]; afkeer: string[] } {
+export function eisen(voorkeuren: Voorkeuren): { dieet: Diet[]; afkeer: string[] } {
   const dieet: string[] = [];
   const afkeer = new Set<string>();
 
-  for (const naam of namen) {
-    const voorkeur = voorkeuren[naam];
-    if (!voorkeur) continue;
+  for (const voorkeur of Object.values(voorkeuren)) {
     dieet.push(...voorkeur.dieet);
     for (const woord of voorkeur.afkeer) afkeer.add(woord);
   }
@@ -131,12 +171,12 @@ export function eisen(
  */
 export function bezwaren(
   voorkeuren: Voorkeuren,
-  ingredientWoorden: readonly string[],
+  ingredientNamen: readonly string[],
 ): Array<{ naam: string; woorden: string[] }> {
   const uit: Array<{ naam: string; woorden: string[] }> = [];
 
   for (const [naam, voorkeur] of Object.entries(voorkeuren)) {
-    const raak = voorkeur.afkeer.filter((woord) => bevatTerm(ingredientWoorden, woord));
+    const raak = voorkeur.afkeer.filter((woord) => bevatIngredient(ingredientNamen, woord));
     if (raak.length > 0) uit.push({ naam, woorden: raak });
   }
   return uit;
@@ -144,9 +184,9 @@ export function bezwaren(
 
 /** Voldoet dit recept aan alles wat de aanwezigen vragen? */
 export function magOpTafel(
-  recept: { diets: readonly Diet[]; ingredientWoorden: readonly string[] },
+  recept: { diets: readonly Diet[]; ingredientNamen: readonly string[] },
   gevraagd: { dieet: readonly Diet[]; afkeer: readonly string[] },
 ): boolean {
   if (!gevraagd.dieet.every((diet) => recept.diets.includes(diet))) return false;
-  return !gevraagd.afkeer.some((woord) => bevatTerm(recept.ingredientWoorden, woord));
+  return !gevraagd.afkeer.some((woord) => bevatIngredient(recept.ingredientNamen, woord));
 }

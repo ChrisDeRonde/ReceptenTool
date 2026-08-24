@@ -106,3 +106,22 @@ export function momentTekst(datum: Date, nu: Date): string {
 export function hoofdletter(tekst: string): string {
   return tekst.charAt(0).toLocaleUpperCase("nl-NL") + tekst.slice(1);
 }
+
+/**
+ * "koriander, olijf en varkensvlees" — een opsomming die als zin leest.
+ *
+ * Eén plek, want deze stond er drie keer bijna hetzelfde in: op de
+ * receptpagina, in de voorstelredenen en in de voorleesregel van de kookmodus.
+ * Alle drie met dezelfde stille bodem — een lege lijst leverde " en undefined"
+ * op, wat niemand ooit zag omdat de aanroepers er nu net nooit een lege lijst
+ * in stopten. Dat soort afspraak hoort in de functie te staan, niet in het
+ * hoofd van wie hem aanroept.
+ *
+ * `hooguit` kapt de lijst af: drie redenen is een reden, tien is een lijst.
+ */
+export function opsomming(woorden: readonly string[], hooguit?: number): string {
+  const kort = hooguit === undefined ? [...woorden] : woorden.slice(0, hooguit);
+  if (kort.length === 0) return "";
+  if (kort.length === 1) return kort[0];
+  return `${kort.slice(0, -1).join(", ")} en ${kort.at(-1)}`;
+}

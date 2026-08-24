@@ -1,8 +1,9 @@
 import { createHash } from "node:crypto";
 import { mkdir, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { prisma } from "@/lib/db";
 import { ACCEPTED_IMAGE_TYPES } from "@/lib/photo-rules";
-import { photoDir } from "@/lib/photos";
+import { deletePhotos, photoDir } from "@/lib/photos";
 
 /**
  * De foto bij een recept naar de eigen schijf halen.
@@ -121,4 +122,23 @@ export function localImageName(imageUrl: string | null): string | null {
   if (!imageUrl) return null;
   const match = /^\/api\/foto\/([a-f0-9-]+\.(?:jpg|png|webp|gif))$/i.exec(imageUrl);
   return match ? match[1] : null;
+}
+
+/**
+ * Een gedownloade afbeelding opruimen zodra geen enkel recept er nog naar
+ * wijst. Twee recepten van dezelfde site kunnen dezelfde foto delen — de naam
+ * is immers een hash van de URL — dus eerst tellen, dan pas weggooien.
+ *
+ * Staat hier en niet meer in `actions.ts`, omdat de JSON-laag hem ook nodig
+ * heeft: wissen vanaf de telefoon liet anders een weesbestand achter dat
+ * wissen vanaf de website wél opruimde.
+ */
+export async function deleteImageIfUnused(imageUrl: string | null): Promise<void> {
+  const name = localImageName(imageUrl);
+  if (!name || !imageUrl) return;
+
+  const others = await prisma.recipe.count({ where: { imageUrl } });
+  if (others > 0) return;
+
+  await deletePhotos([{ name, mime: "" }]);
 }

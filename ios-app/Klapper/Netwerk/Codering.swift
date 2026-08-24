@@ -34,13 +34,21 @@ extension JSONDecoder {
 }
 
 extension JSONEncoder {
-    /// Schrijven doen we zónder fracties: korter, en de server hoeft ze niet.
-    /// De decoder hierboven leest allebei, dus de kast blijft leesbaar.
+    /// Schrijven doen we mét fracties, en dat is geen kwestie van smaak.
+    ///
+    /// De kast wordt met deze encoder weggeschreven, en `bijgewerkt` gaat er
+    /// mee doorheen. Rondden we hier af op hele seconden, dan leest de volgende
+    /// koude start `…20.000` terug terwijl de server `…20.756` meldt, en dan is
+    /// `stempel.bijgewerkt > hier` waar voor élk recept: de app haalt bij iedere
+    /// start de hele collectie opnieuw op, en elke keer schrijft hij hem weer
+    /// afgerond terug. Binnen één sessie valt er niets van te merken — de datums
+    /// in het geheugen kloppen wel — en dat is precies wat het zo'n vervelende
+    /// maakt.
     static var klapper: JSONEncoder {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .custom { datum, codeerder in
             var houder = codeerder.singleValueContainer()
-            try houder.encode(ISO8601.zonderFracties.string(from: datum))
+            try houder.encode(ISO8601.metFracties.string(from: datum))
         }
         return encoder
     }

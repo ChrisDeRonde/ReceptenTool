@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { Vastkop } from "@/components/Vastkop";
 import { icons } from "@/lib/icons";
-import { people, voorkeuren, ideeenblad } from "@/lib/settings";
+import { voorkeuren, ideeenblad } from "@/lib/settings";
 import { momentTekst } from "@/lib/tijd";
 import { eisen } from "@/lib/voorkeuren";
 import { haalIdeeen, ideeNaarInbox } from "./actions";
@@ -20,12 +20,11 @@ export const metadata = { title: "Iets nieuws" };
  * vers is, en je beslist zelf of het opnieuw mag.
  */
 export default async function IdeeenPagina() {
-  const [blad, namen, wensen] = await Promise.all([
+  const [blad, wensen] = await Promise.all([
     ideeenblad(),
-    people(),
     voorkeuren(),
   ]);
-  const gevraagd = eisen(wensen, namen);
+  const gevraagd = eisen(wensen);
 
   return (
     <main>

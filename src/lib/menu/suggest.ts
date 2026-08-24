@@ -24,8 +24,14 @@
  */
 
 import { seizoensproducten } from "@/lib/menu/seizoen";
-import { bevatTerm } from "@/lib/recipe/search";
-import { dagenTussen, geleden, geledenAchteraan, hoofdletter } from "@/lib/tijd";
+import { bevatIngredient } from "@/lib/recipe/search";
+import {
+  dagenTussen,
+  geleden,
+  geledenAchteraan,
+  hoofdletter,
+  opsomming,
+} from "@/lib/tijd";
 import { magOpTafel } from "@/lib/voorkeuren";
 import type { Diet } from "@/lib/recipe/categories";
 
@@ -44,8 +50,8 @@ export type Kandidaat = {
   again: { yes: number; no: number };
   /** Wat het model uit de ingrediënten afleidde. Leeg is: niets vastgesteld. */
   diets?: Diet[];
-  /** De losse woorden uit de ingrediëntnamen, zoals `buildHaystack` ze geeft. */
-  ingredientWoorden?: string[];
+  /** De ingrediëntnamen, zoals `buildHaystack` ze geeft. */
+  ingredientNamen?: string[];
 };
 
 export type Voorstel = {
@@ -73,6 +79,9 @@ const RUST_TOP = 90;
 
 /** Zit er iets in dat déze maand op zijn best is. */
 const SEIZOEN_BONUS = 18;
+
+/** Hooguit zoveel noemen in een reden: daarna is het geen reden maar een lijst. */
+const REDEN_MAX = 3;
 
 export function suggest(
   kandidaten: Kandidaat[],
@@ -108,11 +117,11 @@ export function suggest(
   for (const kandidaat of kandidaten) {
     if (geplandeIds.has(kandidaat.id)) continue;
 
-    const woorden = kandidaat.ingredientWoorden ?? [];
+    const namen = kandidaat.ingredientNamen ?? [];
 
     // Wat er niet op tafel mag, hoort niet in de lijst — ook niet onderaan.
     // Een voorstel dat je elke week moet wegkijken is erger dan geen voorstel.
-    if (!magOpTafel({ diets: kandidaat.diets ?? [], ingredientWoorden: woorden }, gevraagd)) {
+    if (!magOpTafel({ diets: kandidaat.diets ?? [], ingredientNamen: namen }, gevraagd)) {
       continue;
     }
 
@@ -125,8 +134,8 @@ export function suggest(
       ? kandidaat.ratings.reduce((som, r) => som + r, 0) / kandidaat.ratings.length
       : null;
 
-    const gebruikt = inHuis.filter((term) => bevatTerm(woorden, term));
-    const inSeizoen = seizoen.filter((product) => bevatTerm(woorden, product));
+    const gebruikt = inHuis.filter((term) => bevatIngredient(namen, term));
+    const inSeizoen = seizoen.filter((product) => bevatIngredient(namen, product));
 
     let score = Math.min(dagenGeleden, RUST_TOP);
     if (gemiddelde !== null) score += (gemiddelde - 3) * 12;
@@ -195,15 +204,15 @@ function reden(
   },
 ): string {
   if (wat.gebruikt.length > 0) {
-    return `Gebruikt ${opsomming(wat.gebruikt)}`;
+    return `Gebruikt ${opsomming(wat.gebruikt, REDEN_MAX)}`;
   }
   if (kandidaat.cookedAt.length === 0) {
     return wat.inSeizoen.length > 0
-      ? `Nog nooit gemaakt, en ${opsomming(wat.inSeizoen)} ${wat.inSeizoen.length === 1 ? "is" : "zijn"} nu op zijn best`
+      ? `Nog nooit gemaakt, en ${opsomming(wat.inSeizoen, REDEN_MAX)} ${wat.inSeizoen.length === 1 ? "is" : "zijn"} nu op zijn best`
       : "Nog nooit gemaakt";
   }
   if (wat.inSeizoen.length > 0) {
-    return `${hoofdletter(opsomming(wat.inSeizoen))} ${wat.inSeizoen.length === 1 ? "is" : "zijn"} nu op zijn best`;
+    return `${hoofdletter(opsomming(wat.inSeizoen, REDEN_MAX))} ${wat.inSeizoen.length === 1 ? "is" : "zijn"} nu op zijn best`;
   }
   if (kandidaat.again.yes > 0 && wat.dagenGeleden >= 21) {
     return `Wilden jullie vaker, en het is ${geleden(wat.dagenGeleden)}`;
@@ -217,9 +226,3 @@ function reden(
   return hoofdletter(geledenAchteraan(wat.dagenGeleden));
 }
 
-/** Hooguit drie noemen: daarna is het geen reden meer maar een lijst. */
-function opsomming(woorden: string[]): string {
-  const kort = woorden.slice(0, 3);
-  if (kort.length === 1) return kort[0];
-  return `${kort.slice(0, -1).join(", ")} en ${kort.at(-1)}`;
-}

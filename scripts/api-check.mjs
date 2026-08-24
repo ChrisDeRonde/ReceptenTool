@@ -154,6 +154,17 @@ async function main() {
   const bijgesteld = await vraag(`/weekmenu/${gezet.body.id}`, { method: "PATCH", body: { porties: 6 } });
   check("de porties zijn bij te stellen", bijgesteld.body?.porties === 6, `${bijgesteld.body?.porties}`);
   check("porties zonder getal wordt geweigerd", (await vraag(`/weekmenu/${gezet.body.id}`, { method: "PATCH", body: { porties: "zes" } })).status === 400);
+  // `Number(null)` is 0, en dat komt door `Number.isInteger` heen; zonder een
+  // typecontrole werd dit stil de ondergrens in plaats van een nette 400.
+  check("porties null wordt geweigerd", (await vraag(`/weekmenu/${gezet.body.id}`, { method: "PATCH", body: { porties: null } })).status === 400);
+  check("porties als lege tekst wordt geweigerd", (await vraag(`/weekmenu/${gezet.body.id}`, { method: "PATCH", body: { porties: "" } })).status === 400);
+
+  // Een dag die niet klopt hoort niet stilletjes vandaag te worden: dan staat
+  // het gerecht op de verkeerde datum en krijg je er een 201 bij.
+  check("een dag zonder voorloopnul wordt geweigerd",
+    (await vraag("/weekmenu", { method: "POST", body: { receptId: proef.id, dag: "2026-8-3" } })).status === 400);
+  check("een dag die niet bestaat wordt geweigerd",
+    (await vraag("/weekmenu", { method: "POST", body: { receptId: proef.id, dag: "2026-13-45" } })).status === 400);
 
   check("een onbekend recept inplannen geeft 404",
     (await vraag("/weekmenu", { method: "POST", body: { receptId: "bestaatniet", dag: week.week } })).status === 404);

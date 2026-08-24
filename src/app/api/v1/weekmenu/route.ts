@@ -1,7 +1,7 @@
 import { controleerToegang } from "@/lib/api/toegang";
 import { dagAlsTekst } from "@/lib/api/vorm";
 import { prisma } from "@/lib/db";
-import { fromParam, midnight, startOfWeek, toParam, weekRange } from "@/lib/menu/week";
+import { fromParam, startOfWeek, strikteDag, toParam, weekRange } from "@/lib/menu/week";
 import { MAX_SERVINGS, MIN_SERVINGS } from "@/lib/recipe/scale";
 import { huishouden } from "@/lib/settings";
 
@@ -62,7 +62,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const receptId = typeof invoer.receptId === "string" ? invoer.receptId.trim() : "";
-  const dag = typeof invoer.dag === "string" ? invoer.dag.trim() : "";
+  const dag = strikteDag(invoer.dag);
   if (!receptId || !dag) {
     return Response.json(
       { fout: "onvolledig", uitleg: "Geef receptId en dag mee (dag als 2026-08-16)." },
@@ -76,13 +76,16 @@ export async function POST(request: Request): Promise<Response> {
   });
   if (!bestaat) return Response.json({ fout: "niet_gevonden" }, { status: 404 });
 
-  const gevraagd = Number(invoer.porties);
-  const porties = Number.isInteger(gevraagd)
-    ? Math.min(Math.max(gevraagd, MIN_SERVINGS), MAX_SERVINGS)
-    : await huishouden();
+  // `typeof` vóór `Number.isInteger`: `Number(null)` is 0, en dat is een geldig
+  // geheel getal. Zonder deze controle wordt `{"porties": null}` stilletjes
+  // MIN_SERVINGS in plaats van de huishoudgrootte die hier bedoeld is.
+  const porties =
+    typeof invoer.porties === "number" && Number.isInteger(invoer.porties)
+      ? Math.min(Math.max(invoer.porties, MIN_SERVINGS), MAX_SERVINGS)
+      : await huishouden();
 
   const regel = await prisma.menuEntry.create({
-    data: { recipeId: receptId, date: midnight(fromParam(dag)), servings: porties },
+    data: { recipeId: receptId, date: dag, servings: porties },
   });
 
   return Response.json(

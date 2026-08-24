@@ -10,7 +10,6 @@ import {
   IDEEEN,
   huishouden,
   ideeenblad,
-  people,
   voorkeuren,
   writeSetting,
 } from "@/lib/settings";
@@ -29,7 +28,7 @@ const KOOKLOG_TERUG = 40;
  * omdat iemand vernieuwt. Zo staat er bovendien iets als je morgen terugkomt.
  */
 export async function haalIdeeen(): Promise<void> {
-  const [logs, titels, namen, wensen, thuis] = await Promise.all([
+  const [logs, titels, wensen, thuis] = await Promise.all([
     prisma.cookLog.findMany({
       orderBy: [{ cookedAt: "desc" }, { createdAt: "desc" }],
       take: KOOKLOG_TERUG,
@@ -42,12 +41,11 @@ export async function haalIdeeen(): Promise<void> {
       },
     }),
     prisma.recipe.findMany({ select: { title: true }, orderBy: { title: "asc" } }),
-    people(),
     voorkeuren(),
     huishouden(),
   ]);
 
-  const gevraagd = eisen(wensen, namen);
+  const gevraagd = eisen(wensen);
   const vorige = await ideeenblad();
 
   let blad: Ideeenblad;

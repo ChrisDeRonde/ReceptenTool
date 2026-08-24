@@ -105,6 +105,15 @@ const antwoordJsonSchema = {
   },
 } as const;
 
+/**
+ * Hoe vaak we een onderbroken zoekronde hervatten.
+ *
+ * Een grens en geen `while (true)`: elke ronde kost tijd en geld, en een model
+ * dat blijft zoeken hoort ergens tegen een muur te lopen in plaats van de
+ * pagina vier minuten per ronde te laten wachten.
+ */
+const PAUZE_MAX = 4;
+
 let client: Anthropic | null = null;
 
 function getClient(): Anthropic {
@@ -120,33 +129,57 @@ function getClient(): Anthropic {
 export async function bedenkIdeeen(input: IdeeInput): Promise<Idee[]> {
   const aantal = input.aantal ?? IDEEEN_STANDAARD;
 
-  // Niet streamend, net als de importaanroep: het antwoord is klein, en het
-  // zoeken gebeurt aan de kant van de API zonder dat wij ertussen zitten. Wel
-  // ruim de tijd — een zoektocht langs een stuk of acht pagina's duurt langer
-  // dan het uit elkaar halen van één recept.
-  const response = await getClient().messages.create(
-    {
-      model: process.env.RECIPE_MODEL ?? "claude-opus-5",
-      max_tokens: 8000,
-      thinking: { type: "adaptive" },
-      system: systeemPrompt(aantal),
-      // De webzoek-tool draait aan de kant van de API: er komt geen ronde langs
-      // ons terug, we krijgen het eindantwoord. Het plafond staat er omdat een
-      // zoektocht anders kan doorlopen tot de tokens op zijn.
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 8 }],
-      output_config: {
-        format: { type: "json_schema", schema: antwoordJsonSchema },
-      },
-      messages: [{ role: "user", content: gebruikersBericht(input, aantal) }],
+  // Streamend, en dat is hier geen overdaad: adaptief denken plus acht
+  // zoekopdrachten kan minuten duren, en een gewone `create` van die lengte
+  // loopt tegen de verzoektijd aan. `finalMessage()` geeft daarna hetzelfde
+  // bericht terug als een niet-streamende aanroep, dus de rest verandert niet.
+  const params = {
+    model: process.env.RECIPE_MODEL ?? "claude-opus-5",
+    // Ruim, want denken, zoekopdrachten én het samenvatten van wat er gevonden
+    // is komen allemaal uit dit ene budget. Op achtduizend haalde een zoektocht
+    // langs zes pagina's het einde niet, en dan is de hele — betaalde —
+    // aanroep weg met "het zoeken liep vast".
+    max_tokens: 16000,
+    thinking: { type: "adaptive" as const },
+    system: systeemPrompt(aantal),
+    // De webzoek-tool draait aan de kant van de API: er komt geen ronde langs
+    // ons terug, we krijgen het eindantwoord. Het plafond staat er omdat een
+    // zoektocht anders kan doorlopen tot de tokens op zijn.
+    tools: [{ type: "web_search_20260209" as const, name: "web_search" as const, max_uses: 8 }],
+    output_config: {
+      format: { type: "json_schema" as const, schema: antwoordJsonSchema },
     },
-    { timeout: 4 * 60 * 1000 },
-  );
+  };
+
+  const berichten: Anthropic.MessageParam[] = [
+    { role: "user", content: gebruikersBericht(input, aantal) },
+  ];
+
+  let response!: Anthropic.Message;
+
+  // Een lange zoekronde wordt door de API onderbroken met `pause_turn`: dat is
+  // geen fout maar een verzoek om verder te gaan. Sturen we de afgebroken beurt
+  // niet terug, dan pakken we het laatste tekstblok — "ik zoek nu naar…" — en
+  // struikelt `JSON.parse` erover, met een melding die nergens naar wijst.
+  for (let ronde = 0; ronde < PAUZE_MAX; ronde += 1) {
+    const stroom = getClient().messages.stream(
+      { ...params, messages: berichten },
+      { timeout: 4 * 60 * 1000 },
+    );
+    response = await stroom.finalMessage();
+
+    if (response.stop_reason !== "pause_turn") break;
+    berichten.push({ role: "assistant", content: response.content });
+  }
 
   if (response.stop_reason === "refusal") {
     throw new Error("Het model heeft deze vraag geweigerd.");
   }
   if (response.stop_reason === "max_tokens") {
     throw new Error("Het zoeken liep vast voordat er een antwoord kwam.");
+  }
+  if (response.stop_reason === "pause_turn") {
+    throw new Error("Het zoeken bleef te lang doorgaan.");
   }
 
   // Met een servertool erbij staan er eerst zoekopdrachten en zoekresultaten in

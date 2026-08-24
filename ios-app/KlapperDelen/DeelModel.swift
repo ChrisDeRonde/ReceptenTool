@@ -43,6 +43,10 @@ final class DeelModel {
     func begin(met context: NSExtensionContext?) {
         wie = sleutelbos.ik ?? ""
         nietAangemeld = sleutelbos.token == nil || sleutelbos.serveradres == nil
+        // Zie `Sleutelbos.meldGroep`: staat hier een andere groep dan in de app,
+        // dan is de Keychain Sharing niet gelijk ingesteld en is dát de reden
+        // dat hieronder om aanmelden gevraagd wordt.
+        sleutelbos.meldGroep("KlapperDelen")
 
         Task {
             await kast.laad()

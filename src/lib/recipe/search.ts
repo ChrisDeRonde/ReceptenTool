@@ -63,6 +63,14 @@ export function parseQuery(raw: string | null | undefined): SearchTerm[] {
 export type Haystack = {
   /** Losse woorden uit de ingrediëntnamen, genormaliseerd. */
   ingredients: string[];
+  /**
+   * De ingrediëntnamen zelf, één per regel, genormaliseerd.
+   *
+   * Naast `ingredients` en niet in plaats daarvan: die lijst is één hoop losse
+   * woorden zonder verband, en dat is genoeg om te zoeken maar te weinig om
+   * "rode ui" van "rode paprika plus ui" te onderscheiden. Zie `bevatIngredient`.
+   */
+  ingredientNamen: string[];
   /** Losse woorden uit titel, omschrijving, tags en keuken. */
   text: string[];
 };
@@ -98,18 +106,29 @@ function wordMatches(word: string, term: string): boolean {
 }
 
 /**
- * Komt deze term voor in een lijst losse woorden?
+ * Zit deze term in één van deze ingrediënten?
  *
- * De tegenhanger van `wordMatches` voor een term die zelf uit meer woorden kan
- * bestaan: dan moeten ze er allemaal in zitten, anders sluit "rode ui" ook elk
- * recept met een gewone ui in. Gedeeld met de voorkeuren van het huishouden en
- * met de seizoenslijst, zodat een afkeer op precies hetzelfde woord aanslaat
- * als waarop je het recept kunt vinden.
+ * Voor een term die zelf uit meer woorden kan bestaan. De woorden moeten dan
+ * binnen hetzelfde ingrediënt zitten, en dát is het punt: over de hele
+ * boodschappenlijst heen "rode" en "ui" zoeken slaat ook aan op een recept met
+ * rode paprika én een gewone ui, en dan staat er "Chris eet geen rode ui" onder
+ * een gerecht waar geen rode ui in zit.
+ *
+ * Dat het de veilige kant op misgaat — te veel wegstrepen in plaats van te
+ * weinig — maakt het juist lastig te vinden: er verdwijnen alleen stilletjes
+ * voorstellen uit het weekmenu.
+ *
+ * Voor een term van één woord is dit precies hetzelfde als zoeken over alle
+ * woorden tegelijk, dus de seizoenslijst en losse afkeren merken er niets van.
  */
-export function bevatTerm(woorden: readonly string[], term: string): boolean {
+export function bevatIngredient(namen: readonly string[], term: string): boolean {
   const delen = term.split(" ").filter(Boolean);
   if (delen.length === 0) return false;
-  return delen.every((deel) => woorden.some((woord) => wordMatches(woord, deel)));
+
+  return namen.some((naam) => {
+    const woorden = words(naam);
+    return delen.every((deel) => woorden.some((woord) => wordMatches(woord, deel)));
+  });
 }
 
 export function buildHaystack(row: {
@@ -127,15 +146,10 @@ export function buildHaystack(row: {
     // Onleesbare blob: dan zoeken we alleen in de kolommen.
   }
 
-  const ingredients = recipe
-    ? [
-        ...new Set(
-          flattenIngredients(recipe).flatMap((item) =>
-            words(canonicalName(item.name)),
-          ),
-        ),
-      ]
+  const ingredientNamen = recipe
+    ? [...new Set(flattenIngredients(recipe).map((item) => canonicalName(item.name)))]
     : [];
+  const ingredients = [...new Set(ingredientNamen.flatMap(words))];
 
   const text = [
     ...new Set(
@@ -143,7 +157,7 @@ export function buildHaystack(row: {
     ),
   ];
 
-  return { ingredients, text };
+  return { ingredients, ingredientNamen, text };
 }
 
 /**

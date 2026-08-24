@@ -80,7 +80,16 @@ async function leesWachtwoord(request: Request): Promise<string | null> {
 }
 
 /** Achter een reverse proxy is het adres van de verbinding dat van de proxy. */
+/**
+ * Dezelfde volgorde als `clientIp()` op het inlogscherm, en dat is de bedoeling:
+ * de teller is gedeeld, dus hij moet aan beide kanten op hetzelfde adres
+ * uitkomen. Ontbrak `x-real-ip` hier, dan viel elke telefoon achter een proxy
+ * die alléén die kop zet samen in één `"onbekend"`-bak — acht misslagen van één
+ * toestel zetten dan iedereen buiten, terwijl de website vrolijk doortelt.
+ */
 function herkomst(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  return forwarded?.split(",")[0]?.trim() || "onbekend";
+  const forwarded = request.headers.get("x-forwarded-for") ?? "";
+  return (
+    forwarded.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "onbekend"
+  );
 }

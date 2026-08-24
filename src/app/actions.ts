@@ -11,7 +11,7 @@ import {
   packDiets,
   packMealTypes,
 } from "@/lib/recipe/categories";
-import { localImageName, storeRemoteImage } from "@/lib/images";
+import { deleteImageIfUnused, localImageName, storeRemoteImage } from "@/lib/images";
 import { keepDuplicate, processShareItem } from "@/lib/pipeline";
 import { ingredientFromFields } from "@/lib/recipe/amount";
 import { MAX_SERVINGS, MIN_SERVINGS } from "@/lib/recipe/scale";
@@ -297,21 +297,6 @@ export async function fetchRecipeImages(): Promise<void> {
 
   revalidatePath("/inbox");
   revalidatePath("/");
-}
-
-/**
- * Een gedownloade afbeelding opruimen zodra geen enkel recept er nog naar
- * wijst. Twee recepten van dezelfde site kunnen dezelfde foto delen — de naam
- * is immers een hash van de URL — dus eerst tellen, dan pas weggooien.
- */
-async function deleteImageIfUnused(imageUrl: string | null): Promise<void> {
-  const name = localImageName(imageUrl);
-  if (!name || !imageUrl) return;
-
-  const others = await prisma.recipe.count({ where: { imageUrl } });
-  if (others > 0) return;
-
-  await deletePhotos([{ name, mime: "" }]);
 }
 
 /**

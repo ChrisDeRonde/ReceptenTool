@@ -144,3 +144,25 @@ describe("bestandsnaam", () => {
     assert.ok(naam.length <= 64, naam.length.toString());
   });
 });
+
+describe("de hekjes onderaan", () => {
+  test("een kenmerk dat én kolom én tag is, staat er één keer", () => {
+    // `npm run dieet` haalde "vegetarisch" naar de dieetkolom; stond de tag er
+    // ook nog, dan werd het #vegetarisch #vegetarisch.
+    const uit = receptNaarMarkdown(basis, {
+      diets: "vegetarisch",
+      tags: "eenpans, vegetarisch",
+      cuisine: "Midden-Oosters",
+    });
+    assert.match(uit, /#midden-oosters #vegetarisch #eenpans/);
+    assert.equal(uit.match(/#vegetarisch/g)?.length, 1);
+  });
+
+  test("verschil in hoofdletters telt als hetzelfde hekje", () => {
+    const uit = receptNaarMarkdown(basis, {
+      diets: "vegetarisch",
+      tags: "Vegetarisch",
+    });
+    assert.equal(uit.match(/#vegetarisch/g)?.length, 1);
+  });
+});

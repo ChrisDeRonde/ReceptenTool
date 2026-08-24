@@ -1,6 +1,7 @@
 import { after } from "next/server";
 import { controleerToegang } from "@/lib/api/toegang";
 import { prisma } from "@/lib/db";
+import { deleteImageIfUnused } from "@/lib/images";
 import { keepDuplicate, processShareItem } from "@/lib/pipeline";
 import { deletePhotos, parsePhotos } from "@/lib/photos";
 
@@ -77,7 +78,11 @@ export async function DELETE(
   const { id } = await context.params;
   const item = await prisma.shareItem.findUnique({
     where: { id },
-    select: { photos: true },
+    // De omslagfoto hoort er ook bij. Een gedeelde link heeft geen `photos`,
+    // maar wel een plaatje dat bij het uitschrijven is opgehaald; laat je die
+    // hier liggen, dan groeit de uploadmap met bestanden waar niets meer naar
+    // wijst — en alleen als je vanaf de telefoon wist, niet vanaf de website.
+    select: { photos: true, recipe: { select: { imageUrl: true } } },
   });
   if (!item) return Response.json({ verwijderd: 0 });
 
@@ -86,6 +91,7 @@ export async function DELETE(
     prisma.shareItem.deleteMany({ where: { id } }),
   ]);
   await deletePhotos(parsePhotos(item.photos));
+  await deleteImageIfUnused(item.recipe?.imageUrl ?? null);
 
   return Response.json({ verwijderd: 1 });
 }

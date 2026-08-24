@@ -6,6 +6,7 @@ import {
   geleden,
   geledenAchteraan,
   hoofdletter,
+  opsomming,
   momentTekst,
 } from "@/lib/tijd";
 
@@ -103,5 +104,31 @@ describe("hoofdletter", () => {
 
   test("een lege tekst blijft leeg", () => {
     assert.equal(hoofdletter(""), "");
+  });
+});
+
+describe("een opsomming die als zin leest", () => {
+  test("één ding staat er kaal", () => {
+    assert.equal(opsomming(["koriander"]), "koriander");
+  });
+
+  test("twee dingen krijgen een en", () => {
+    assert.equal(opsomming(["koriander", "olijf"]), "koriander en olijf");
+  });
+
+  test("drie dingen krijgen komma's en één en", () => {
+    assert.equal(opsomming(["ui", "prei", "wortel"]), "ui, prei en wortel");
+  });
+
+  test("een lege lijst levert niets op, geen ' en undefined'", () => {
+    // Deze stond er in drie kopieën in, alle drie met dezelfde bodem.
+    assert.equal(opsomming([]), "");
+  });
+
+  test("met een grens erop blijft het een reden en wordt het geen lijst", () => {
+    assert.equal(
+      opsomming(["ui", "prei", "wortel", "knolselderij"], 3),
+      "ui, prei en wortel",
+    );
   });
 });

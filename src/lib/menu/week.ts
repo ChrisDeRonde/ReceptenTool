@@ -45,6 +45,39 @@ export function toParam(date: Date): string {
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
+/**
+ * Leest een dag, maar geeft `null` terug in plaats van vandaag.
+ *
+ * Voor de JSON-laag. Op een webpagina is terugvallen op vandaag prima — je ziet
+ * meteen welke week er staat en je klikt door. Bij `POST /api/v1/weekmenu` is
+ * het dat niet: daar levert een dag die niet klopt een 201 op met het gerecht
+ * op de verkeerde datum, en dat merk je pas als het weekmenu er raar uitziet.
+ *
+ * Strenger dan `fromParam` op twee punten: de vorm moet exact `2026-08-16` zijn
+ * (dus mét voorloopnullen), en de onderdelen moeten terugkomen zoals ze erin
+ * gingen. Dat laatste vangt `2026-13-45`, waar `new Date` zonder klagen
+ * 2027-02-14 van maakt.
+ */
+export function strikteDag(waarde: unknown): Date | null {
+  if (typeof waarde !== "string") return null;
+  const match = waarde.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+
+  const jaar = Number(match[1]);
+  const maand = Number(match[2]);
+  const dag = Number(match[3]);
+  const datum = new Date(jaar, maand - 1, dag);
+
+  if (
+    datum.getFullYear() !== jaar ||
+    datum.getMonth() !== maand - 1 ||
+    datum.getDate() !== dag
+  ) {
+    return null;
+  }
+  return midnight(datum);
+}
+
 /** Leest een dag uit de URL; onzin levert vandaag op. */
 export function fromParam(value: string | string[] | undefined): Date {
   const raw = Array.isArray(value) ? value[0] : value;

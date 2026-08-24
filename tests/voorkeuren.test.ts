@@ -7,6 +7,7 @@ import {
   magOpTafel,
   schoonAfkeer,
   schrijfVoorkeuren,
+  voegSamen,
 } from "@/lib/voorkeuren";
 import { normalizeDiets, unpackDiets } from "@/lib/recipe/categories";
 
@@ -70,7 +71,7 @@ describe("wat het huishouden samen vraagt", () => {
       }),
       NAMEN,
     );
-    const gevraagd = eisen(voorkeuren, NAMEN);
+    const gevraagd = eisen(voorkeuren);
     assert.deepEqual(gevraagd.dieet, ["vegetarisch"]);
     assert.deepEqual(gevraagd.afkeer, ["koriander"]);
   });
@@ -80,7 +81,7 @@ describe("wat het huishouden samen vraagt", () => {
       schrijfVoorkeuren({ Sanne: { dieet: ["veganistisch"], afkeer: [] } }),
       NAMEN,
     );
-    assert.deepEqual(eisen(voorkeuren, NAMEN).dieet, [
+    assert.deepEqual(eisen(voorkeuren).dieet, [
       "vegetarisch",
       "veganistisch",
       "lactosevrij",
@@ -88,11 +89,14 @@ describe("wat het huishouden samen vraagt", () => {
   });
 
   test("wie er niet bij zit, telt niet mee", () => {
+    // Het filteren op wie er in het huishouden staat gebeurt bij het lezen,
+    // niet nog een keer hier — anders moet elke aanroeper `people()` twee keer
+    // ophalen om hetzelfde antwoord te krijgen.
     const voorkeuren = leesVoorkeuren(
       schrijfVoorkeuren({ Sanne: { dieet: ["vegetarisch"], afkeer: [] } }),
-      NAMEN,
+      ["Chris"],
     );
-    assert.deepEqual(eisen(voorkeuren, ["Chris"]).dieet, []);
+    assert.deepEqual(eisen(voorkeuren).dieet, []);
   });
 });
 
@@ -101,7 +105,7 @@ describe("mag dit op tafel", () => {
 
   test("een gerecht zonder het kenmerk valt af", () => {
     assert.equal(
-      magOpTafel({ diets: [], ingredientWoorden: ["kip"] }, gevraagd),
+      magOpTafel({ diets: [], ingredientNamen: ["kip"] }, gevraagd),
       false,
     );
   });
@@ -109,7 +113,7 @@ describe("mag dit op tafel", () => {
   test("met het kenmerk en zonder het verboden ingrediënt mag het", () => {
     assert.equal(
       magOpTafel(
-        { diets: unpackDiets("vegetarisch"), ingredientWoorden: ["kaas", "prei"] },
+        { diets: unpackDiets("vegetarisch"), ingredientNamen: ["kaas", "prei"] },
         gevraagd,
       ),
       true,
@@ -119,7 +123,7 @@ describe("mag dit op tafel", () => {
   test("het verboden ingrediënt weegt zwaarder dan het kenmerk", () => {
     assert.equal(
       magOpTafel(
-        { diets: unpackDiets("vegetarisch"), ingredientWoorden: ["koriander"] },
+        { diets: unpackDiets("vegetarisch"), ingredientNamen: ["koriander"] },
         gevraagd,
       ),
       false,
@@ -128,7 +132,7 @@ describe("mag dit op tafel", () => {
 
   test("zonder eisen mag alles", () => {
     assert.equal(
-      magOpTafel({ diets: [], ingredientWoorden: ["kip"] }, { dieet: [], afkeer: [] }),
+      magOpTafel({ diets: [], ingredientNamen: ["kip"] }, { dieet: [], afkeer: [] }),
       true,
     );
   });
@@ -160,5 +164,81 @@ describe("wie eet dit niet", () => {
 
   test("niets aan de hand levert een lege lijst", () => {
     assert.deepEqual(bezwaren(voorkeuren, ["ui", "prei"]), []);
+  });
+});
+
+describe("een afkeer van meer dan één woord", () => {
+  // De losse-woordenlijst van een recept is één hoop zonder verband, dus
+  // "rode" en "ui" apart terugvinden zegt niets over of er rode ui in zit.
+  const gevraagd = { dieet: [], afkeer: ["rode ui"] };
+
+  test("rode paprika plus gewone ui is geen rode ui", () => {
+    assert.equal(
+      magOpTafel(
+        { diets: [], ingredientNamen: ["rode paprika", "ui", "olijfolie"] },
+        gevraagd,
+      ),
+      true,
+    );
+  });
+
+  test("rode ui is wel rode ui", () => {
+    assert.equal(
+      magOpTafel({ diets: [], ingredientNamen: ["rode ui", "olijfolie"] }, gevraagd),
+      false,
+    );
+  });
+
+  test("één woord blijft over de hele lijst kijken", () => {
+    assert.equal(
+      magOpTafel(
+        { diets: [], ingredientNamen: ["rode paprika", "ui"] },
+        { dieet: [], afkeer: ["ui"] },
+      ),
+      false,
+    );
+  });
+
+  test("en het bezwaar noemt hem dan ook niet", () => {
+    const voorkeuren = leesVoorkeuren(
+      schrijfVoorkeuren({ Chris: { dieet: [], afkeer: ["rode ui"] } }),
+      NAMEN,
+    );
+    assert.deepEqual(bezwaren(voorkeuren, ["rode paprika", "ui"]), []);
+    assert.deepEqual(bezwaren(voorkeuren, ["rode ui"]), [
+      { naam: "Chris", woorden: ["rode ui"] },
+    ]);
+  });
+});
+
+describe("het samenvoegen bij opslaan", () => {
+  const opgeslagen = schrijfVoorkeuren({
+    Chris: { dieet: [], afkeer: ["koriander"] },
+    Sanne: { dieet: ["veganistisch"], afkeer: [] },
+  });
+
+  test("wie niet op het formulier stond houdt zijn voorkeur", () => {
+    // Sanne uit het huishouden halen mag haar dieet niet wissen: zet je haar
+    // terug, dan hoort het er weer te staan.
+    const uit = voegSamen(opgeslagen, { Chris: { dieet: [], afkeer: ["olijf"] } }, [
+      "Chris",
+    ]);
+    const terug = leesVoorkeuren(uit, ["Chris", "Sanne"]);
+    assert.deepEqual(terug.Chris.afkeer, ["olijf"]);
+    assert.deepEqual(terug.Sanne.dieet, ["vegetarisch", "veganistisch", "lactosevrij"]);
+  });
+
+  test("leeg invullen wist alleen die ene", () => {
+    const uit = voegSamen(opgeslagen, {}, ["Chris"]);
+    const terug = leesVoorkeuren(uit, ["Chris", "Sanne"]);
+    assert.equal(terug.Chris, undefined);
+    assert.ok(terug.Sanne);
+  });
+
+  test("onleesbaar opgeslagen begint met een schone lei", () => {
+    const uit = voegSamen("{geen json", { Chris: { dieet: [], afkeer: ["ui"] } }, [
+      "Chris",
+    ]);
+    assert.deepEqual(leesVoorkeuren(uit, NAMEN).Chris.afkeer, ["ui"]);
   });
 });
