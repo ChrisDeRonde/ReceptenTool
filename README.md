@@ -165,6 +165,26 @@ achteraf bijwerken kan ook.
   keer.
 - "Laatst" telt in kalenderdagen en niet in verstreken uren: iets dat je
   vanochtend maakte is vanavond nog steeds vandaag.
+- Er staat ook **hoe lang je erover deed**, in minuten en optioneel. Dat is het
+  vierde veld en het mag net zo goed leeg blijven als de rest.
+
+### Hoe lang het echt duurde
+
+De bereidingstijd in een recept is de tijd die de schrijver ervoor rekende, en
+die klopt zelden met jouw keuken. Vul je bij *Gemaakt* in hoe lang je erover
+deed, dan komt dat na twee keer bovenaan het recept te staan — naast de tijd uit
+de bron, niet in plaats daarvan. "Bij jullie: 50 min" is iets anders dan een
+correctie.
+
+Twee keuzes die het verschil maken tussen bruikbaar en misleidend
+(`src/lib/recipe/duur.ts`):
+
+- **De mediaan, niet het gemiddelde.** Één keer waarbij de telefoon ging en het
+  een uur langer werd trekt een gemiddelde scheef, en dan staat er een getal dat
+  nooit ergens op sloeg.
+- **Pas vanaf twee metingen**, en het valt alleen op als het meer dan 20% scheelt
+  met de bron. Eén keer is een anekdote, en vijf minuten verschil is geen
+  bevinding.
 
 Elke keer is een eigen regel in `CookLog`, want het gaat niet over het recept
 maar over díe avond. Hoe vaak je iets eet en hoe lang het geleden is volgen
@@ -193,6 +213,30 @@ die niet samenhoren. Mis je er een, dan zet je hem erbij in
 
 De lijst wordt nergens opgeslagen: hij is een afgeleide van je weekmenu en wordt
 bij elke weergave opnieuw berekend. Eén ding minder dat kan verouderen.
+
+### Wie kookt, en wie er komt eten
+
+Elke avond in het weekmenu klapt open. Daarin staan twee dingen die je van
+tevoren afspreekt en anders 's middags per app moet uitzoeken: **wie kookt** en
+**wie er komt eten**.
+
+Wie kookt is een rij namen uit `APP_USERS` — aantikken en het staat er, met het
+gekleurde rondje van die persoon erbij. Gasten zijn een teller met een
+plus en een min, plus een regel voor wie het zijn ("Bram en Lotte").
+
+Het aantal porties volgt de gasten vanzelf: twee huisgenoten plus drie gasten
+is vijf porties, en de boodschappenlijst rekent daar meteen mee. Maar alleen
+zolang je er zelf niet aan gezeten hebt — verzet je de porties met de hand, dan
+laat de teller ze verder met rust. Wie een keer voor acht kookt omdat er wat
+over mag blijven, wil dat niet teruggedraaid zien als er nog een gast bij komt.
+Dat "volgt nog" of "volgt niet meer" is een pure functie in
+`src/lib/menu/gasten.ts`, met de tests erbij; `null` porties tellen als *volgt
+nog*, want anders bleef een avond met drie gasten stug op twee staan.
+
+Het paneel staat standaard dicht en de open avond staat in de URL
+(`?avond=<id>`) en niet in de component. Dat is geen stijlkeuze: elke wijziging
+gaat via een server action met `revalidatePath`, en een `useState` overleeft dat
+niet — het paneel klapte na elke klik weer dicht.
 
 ### Naar de Appie
 
@@ -384,6 +428,19 @@ Twee signalen, op twee momenten:
   plakt woorden aan elkaar en niet iedereen doet dat hetzelfde, dus
   "truffel-roomsaus" en "truffelroomsaus" zijn hetzelfde gerecht.
 
+- **Bijna dezelfde titel én dezelfde ingrediënten.** Twee sites schrijven
+  zelden hetzelfde op, dus letterlijk vergelijken vindt "Snelle pasta pesto"
+  en "Pasta met pesto" niet. Deze controle vraagt daarom om **allebei**:
+  de titels moeten voor 80% overeenkomen én de ingrediëntenlijsten voor 60%.
+  Woorden die niets zeggen over wat het gerecht ís — *snelle*, *lekkere*,
+  *makkelijke*, *simpele* — tellen niet mee in de titel; anders lijken twee
+  wildvreemde gerechten op elkaar omdat ze allebei snel zijn.
+
+  Eén signaal alleen was te scherp. Op titel alleen is "Pasta met tomaat" en
+  "Pasta met tonijn" bijna hetzelfde; op ingrediënten alleen zijn dat alle
+  pastagerechten die er zijn. Samen is het een vermoeden dat vaak klopt — en
+  ook dit blijft een vermoeden met een *Toch toevoegen* ernaast.
+
 Opnieuw verwerken van een item is geen duplicaat van zichzelf; het eigen recept
 telt niet mee bij het zoeken.
 
@@ -427,6 +484,36 @@ niet zocht.
 
 Het veld is een gewoon GET-formulier, dus wat je intikt staat in de URL: de
 terugknop werkt en je kunt het resultaat doorsturen.
+
+## De vriezer
+
+Wat er in de vriezer ligt weet niemand, en dat is precies waarom er elke maand
+iets in de bak gaat dat er een jaar geleden ook al lag. `/vriezer` is een lijst
+van wat erin ligt, met hoeveel porties en sinds wanneer.
+
+**Langst ingevroren bovenaan.** Niet alfabetisch en niet nieuwste eerst: de
+vraag die je bij een openstaande vriezer stelt is "wat moet er weg", en dan hoort
+het antwoord bovenaan te staan. Ligt iets er langer dan drie maanden, dan staat
+er *ligt er lang* bij — geen waarschuwing over bederf, want dat weet dit scherm
+niet; wel een duwtje.
+
+Erin komt het op twee manieren: met de knop bij een recept (dan hangt de regel
+aan dat recept en kun je er vanuit de vriezer meteen naartoe), of met de hand,
+voor de halve pan soep waar geen recept bij hoort. Eruit gaat het met **Eruit
+gehaald**, dat de regel weghaalt.
+
+### Bewaren
+
+Bewaaradvies is een eigen veld in het recept (`bewaren`) en geen tip meer. Dat
+scheelt: een tip lees je tijdens het koken, bewaaradvies lees je erna, en die
+twee door elkaar in één lijst betekent dat je allebei op het verkeerde moment
+leest. Het model vult het nu apart in — hoe lang het goed blijft, of het de
+vriezer in kan, en hoe je het opwarmt.
+
+Recepten van vóór deze wijziging hebben het veld niet. Dat is geen probleem: het
+veld heeft een `.default(null)` in het schema, dus ze blijven gewoon leesbaar en
+tonen het blokje niet. Wil je het alsnog, verwerk de bron dan opnieuw vanuit de
+inbox.
 
 ## Dieet en voorkeuren
 
@@ -747,6 +834,38 @@ dan het oplost, dus die blijven staan zoals de bron ze gaf; als je omrekent
 verschijnt daarom een melding dat de ingrediëntenlijst leidend is. De prompt
 stuurt er wel op aan dat hoeveelheden in de lijst horen en niet in de stap.
 
+## Ingrediënt vervangen
+
+Geen crème fraîche in huis, of iemand aan tafel kan geen lactose. Dat is
+dezelfde vraag met een andere aanleiding, en op `/recepten/<id>/vervangen` kies
+je het ingrediënt, vink je aan waar de vervanging aan moet voldoen, en zet je er
+optioneel bij waarom.
+
+Waarom het model en geen tabel met standaardvervangingen: het antwoord hangt af
+van wat het ingrediënt in dít gerecht doet. Room die een saus bindt vraagt om
+iets anders dan room die door een soep gaat, en een lijst weet dat verschil
+niet. Daarom gaan alleen de stappen waarin het ingrediënt voorkomt mee naar het
+model — meer kost tokens en levert niets op.
+
+Een eigen pagina en geen uitklap bij de ingrediëntenlijst, om twee redenen: het
+duurt even, en de vraag heeft een voorkant nodig. De voorkeuren van het
+huishouden staan alvast aangevinkt, want dat is de vraag die je negen van de
+tien keer stelt.
+
+Hooguit drie antwoorden, en het model mag er nul geven — "hier is geen goede
+vervanging voor" is een beter antwoord dan iets verzinnen. Bij elk antwoord
+staat wat het met het gerecht doet, ook als het minder wordt.
+
+**Dit is geen allergie-advies, en dat staat er ook.** Een vervanging die
+"lactosevrij" heet is een suggestie van een taalmodel, geen etiket van een
+fabrikant. Het systeemprompt verbiedt uitspraken over veiligheid of
+geschiktheid, en onder elk antwoord staat dat wie ergens ziek van wordt de
+verpakking leest en niet dit scherm. Dezelfde regel als bij
+[de zwangerschapscontrole](#wat-eet-wie-niet).
+
+Het antwoord komt in de URL en niet in de database. Het is een vraag van dit
+moment — morgen heb je wél crème fraîche — en zo kun je het ook doorsturen.
+
 ## Kookmodus
 
 Vanaf een recept start je `/recepten/<id>/koken`: één stap tegelijk, groot
@@ -762,6 +881,22 @@ bovenin verschijnt dan een knopje met de resterende tijd waarmee je terugspringt
 Als hij afgaat piept en trilt de telefoon en kleurt het blok oudroze. Het scherm
 blijft aan zolang je in kookmodus zit.
 
+### De wekker buiten de app
+
+In de browser bestaat een timer alleen zolang het tabblad leeft, en koken is
+niet naar je telefoon kijken. Voor de native app ligt daarom een laag klaar die
+de wekker op het **vergrendelscherm en in het Dynamic Island** zet, met
+ActivityKit: `ios-app/Klapper/Wekker/` en `ios-app/KlapperWekker/`.
+
+De kern ervan is dat de app *niet* elke seconde bijwerkt — daar zit een budget
+op, en eroverheen gaan laat je wekker bevriezen op een getal dat niet meer
+klopt. Het aftellen tekent de widget zelf, en afgaan gebeurt via `staleDate`.
+De uitleg en de opzetstappen voor Xcode staan in
+[`ios-app/README.md`](ios-app/README.md#de-kookwekkers-klapperwekker).
+
+Er is nog geen kookscherm in de native app dat de wekker aanzet; die laag
+wacht daarop.
+
 Deze modus leunt op drie velden per stap (`ingredientRefs`, `timerMinutes`,
 `tip`) die het model invult. Recepten van vóór deze functie missen die en
 werken gewoon, alleen zonder ingrediëntenpaneel en timer — verwerk de bron
@@ -775,6 +910,11 @@ npm install
 npm run db:push           # maakt dev.db aan
 npm run dev               # http://localhost:3000
 ```
+
+Haal je later nieuwe code op waarin het schema veranderd is, draai dan opnieuw
+`npm run db:push`. Er zijn geen migraties in deze repo — voor een database van
+twee mensen op één schijf is dat meer bouwwerk dan het oplevert, maar het
+betekent wel dat die ene regel jouw verantwoordelijkheid is.
 
 `INGEST_TOKEN` is het gedeelde geheim tussen de iOS-kant en de server.
 Genereer er een met `openssl rand -hex 32`; zonder token van minstens 16 tekens
@@ -800,9 +940,11 @@ start begint met een schone lei, dus je kunt vrij rommelen; opnieuw beginnen is
 nog een keer `npm run demo`.
 
 Wat werkt: zoeken en filteren, porties omrekenen, de kookmodus met de wekker,
-het weekmenu inclusief huishoudgrootte, de boodschappenlijst, de kooklog, je
-profiel, de instellingen en de donkere stand (die volgt je systeeminstelling).
-Wat niet werkt: importeren — dat is het enige dat het model nodig heeft.
+het weekmenu inclusief huishoudgrootte, wie kookt en wie er komt eten, de
+boodschappenlijst met afvinken, de kooklog, de vriezer, je profiel, de
+instellingen en de donkere stand (die volgt je systeeminstelling). Wat niet
+werkt: importeren en ingrediënten vervangen — dat zijn de twee dingen die het
+model nodig hebben.
 
 De datums schuiven mee met de dag waarop je dit draait. De kooklogregels hangen
 aan vandaag, zodat "2 dagen geleden" ook echt twee dagen geleden is; het
@@ -1047,6 +1189,9 @@ op dezelfde endpoint worden aangesloten.
 | `scripts/dieet.mjs`          | Vult het dieetkenmerk aan bij bestaande recepten (`npm run dieet`). |
 | `scripts/api-check.mjs`      | Controleert `/api/v1` over echte HTTP (`npm run api:check`).        |
 | `scripts/swift-vorm.mjs`     | Legt de Swift-structs naast de echte JSON (`npm run swift:vorm`).   |
+| `scripts/swift-targets.mjs`  | Welk Swift-bestand in welk Xcode-target hoort (`npm run swift:targets`). |
+| `ios-app/Klapper/Wekker/`    | De kookwekkers op het vergrendelscherm; app-kant.           |
+| `ios-app/KlapperWekker/`     | Dezelfde wekkers, widget-kant. Eigen Xcode-target.          |
 | `scripts/export.mjs`         | De recepten als markdown wegschrijven; draait mee in de back-up. |
 | `scripts/ts-loader.mjs`      | App-code rechtstreeks vanuit Node draaien (tests én export). |
 | `src/lib/shopping/units.ts`  | Hoeveelheden optellen en namen gelijktrekken.               |
@@ -1061,7 +1206,19 @@ op dezelfde endpoint worden aangesloten.
 | `src/lib/images.ts`          | Receptfoto's downloaden naar eigen schijf.                  |
 | `src/components/RecipeEditor.tsx` | Het bewerkscherm; rijen erbij en eraf.                 |
 | `src/lib/recipe/amount.ts`   | "300 g" terug naar getal en eenheid. Tegenhanger van format. |
-| `src/lib/recipe/duplicate.ts` | Herkennen dat je een recept al hebt: bron-URL en titel.    |
+| `src/lib/recipe/duplicate.ts` | Herkennen dat je een recept al hebt: bron-URL, titel, bijna-dubbelen. |
+| `src/lib/recipe/duur.ts`     | Hoe lang je er werkelijk over deed. Mediaan, geen gemiddelde. |
+| `src/lib/recipe/vervangen.ts` | Waarmee kun je dit vervangen. Vraagt het model, geen tabel. |
+| `src/lib/menu/gasten.ts`     | Volgen de porties de gasten nog, of zat je er zelf aan?     |
+| `src/lib/menu/melding.ts`    | De strook met "gelukt" en *ongedaan maken*, via de URL.     |
+| `src/lib/recipe/sorteer.ts`  | In welke volgorde het overzicht staat.                      |
+| `src/lib/paasei.ts`          | Eén verstopt grapje. Zoek maar eens op "klapper".           |
+| `src/app/(app)/vriezer/`     | Wat er in de vriezer ligt, langst ingevroren bovenaan.      |
+| `src/components/Avond.tsx`   | Eén avond in het weekmenu: wie kookt, wie er komt eten.     |
+| `src/components/Melding.tsx` | De strook bovenin. Verdwijnt bij de volgende navigatie.     |
+| `src/components/Afvinklijst.tsx` | Boodschappen afvinken; blijft staan in localStorage.    |
+| `src/components/Verversen.tsx` | De inbox die zichzelf bijwerkt zolang het tabblad kijkt.  |
+| `src/components/PrintKnop.tsx` | Het recept op papier.                                     |
 | `src/components/CookLog.tsx` | Gemaakt: sterren, opmerking, vaker eten.                    |
 | `src/lib/who.ts`             | Het naamkaartje: wie noteert er. Geen tweede slot.          |
 | `src/lib/settings.ts`        | Voorkeuren uit de database; geheimen blijven in .env.       |
@@ -1120,8 +1277,9 @@ npm test
 
 Node's eigen testrunner over de pure functies: zoeken, hoeveelheden lezen en
 schrijven, porties omrekenen, boodschappen samenvoegen en indelen, weken en
-categorieën, het inlogkoekje, duplicaatherkenning, de weekmenu-voorstellen en
-het rekenen met kalenderdagen.
+categorieën, het inlogkoekje, duplicaatherkenning, de weekmenu-voorstellen, of
+de porties de gasten nog volgen, hoe lang je er werkelijk over deed en het
+rekenen met kalenderdagen.
 Geen framework, geen bouwstap — `scripts/resolve-alias.mjs` vertaalt `@/lib/x`
 naar `src/lib/x` en plakt de ontbrekende `.ts` erachter, en Node 22 streept de
 types zelf af. Die hook staat in `scripts/` en niet in `tests/`, want
@@ -1156,3 +1314,4 @@ optuigen die groter is dan de app zelf.
 | `npm run dieet`     | Dieetkenmerk aanvullen bij bestaande recepten      |
 | `npm run api:check` | `/api/v1` langs de meetlat, tegen een draaiende server |
 | `npm run swift:vorm` | Klopt `Contract.swift` nog met wat de server stuurt   |
+| `npm run swift:targets` | Welk Swift-bestand hoort in welk Xcode-target      |

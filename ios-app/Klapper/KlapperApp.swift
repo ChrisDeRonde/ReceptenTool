@@ -10,6 +10,10 @@ struct KlapperApp: App {
                 .environment(voorraad)
                 .task {
                     Stijl.controleerFonts()
+                    // Wekkers die de app overleefd hebben terugpakken, vóór
+                    // het synchroniseren: zonder dit heb je er geen greep meer
+                    // op en blijven ze op het vergrendelscherm staan.
+                    Kookwekker.gedeeld.hervatBestaande()
                     await voorraad.begin()
                 }
         }
@@ -32,7 +36,11 @@ private struct Ingang: View {
         // Terug uit je zak: even kijken of er iets nieuws is. De kast staat er
         // al, dus dit mag mislukken zonder dat je iets merkt.
         .onChange(of: fase) { _, nieuw in
-            guard nieuw == .active, voorraad.aangemeld else { return }
+            guard nieuw == .active else { return }
+            // Ook hier de wekkers nalopen: een afgegane wekker die niemand
+            // wegdrukte hoort weg te zijn tegen de tijd dat je terugkomt.
+            Kookwekker.gedeeld.hervatBestaande()
+            guard voorraad.aangemeld else { return }
             Task { await voorraad.synchroniseer() }
         }
     }

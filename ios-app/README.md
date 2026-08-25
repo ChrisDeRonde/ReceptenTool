@@ -85,6 +85,7 @@ niet kunnen laten controleren.
 | `Voorraad.swift` | Wat de schermen zien. Knoopt klant en kast aan elkaar. |
 | `Stijl.swift` | De huisstijl, één op één uit `globals.css`. |
 | `Schermen/` | Aanmelden en het overzicht. De rest volgt. |
+| `Wekker/` | De kookwekkers op het vergrendelscherm. Zie "De kookwekkers" onderaan. |
 
 ## Opzetten in Xcode
 
@@ -147,10 +148,13 @@ synchronisatie.
 ## Wat er nog niet is
 
 - De receptpagina, de kookmodus, het weekmenu, de boodschappenlijst en de inbox.
-- Live Activities voor de kookwekkers.
 
 De volgorde die ik zou aanhouden staat in de begroting: eerst dit ene scherm
 helemaal af, want daarna weet je of de rest van de schatting klopt.
+
+De laag voor de kookwekkers ligt er wél al (`Klapper/Wekker/` en
+`KlapperWekker/`), maar er is nog geen kookscherm dat hem aanroept — zie
+"De kookwekkers" hieronder.
 
 ## De deelextensie (`KlapperDelen`)
 
@@ -257,3 +261,173 @@ Group), en of het `kSecAttrAccessGroup` in `Sleutelbos.swift` er expliciet bij
 moet — met precies één Keychain-groep in de entitlements van beide targets
 hoort de impliciete standaardgroep al te werken, maar dat is iets om in de
 gegenereerde `.entitlements`-bestanden na te kijken, niet om te gokken.
+
+## De kookwekkers (`KlapperWekker`)
+
+Koken is niet naar je telefoon kijken. Je zet de pan op en je loopt weg, en een
+timer die alleen bestaat zolang het scherm aanstaat is dan geen timer. Vandaar
+een Live Activity: het aftellen staat op het vergrendelscherm en in het Dynamic
+Island, en blijft daar staan terwijl de app in de achtergrond hangt.
+
+**Er is nog geen knop die dit aanzet.** De native app heeft nog geen kookscherm
+— `Schermen/` bevat aanmelden en het overzicht — dus de kookmodus met de timers
+staat op dit moment alleen op het web (`src/components/CookMode.tsx`). Deze laag
+ligt er wél helemaal, zodat dat kookscherm straks aan één regel per knop genoeg
+heeft:
+
+```swift
+Kookwekker.gedeeld.start(
+    gerecht: recept.titel, receptId: recept.id,
+    stap: index + 1, vanTotaal: recept.stappen.count,
+    stapTitel: stap.kort, minuten: minuten
+)
+Kookwekker.gedeeld.pauzeer(receptId: recept.id, stap: index + 1)
+Kookwekker.gedeeld.hervat(receptId: recept.id, stap: index + 1)
+Kookwekker.gedeeld.stop(receptId: recept.id, stap: index + 1)
+Kookwekker.gedeeld.stopAlles(van: recept.id)   // kookmodus verlaten
+```
+
+| Bestand | Wat het doet |
+|---|---|
+| `Klapper/Wekker/KookwekkerAttributes.swift` | De vorm die app en widget delen. Hoort in **allebei** de targets. |
+| `Klapper/Wekker/Kookwekker.swift` | Zetten, pauzeren, hervatten, weghalen. Alleen het app-target. |
+| `KlapperWekker/KlapperWekkerBundle.swift` | Het startpunt van de extensie. |
+| `KlapperWekker/KookwekkerLiveActivity.swift` | Hoe hij eruitziet, op het slot én in het eiland. |
+
+### Het ene ding dat je hier moet snappen
+
+**De widget telt zelf af, en de app doet dat niet.** Er zit een budget op het
+aantal keer dat je een Live Activity mag bijwerken, en één keer per seconde haal
+je dat er binnen een paar minuten doorheen — waarna je wekker bevriest op een
+getal dat niet meer klopt. Dat is erger dan geen wekker.
+
+Twee dingen vangen dat op, en allebei zijn ze de reden dat de code eruitziet
+zoals hij eruitziet:
+
+- **`Text(timerInterval:countsDown:)`** tekent de klok. Die houdt zijn eigen tijd
+  bij zonder dat er iets draait. Daarom staat het aftellen *niet* in
+  `ContentState` — daar staat alleen wanneer hij begon en wanneer hij afgaat.
+- **`staleDate`** vertelt iOS wanneer de inhoud verloopt. De app zet die op het
+  moment dat de wekker afgaat; het scherm leest `context.isStale` en tekent dan
+  de afgegane stand. Zo hoeft er niemand wakker te zijn op het moment dat het
+  gebeurt.
+
+Er wordt dus precies vier keer een bericht gestuurd per wekker: zetten,
+pauzeren, hervatten, weghalen. Meer niet.
+
+Twee dingen die daaruit volgen en die makkelijk over het hoofd te zien zijn:
+
+- **Een wekker overleeft de app.** Sluit iOS de app onder je vandaan, dan staat
+  de wekker er bij de volgende start nog steeds — maar je hebt er geen greep
+  meer op, want je dictionary is leeg. Daarvoor is `hervatBestaande()`, die
+  `Activity<KookwekkerAttributes>.activities` weer oppakt. Hij wordt aangeroepen
+  bij het opstarten én bij terugkeer naar de voorgrond (`KlapperApp.swift`), en
+  ruimt meteen op wat meer dan een halfuur geleden afging.
+- **Een leeg tijdvenster laat SwiftUI vallen over een assertie.** Vandaar
+  `ContentState.venster`, dat nooit een omgekeerd bereik teruggeeft.
+
+### Het target opzetten in Xcode
+
+1. **File → New → Target → Widget Extension.** Naam `KlapperWekker`. Vink
+   *Include Live Activity* **aan** en *Include Configuration App Intent*
+   **uit** — er valt niets in te stellen aan een kookwekker.
+2. **Gooi het sjabloon weg** dat Xcode neerzet (`KlapperWekker.swift`,
+   `KlapperWekkerLiveActivity.swift`, `KlapperWekkerBundle.swift`,
+   `AppIntent.swift`). Let op: onze bundel heet net zo — vervang dat bestand,
+   niet alleen aanvullen.
+3. **Minimum deployment op 18.0**, gelijk aan `Klapper`.
+4. **`NSSupportsLiveActivities` = `YES`** in de Info.plist van het **app**-target
+   (niet die van de extensie). Zonder deze sleutel geeft `Activity.request`
+   stilletjes een fout en zie je niets.
+   `NSSupportsLiveActivitiesFrequentUpdates` heb je hier **niet** nodig: die is
+   voor apps die wél elke paar seconden bijwerken, en dat is precies wat deze
+   niet doet.
+5. **Fonts ook in dit target.** De wekker gebruikt `Letter.kop` en
+   `Letter.tekst` uit `Stijl.swift`, en een extensie kan niet bij de fonts van
+   de app. Sleep dezelfde `.ttf`-bestanden in het `KlapperWekker`-target en zet
+   `UIAppFonts` in de Info.plist van de extensie. Sla je dit over, dan staat de
+   wekker in het systeemfont naast een app die dat niet doet.
+6. **Geen App Group en geen Keychain Sharing nodig.** Dat is de natuurlijke
+   aanname na de deelextensie, maar hij klopt hier niet: de widget krijgt zijn
+   gegevens van ActivityKit en praat zelf nergens mee.
+7. **Target membership**: vier bestanden, zie hieronder.
+
+### Welke bestanden in welk target
+
+Nagerekend, niet gegokt — `npm run swift:targets` doet nu allebei de extensies.
+Het weet ook per extensie hoe die start: `KlapperDelen` begint bij
+`NSExtensionPrincipalClass` en mag daarom géén `@main` bevatten, een
+widget-extensie begint juist wél bij precies één `@main WidgetBundle`. Klopt dat
+niet, of komt er van buiten de extensie een bestand met `@main` mee, dan stopt
+het script met een foutmelding.
+
+**Aanvinken bij `KlapperWekker`:**
+
+- `KlapperWekker/KlapperWekkerBundle.swift`
+- `KlapperWekker/KookwekkerLiveActivity.swift`
+- `Klapper/Stijl.swift`
+- `Klapper/Wekker/KookwekkerAttributes.swift`
+
+**Níét**: `Klapper/Wekker/Kookwekker.swift` (dat is de kant die de wekker zet,
+niet die hem tekent), en verder niets uit `Klapper/` — geen `Contract.swift`,
+geen netwerklaag. De widget haalt niets op.
+
+### Uitproberen
+
+De Simulator kan dit. Live Activities werken vanaf iOS 16.2, het Dynamic Island
+alleen op een iPhone 14 Pro of nieuwer — kies dus zo'n toestel, anders zie je
+alleen het vergrendelscherm (⌘L).
+
+Er is nog geen knop, dus tot er een kookscherm is test je het met een tijdelijke
+aanroep, bijvoorbeeld in een `.task` van `OverzichtScherm`:
+
+```swift
+Kookwekker.gedeeld.start(
+    gerecht: "Linzensoep", receptId: "proef",
+    stap: 3, vanTotaal: 8, stapTitel: "Laten sudderen", minuten: 2
+)
+```
+
+Waar op te letten: dat de klok loopt zonder dat de app in beeld is, dat hij na
+twee minuten naar de afgegane stand springt (dat is `staleDate` die werkt), en
+dat hij ná het herstarten van de app nog steeds weg te drukken is (dat is
+`hervatBestaande()` die werkt). Zie je niets gebeuren, kijk dan eerst bij
+Instellingen → Klapper → Live Activiteiten; `Kookwekker.beschikbaar` geeft
+`false` als die uitstaat en dan doet `start` bewust niets.
+
+### Het bericht voor Claude Code op je Mac
+
+> Er moet een widget-extensie bij: `KlapperWekker`, voor de kookwekkers op het
+> vergrendelscherm. De Swift staat klaar in `ios-app/Klapper/Wekker/` en
+> `ios-app/KlapperWekker/`, maar hangt nog nergens aan en is nooit
+> gecompileerd.
+>
+> Lees eerst `ios-app/README.md` vanaf "De kookwekkers" — daar staat welke
+> bestanden in welk target horen, waarom de app níét elke seconde bijwerkt, en
+> welke drie Info.plist-dingen er nodig zijn. Die lijst is nagerekend met
+> `npm run swift:targets`; volg hem letterlijk.
+>
+> Doe dan dit:
+>
+> 1. Maak het target aan (Widget Extension, `KlapperWekker`, mét Live Activity,
+>    zónder App Intent) en gooi het sjabloon weg dat Xcode neerzet.
+> 2. Vink de vier bestanden uit die lijst aan. `Kookwekker.swift` hoort er
+>    beslist niet bij, `KlapperApp.swift` al helemaal niet.
+> 3. Zet `NSSupportsLiveActivities` op `YES` in de Info.plist van het
+>    **app**-target, en Minimum Deployment van de extensie op 18.0.
+> 4. Zet dezelfde font-bestanden in het `KlapperWekker`-target en `UIAppFonts`
+>    in de Info.plist van de extensie — een extensie kan niet bij de fonts van
+>    de app.
+> 5. Bouw alle drie de schema's met `xcodebuild`: `Klapper`, `KlapperDelen`,
+>    `KlapperWekker`. Los fouten op in de bronbestanden onder `ios-app/`.
+>    Reken op concurrency-geklaag rond `Kookwekker` — dat is een `@MainActor`
+>    klasse die `Task { await wekker.update(...) }` doet.
+> 6. Test met een tijdelijke aanroep zoals in "Uitproberen" hierboven, op een
+>    iPhone 16 Pro-simulator. Laat me een schermafdruk zien van het
+>    vergrendelscherm én van het uitgeklapte eiland.
+> 7. Haal die tijdelijke aanroep daarna weer weg.
+>
+> Wat ik níét wil dat je doet: de app elke seconde `Activity.update()` laten
+> aanroepen om de klok bij te werken. Dat lijkt de simpele oplossing en het is
+> precies de fout die deze code vermijdt — lees de opmerking bovenaan
+> `KookwekkerLiveActivity.swift`.
