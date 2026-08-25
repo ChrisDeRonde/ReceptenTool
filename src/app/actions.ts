@@ -25,10 +25,12 @@ import {
   type Step,
 } from "@/lib/recipe/schema";
 import { deletePhotos, parsePhotos, savePhotos } from "@/lib/photos";
+import { nieuwePorties, portiesVolgenNog } from "@/lib/menu/gasten";
 import { fromParam, midnight, startOfWeek, toParam } from "@/lib/menu/week";
+import { bekendeNaam } from "@/lib/people";
 import { currentPerson } from "@/lib/who";
 import { momentTekst } from "@/lib/tijd";
-import { huishouden } from "@/lib/settings";
+import { huishouden, people } from "@/lib/settings";
 
 /**
  * Server actions voor de web-UI. De iOS-kant praat met /api/share; dit is voor
@@ -581,6 +583,7 @@ export async function logCook(formData: FormData): Promise<void> {
   const rating = Number.parseInt(readField(formData, "sterren") ?? "", 10);
   const again = readField(formData, "vaker");
   const day = readField(formData, "wanneer");
+  const duur = Number.parseInt(readField(formData, "duurde") ?? "", 10);
 
   await prisma.cookLog.create({
     data: {
@@ -590,6 +593,9 @@ export async function logCook(formData: FormData): Promise<void> {
       rating: rating >= 1 && rating <= 5 ? rating : null,
       note: readField(formData, "opmerking"),
       again: again === "ja" ? true : again === "nee" ? false : null,
+      // Een bovengrens van een etmaal: dit is een keukenklok, geen stopwatch
+      // die iemand vergat uit te zetten.
+      minutes: duur >= 1 && duur <= 24 * 60 ? duur : null,
       who: await currentPerson(),
     },
   });
@@ -713,4 +719,62 @@ export async function moveMenuEntry(formData: FormData): Promise<void> {
   redirect(
     `/weekmenu?week=${toParam(startOfWeek(datum))}&gedaan=gezet.${toParam(datum)}`,
   );
+}
+
+/**
+ * Wie er kookt op een avond.
+ *
+ * Een lege waarde betekent "maakt niet uit"; dat is een geldig antwoord en
+ * geen ontbrekend gegeven. De naam gaat door dezelfde controle als overal:
+ * alleen wie in het huishouden staat komt erdoor.
+ */
+export async function setCook(formData: FormData): Promise<void> {
+  const id = readField(formData, "id");
+  if (!id) return;
+
+  const gekozen = readField(formData, "kok");
+  const kok = gekozen ? bekendeNaam(gekozen, await people()) : null;
+
+  await prisma.menuEntry.updateMany({ where: { id }, data: { cook: kok } });
+  revalidatePath("/weekmenu");
+}
+
+/**
+ * Hoeveel mensen er die avond bijkomen, en wat je van ze moet weten.
+ *
+ * De porties gaan mee omhoog zolang je ze niet zelf hebt bijgesteld. Zou dat
+ * niet gebeuren, dan nodig je iemand uit en kook je alsnog voor twee — en dat
+ * merk je pas als de boodschappen al binnen zijn.
+ */
+export async function setGuests(formData: FormData): Promise<void> {
+  const id = readField(formData, "id");
+  if (!id) return;
+
+  const gevraagd = Number(readField(formData, "gasten") ?? "");
+  const gasten = Number.isInteger(gevraagd)
+    ? Math.min(Math.max(gevraagd, 0), MAX_SERVINGS)
+    : 0;
+
+  const bestaand = await prisma.menuEntry.findUnique({
+    where: { id },
+    select: { guests: true, servings: true },
+  });
+  if (!bestaand) return;
+
+  const thuis = await huishouden();
+  // Zie lib/menu/gasten.ts voor waarom `null` als "volgt nog" telt.
+  const volgdeNog = portiesVolgenNog(bestaand.servings, bestaand.guests, thuis);
+
+  await prisma.menuEntry.updateMany({
+    where: { id },
+    data: {
+      guests: gasten,
+      guestNote: readField(formData, "gastnotitie"),
+      ...(volgdeNog
+        ? { servings: nieuwePorties(thuis, gasten, MAX_SERVINGS) }
+        : {}),
+    },
+  });
+  revalidatePath("/weekmenu");
+  revalidatePath("/weekmenu/boodschappen");
 }

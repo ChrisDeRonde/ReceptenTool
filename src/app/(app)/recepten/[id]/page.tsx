@@ -23,6 +23,7 @@ import {
   iemandZwanger,
   NIVEAU_LABEL,
 } from "@/lib/zwanger";
+import { duurTekst, werkelijkeDuur } from "@/lib/recipe/duur";
 import { datumKort, opsomming } from "@/lib/tijd";
 import { icons } from "@/lib/icons";
 import {
@@ -114,6 +115,12 @@ export default async function RecipePage({
   const zwangeren = iemandZwanger(wensen);
   const zwangerAan = zwangeren.length > 0;
   const oordeel = beoordeelRecept(zwangerAan ? namenVanHetRecept : []);
+
+  // Hoe lang het bij jullie werkelijk duurt, uit de kooklog.
+  const duur = werkelijkeDuur(
+    row.cookLogs.map((log) => log.minutes),
+    parsed.data.totalMinutes,
+  );
 
   const servings = parseServings(query.porties, base.servings, thuis);
   const recipe = servings === null ? base : scaleRecipe(base, servings);
@@ -348,6 +355,15 @@ export default async function RecipePage({
           <div className="fact">
             <span>Totaal</span>
             <strong>{recipe.totalMinutes} min</strong>
+          </div>
+        )}
+        {/* Wat de bron schat staat hierboven; dit is wat het bij jullie
+            werkelijk werd. Alleen als er genoeg gemeten is én het genoeg
+            afwijkt — zie lib/recipe/duur.ts. */}
+        {duur?.opvallend && (
+          <div className="fact echt">
+            <span>Bij jullie</span>
+            <strong>{duurTekst(duur.minuten)}</strong>
           </div>
         )}
       </div>

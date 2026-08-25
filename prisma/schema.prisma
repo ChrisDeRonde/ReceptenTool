@@ -99,6 +99,7 @@ model Recipe {
 
   menuEntries MenuEntry[]
   cookLogs    CookLog[]
+  freezer     FreezerItem[]
 
   shareItemId String?    @unique
   shareItem   ShareItem? @relation("Bron", fields: [shareItemId], references: [id], onDelete: SetNull)
@@ -127,7 +128,61 @@ model MenuEntry {
   /// recept het bedoelde.
   servings Int?
 
+  /// Wie er kookt. Null als het niet uitmaakt of nog niet verdeeld is.
+  ///
+  /// Een naam en geen verwijzing naar een tabel: het huishouden is een
+  /// komma-lijst in de instellingen en geen `User`-model. Haal je iemand
+  /// daaruit weg, dan blijft zijn naam hier staan — dat is beter dan een lege
+  /// avond, want er is die dag wel degelijk gekookt.
+  cook String?
+
+  /// Hoeveel mensen er die avond bijkomen bovenop het huishouden.
+  ///
+  /// Apart van `servings` en niet erin verwerkt, want het zijn twee
+  /// verschillende dingen: `servings` is "voor hoeveel maak ik het", gasten is
+  /// "wie er zijn". Je wilt op het scherm kunnen zien dát er bezoek komt, ook
+  /// als je toch voor zes kookt omdat er overblijft.
+  guests Int @default(0)
+
+  /// Wat je van de gasten moet weten: "Ilse eet geen vis".
+  ///
+  /// Vrije tekst en geen koppeling met de dieetvoorkeuren van het huishouden:
+  /// een gast is geen huisgenoot, en voor één avond een profiel aanmaken is
+  /// meer administratie dan het waard is.
+  guestNote String?
+
   @@index([date])
+}
+
+/// Wat er in de vriezer ligt.
+///
+/// De goedkoopste maaltijd die je kunt plannen is er een die je al gekookt
+/// hebt. Dubbel koken en de helft invriezen werkt alleen als je het niet
+/// vergeet — en een la vol naamloze bakjes is precies hoe je het vergeet.
+///
+/// Aan een recept gekoppeld waar dat kan, maar de naam wordt óók opgeslagen:
+/// gooi je het recept later weg, dan ligt dat bakje er nog steeds.
+model FreezerItem {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  /// Wat het is, zoals je het op het bakje zou schrijven.
+  name String
+
+  /// Hoeveel porties erin zitten.
+  portions Int @default(1)
+
+  /// Wanneer het de vriezer in ging.
+  frozenAt DateTime
+
+  /// Het recept waar het van kwam, als het er nog is.
+  recipeId String?
+  recipe   Recipe? @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+
+  /// Wie het erin zette.
+  addedBy String?
+
+  @@index([frozenAt])
 }
 
 /// Iets dat je zelf op de boodschappenlijst zet.
@@ -180,6 +235,13 @@ model CookLog {
 
   /// Vaker eten? Null betekent: niet gezegd.
   again Boolean?
+
+  /// Hoe lang het werkelijk duurde, van beginnen tot op tafel.
+  ///
+  /// De bron schat, en die schatting is er meestal naast. Na twee of drie keer
+  /// koken weet de app het beter dan het recept; zie `werkelijkeDuur` in
+  /// lib/recipe/duur.ts voor hoe daar één getal van gemaakt wordt.
+  minutes Int?
 
   /// Wie dit vond. Null als er geen naam gekozen was; een oordeel zonder naam
   /// is nog steeds een oordeel.

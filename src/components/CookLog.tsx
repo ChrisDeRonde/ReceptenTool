@@ -203,10 +203,26 @@ export function CookLog({
             </div>
           </fieldset>
 
-          <label className="field">
-            <span className="eyebrow">Wanneer</span>
-            <input type="date" name="wanneer" defaultValue={today} max={today} />
-          </label>
+          <div className="log-rij">
+            <label className="field">
+              <span className="eyebrow">Wanneer</span>
+              <input type="date" name="wanneer" defaultValue={today} max={today} />
+            </label>
+
+            {/* Mag leeg, net als de rest. Vul je hem twee keer in, dan weet de
+                app het beter dan de bron — zie lib/recipe/duur.ts. */}
+            <label className="field">
+              <span className="eyebrow">Hoe lang deed je erover?</span>
+              <input
+                type="number"
+                name="duurde"
+                min={1}
+                max={1440}
+                inputMode="numeric"
+                placeholder="min"
+              />
+            </label>
+          </div>
 
           <Knop>
             <Icon icon={icons.done} size={17} />

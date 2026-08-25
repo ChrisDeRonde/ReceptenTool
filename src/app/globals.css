@@ -4012,3 +4012,123 @@ button.gevaar {
   font-size: 0.75rem;
   font-weight: 600;
 }
+
+/* --- Wie kookt en wie er komt --------------------------------------------
+   Zie components/Avond.tsx. Dichtgeklapt is het één regel onder de titel; dat
+   is de hele bedoeling — in één blik zien wie er woensdag kookt. */
+
+.avond {
+  margin-top: 0.1rem;
+}
+
+.avond-knop {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 32px;
+  padding: 0 0.15rem;
+  background: none;
+  border: 0;
+  color: var(--body);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Het raakvlak reikt tot 44, zonder dat de regel dikker wordt. */
+.avond-knop::after {
+  content: "";
+  position: absolute;
+  inset: -6px -8px;
+}
+
+.avond-knop .muted {
+  color: var(--muted);
+}
+
+.avond-knop svg {
+  color: var(--warn);
+}
+
+.avond-uit {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0.5rem 0 0.2rem;
+  padding: 0.9rem 1rem;
+  background: var(--sunken);
+  border-radius: var(--r-sm);
+}
+
+.avond-namen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+}
+
+/* De naamknoppen zijn verzendknoppen in één formulier; ze moeten eruitzien als
+   de chips elders, niet als knoppen. */
+.avond-namen button.chip {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.avond-namen button.chip.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.avond-gasten {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.5rem;
+  align-items: end;
+}
+
+.avond-gasten button {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.avond-uit .hint {
+  margin: 0;
+  font-size: 0.78rem;
+}
+
+/* Wat het bij jullie werkelijk werd, naast wat de bron schatte. Accentkleur,
+   want dit is het enige getal in die rij dat uit je eigen keuken komt. */
+.fact.echt strong {
+  color: var(--accent);
+}
+
+/* Twee velden naast elkaar onderin de kooklog. */
+.log-rij {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+/* De gastnotitie in het opengeklapte paneel. Zand en geen alarm: het is iets
+   om te weten bij het koken, niet iets dat misgaat. */
+.avond-notitie {
+  display: flex;
+  align-items: start;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--r-sm);
+  background: var(--sand);
+  color: var(--ink);
+  font-size: 0.85rem;
+}
+
+.avond-notitie svg {
+  flex: none;
+  margin-top: 0.1rem;
+  color: var(--warn);
+}

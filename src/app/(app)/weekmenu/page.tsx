@@ -1,6 +1,15 @@
 import Link from "next/link";
-import { addToMenu, moveMenuEntry, clearWeek, removeFromMenu, setMenuServings } from "@/app/actions";
+import {
+  addToMenu,
+  clearWeek,
+  moveMenuEntry,
+  removeFromMenu,
+  setCook,
+  setGuests,
+  setMenuServings,
+} from "@/app/actions";
 import { Knop } from "@/components/Knop";
+import { Avond } from "@/components/Avond";
 import { Melding } from "@/components/Melding";
 import { Icon } from "@/components/Icon";
 import { Vastkop } from "@/components/Vastkop";
@@ -20,7 +29,7 @@ import {
 import { leesMelding } from "@/lib/menu/melding";
 import { haalVoorstellen } from "@/lib/menu/voorstellen";
 import { maandNaam } from "@/lib/menu/seizoen";
-import { huishouden } from "@/lib/settings";
+import { huishouden, people } from "@/lib/settings";
 import { MAX_SERVINGS, MIN_SERVINGS } from "@/lib/recipe/scale";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +64,11 @@ export default async function WeekMenuPage({
         select: { id: true, title: true },
       })
     : null;
+
+  const huisgenoten = await people();
+  // Welke avondregel openstaat. In de URL en niet in het geheugen van de
+  // component: zie components/Avond.tsx.
+  const openAvond = readOne(query.avond);
 
   const entries = await prisma.menuEntry.findMany({
     where: { date: weekRange(monday) },
@@ -213,6 +227,19 @@ export default async function WeekMenuPage({
                         </Knop>
                       </form>
                     </div>
+
+                    <Avond
+                      entryId={meal.id}
+                      kok={meal.cook}
+                      gasten={meal.guests}
+                      gastnotitie={meal.guestNote}
+                      namen={huisgenoten}
+                      open={openAvond === meal.id}
+                      openHref={`/weekmenu?week=${weekParam}&avond=${meal.id}`}
+                      dichtHref={`/weekmenu?week=${weekParam}`}
+                      zetKok={setCook}
+                      zetGasten={setGuests}
+                    />
                   </div>
                 );
               })}
