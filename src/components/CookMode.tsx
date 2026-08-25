@@ -38,13 +38,16 @@ export function CookMode({
   // kant waar hij vandaan komt, en dat is het verschil tussen "er gebeurde
   // iets" en "ik ben een stap verder".
   const [richting, setRichting] = useState<"vooruit" | "terug">("vooruit");
+  // Wat er al in de pan ligt, per stap. Zie de opmerking bij de lijst hieronder
+  // voor waarom dit niets bewaart buiten deze pagina.
+  const [gepakt, setGepakt] = useState<Set<string>>(new Set());
 
   const scaled = baseServings !== null && recipe.servings !== baseServings;
   const step = recipe.steps[current];
   const stepIngredients = step ? ingredientsForStep(recipe, step) : [];
   const isLast = current === recipe.steps.length - 1;
 
-  useKeepScreenAwake();
+  const schermBlijftAan = useKeepScreenAwake();
   const alarm = useAlarm();
 
   // Een nieuwe stap begin je bovenaan. Zonder dit blijft de pagina staan waar
@@ -111,6 +114,15 @@ export function CookMode({
       if (!timer?.endsAt) return prev;
       const remaining = Math.max(0, Math.round((timer.endsAt - Date.now()) / 1000));
       return { ...prev, [index]: { endsAt: null, remaining, done: false } };
+    });
+  }, []);
+
+  const wisselGepakt = useCallback((sleutel: string) => {
+    setGepakt((vorige) => {
+      const volgende = new Set(vorige);
+      if (volgende.has(sleutel)) volgende.delete(sleutel);
+      else volgende.add(sleutel);
+      return volgende;
     });
   }, []);
 
@@ -188,9 +200,20 @@ export function CookMode({
           </span>
         </header>
 
-        <div className="cook-progress" aria-hidden>
-          {recipe.steps.map((_, index) => (
-            <span key={index} className={index <= current ? "on" : ""} />
+        {/* Aantikbaar, want de segmenten stonden er al en zijn al zo breed als
+            een duim. Van stap vijf terug naar stap twee was drie keer "Vorige"
+            met natte handen. Geen `aria-hidden` meer nu het knoppen zijn — wel
+            een label per stap, want een streepje leest niet voor. */}
+        <div className="cook-progress">
+          {recipe.steps.map((stap, index) => (
+            <button
+              key={index}
+              type="button"
+              className={index <= current ? "on" : ""}
+              onClick={() => naStap(index)}
+              aria-label={`Naar stap ${index + 1}${stap.title ? `: ${stap.title}` : ""}`}
+              aria-current={index === current ? "step" : undefined}
+            />
           ))}
         </div>
       </div>
@@ -240,21 +263,46 @@ export function CookMode({
         {stepIngredients.length > 0 && (
           <section className="cook-ingredients">
             <h2>Nodig voor deze stap</h2>
+            {/* Aan te tikken, met een streep erdoor. Bij een stap met acht
+                ingrediënten raak je anders kwijt wat er al in de pan ligt, en
+                dat is precies het moment waarop de deurbel gaat. Alleen in het
+                geheugen van deze pagina: verlaat je de kookmodus, dan is het
+                klaar — er valt niets te bewaren aan een pan die al op staat. */}
             <ul>
-              {stepIngredients.map((item, index) => (
-                <li key={index}>
-                  <span className="amount">{formatAmount(item)}</span>
-                  <span>
-                    {item.name}
-                    {item.note && <span className="muted">, {item.note}</span>}
-                  </span>
-                </li>
-              ))}
+              {stepIngredients.map((item, index) => {
+                const sleutel = `${current}:${index}`;
+                const erin = gepakt.has(sleutel);
+                return (
+                  <li key={index} className={erin ? "gepakt" : undefined}>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={erin}
+                        onChange={() => wisselGepakt(sleutel)}
+                      />
+                      <span className="amount">{formatAmount(item)}</span>
+                      <span>
+                        {item.name}
+                        {item.note && <span className="muted">, {item.note}</span>}
+                      </span>
+                    </label>
+                  </li>
+                );
+              })}
             </ul>
           </section>
         )}
 
         <p className="cook-text">{step.text}</p>
+
+        {/* Koken is vooruitdenken: als er straks twintig minuten geprutteld
+            moet worden, wil je dat weten terwijl je nog staat te snijden. */}
+        {!isLast && (
+          <p className="cook-straks">
+            <span className="eyebrow">Straks</span>
+            {recipe.steps[current + 1].title ?? recipe.steps[current + 1].text}
+          </p>
+        )}
 
         {step.timerMinutes !== null && (
           <Timer
@@ -300,6 +348,13 @@ export function CookMode({
             </div>
           ))}
         </details>
+
+        {/* Onopvallend onderaan. Alleen als het werkelijk gelukt is: een
+            browser die de lock weigert hoort geen belofte op het scherm te
+            zetten. */}
+        {schermBlijftAan && (
+          <p className="cook-wakker muted">Het scherm blijft aan zolang je kookt.</p>
+        )}
       </main>
 
       <nav className="cook-nav">
@@ -417,7 +472,19 @@ function Timer({
  * Houdt het scherm aan tijdens het koken. Zonder dit valt de telefoon in slaap
  * halverwege het fruiten van een ui, en dan sta je met natte handen te vegen.
  */
-function useKeepScreenAwake(): void {
+/**
+ * Het scherm aanhouden zolang je kookt.
+ *
+ * Geeft terug óf het gelukt is, en dat is de hele reden dat het niet `void`
+ * meer is: de lock werkte al, maar je zag het nergens — dus legde je de
+ * telefoon toch met een schuin oog neer, of tikte je hem elke minuut wakker.
+ * Vertrouwen komt van zeggen wat je doet, en alleen als het waar is: een
+ * browser die het weigert (batterijbesparing) hoort geen belofte op het scherm
+ * te zetten.
+ */
+function useKeepScreenAwake(): boolean {
+  const [aan, setAan] = useState(false);
+
   useEffect(() => {
     type WakeLockSentinel = { release: () => Promise<void> };
     const wakeLockApi = (
@@ -438,8 +505,11 @@ function useKeepScreenAwake(): void {
           return;
         }
         sentinel = lock;
+        setAan(true);
       } catch {
-        // Browser weigert het (bijv. batterijbesparing). Niet erg.
+        // Browser weigert het (bijv. batterijbesparing). Niet erg — maar dan
+        // zeggen we het ook niet.
+        setAan(false);
       }
     };
 
@@ -457,6 +527,8 @@ function useKeepScreenAwake(): void {
       void sentinel?.release().catch(() => {});
     };
   }, []);
+
+  return aan;
 }
 
 type Alarm = (() => void) & { prime: () => void };
