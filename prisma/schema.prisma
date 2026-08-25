@@ -78,10 +78,10 @@ model Recipe {
 
   /// Wanneer je dit eet: komma-gescheiden waarden uit MEAL_TYPES. Een gerecht
   /// mag er meerdere hebben — soep is lunch én diner.
-  mealTypes String @default("")
+  mealTypes String  @default("")
   /// Uit welke keuken het komt, bijv. "Italiaans". Kolom in plaats van een
   /// veld in `data`, omdat er op gefilterd wordt.
-  cuisine String?
+  cuisine   String?
 
   /// Dieetkenmerken: komma-gescheiden waarden uit DIETS. Een inschatting op
   /// basis van de ingrediënten, geen keurmerk — zie src/lib/recipe/categories.ts.
@@ -128,6 +128,32 @@ model MenuEntry {
   servings Int?
 
   @@index([date])
+}
+
+/// Iets dat je zelf op de boodschappenlijst zet.
+///
+/// Wc-papier, koffie, hondenbrokken. Ze horen bij de week en niet bij een
+/// recept, want ze komen nergens uit voort — daarom een eigen tabel en geen
+/// veld aan `MenuEntry`.
+///
+/// In de database en niet in de browser, anders dan het afvinken: dit is een
+/// huishouden van twee, en wat de één toevoegt hoort de ander te zien staan
+/// als hij in de winkel staat. Afvinken is van jouw kant van de winkel;
+/// toevoegen is van jullie samen.
+model ShoppingExtra {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  /// De maandag van de week waar dit bij hoort, op middernacht.
+  week DateTime
+
+  /// Wat je nodig hebt, in je eigen woorden.
+  text String
+
+  /// Wie het erbij zette. Null als er geen naamkaartje gekozen is.
+  addedBy String?
+
+  @@index([week])
 }
 
 /// Eén keer dat je dit gerecht hebt gemaakt.

@@ -658,3 +658,37 @@ export async function deleteRecipe(formData: FormData): Promise<void> {
   revalidatePath("/weekmenu");
   redirect("/");
 }
+
+/* --- Zelf toegevoegde boodschappen ---------------------------------------- */
+
+/**
+ * Iets op de lijst zetten dat uit geen enkel recept komt.
+ *
+ * Hoort bij de week, niet bij een gerecht; zie `ShoppingExtra` in het schema
+ * voor waarom dit in de database staat en het afvinken niet.
+ */
+export async function addExtra(formData: FormData): Promise<void> {
+  const week = readField(formData, "week");
+  const text = readField(formData, "tekst");
+  if (!week || !text) return;
+
+  await prisma.shoppingExtra.create({
+    data: {
+      week: startOfWeek(fromParam(week)),
+      // Ruim afkappen in plaats van weigeren: dit is een boodschappenlijstje,
+      // geen formulier. Wie een heel verhaal plakt krijgt het begin ervan.
+      text: text.slice(0, 120),
+      addedBy: await currentPerson(),
+    },
+  });
+
+  revalidatePath("/weekmenu/boodschappen");
+}
+
+export async function removeExtra(formData: FormData): Promise<void> {
+  const id = readField(formData, "id");
+  if (!id) return;
+
+  await prisma.shoppingExtra.deleteMany({ where: { id } });
+  revalidatePath("/weekmenu/boodschappen");
+}

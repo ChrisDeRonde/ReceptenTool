@@ -3732,3 +3732,111 @@ button.gevaar {
   padding-left: 0.5rem;
   border-left: 1px solid var(--line);
 }
+
+/* --- Afvinken op de boodschappenlijst -------------------------------------
+   Zie components/Afvinklijst.tsx. Het label vult de hele regel: in een winkel
+   mik je niet op een vakje van twintig pixels, en de regel is toch al 44 hoog. */
+
+.aisle li > label {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 0.35rem 0;
+  cursor: pointer;
+}
+
+.aisle li > label input[type="checkbox"] {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  /* Uitlijnen op de eerste tekstregel en niet op het midden: bij een regel met
+     een waarschuwing eronder zakt een gecentreerd vakje naar de tweede regel
+     en lijkt het bij de verkeerde tekst te horen. */
+  margin: 0.1rem 0 0;
+  align-self: flex-start;
+  accent-color: var(--accent);
+}
+
+/* Doorgestreept en gedempt, maar niet weg: je wilt kunnen zien dát je het al
+   hebt, en je wilt het terug kunnen zetten als je je vergiste. */
+.aisle li.af .what,
+.aisle li.af .amount {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.aisle li.af .name {
+  opacity: 0.75;
+}
+
+/* De stand bovenaan. Een balk en een telling: in een winkel wil je weten of je
+   er bijna bent zonder de hele lijst na te lopen. */
+.afvink-stand {
+  margin: 0 0 1.1rem;
+}
+
+.afvink-balk {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--sunken);
+  overflow: hidden;
+}
+
+.afvink-balk span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width var(--vlot) var(--soepel);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .afvink-balk span { transition: none; }
+}
+
+.afvink-stand p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.45rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Zelf toegevoegd ------------------------------------------------------ */
+
+.zelf {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.zelf-toevoegen {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.zelf-toevoegen input {
+  flex: 1;
+  min-width: 0;
+}
+
+.zelf-toevoegen button {
+  flex: none;
+}
+
+/* Het vlaggetje en de reden staan op de boodschappenlijst compacter dan op de
+   receptpagina: hier is het een geheugensteun bij het schap, geen uitleg. */
+.aisle .zw-vlag {
+  margin-left: 0.4rem;
+  vertical-align: 1px;
+}
+
+.aisle .zw-waarom {
+  font-size: 0.75rem;
+}

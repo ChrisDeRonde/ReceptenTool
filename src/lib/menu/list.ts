@@ -93,16 +93,39 @@ export async function weekShoppingList(monday: Date): Promise<WeekList> {
     }
   }
 
-  const byAisle = new Map<Aisle, Line[]>();
+  // Emmers met dezelfde naam maar een andere eenheid worden één regel.
+  //
+  // 400 gram en 3 blik tomatenblokjes kun je niet optellen — dat is de reden
+  // dat het twee emmers zijn — maar als twee losse regels onder elkaar lezen
+  // ze aan een schap als een fout in de app. Eén regel met beide hoeveelheden
+  // erachter is eerlijk én bruikbaar: je ziet dat het om hetzelfde product
+  // gaat en hoeveel je in totaal nodig hebt.
+  const perNaam = new Map<string, { line: Line; aisle: Aisle; delen: string[] }>();
   for (const bucket of buckets.values()) {
-    const line: Line = {
-      name: bucket.name,
-      amount: formatAmount({ quantity: bucket.quantity, unit: bucket.unit }),
-      from: [...bucket.from],
-    };
-    const list = byAisle.get(bucket.aisle);
+    const sleutel = `${bucket.aisle}|${canonicalName(bucket.name)}`;
+    const stuk = formatAmount({ quantity: bucket.quantity, unit: bucket.unit });
+    const bestaand = perNaam.get(sleutel);
+
+    if (bestaand) {
+      if (stuk) bestaand.delen.push(stuk);
+      for (const titel of bucket.from) {
+        if (!bestaand.line.from.includes(titel)) bestaand.line.from.push(titel);
+      }
+    } else {
+      perNaam.set(sleutel, {
+        aisle: bucket.aisle,
+        delen: stuk ? [stuk] : [],
+        line: { name: bucket.name, amount: stuk, from: [...bucket.from] },
+      });
+    }
+  }
+
+  const byAisle = new Map<Aisle, Line[]>();
+  for (const { line, aisle, delen } of perNaam.values()) {
+    line.amount = delen.join(" + ");
+    const list = byAisle.get(aisle);
     if (list) list.push(line);
-    else byAisle.set(bucket.aisle, [line]);
+    else byAisle.set(aisle, [line]);
   }
 
   const groups = aisleOrder()
@@ -113,7 +136,7 @@ export async function weekShoppingList(monday: Date): Promise<WeekList> {
       lines: (byAisle.get(aisle) ?? []).sort((a, b) => a.name.localeCompare(b.name, "nl")),
     }));
 
-  return { groups, count: buckets.size, meals: entries.length };
+  return { groups, count: perNaam.size, meals: entries.length };
 }
 
 /**
