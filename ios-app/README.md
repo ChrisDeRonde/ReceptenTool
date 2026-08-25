@@ -28,8 +28,9 @@ Twee dingen die hij moet weten en die verderop in dit bestand staan uitgelegd:
 `Kast` geen SwiftData** — allebei zijn het bewuste keuzes met een reden die in
 de code staat. Wat er verder omgegooid moet worden mag hij zelf beslissen.
 
-Nakijken kan met `npm run api:check` (de serverkant) en `npm run swift:vorm`
-(of de Swift-structs nog kloppen met wat de server stuurt).
+Nakijken kan met `npm run api:check` (de serverkant), `npm run swift:vorm` (of
+de Swift-structs nog kloppen met wat de server stuurt) en `npm run
+swift:targets` (welk bestand in welk Xcode-target hoort).
 
 ## Lees dit eerst
 
@@ -167,45 +168,86 @@ geheim op het toestel dus, en niets in te vullen — wel nog een naamkaartje als
 er meer dan één huisgenoot is, want dat weet de server niet uit zichzelf.
 
 **Dit is nog nooit gecompileerd**, net als de rest — dezelfde reden als
-hierboven. Zet Claude Code op je Mac er weer op met dit bericht:
+hierboven.
 
-> De deelextensie staat in `ios-app/KlapperDelen/` (`DeelExtensieController`,
-> `DeelModel`, `DeelScherm`) en moet nog aan het Xcode-project. Lees eerst
-> `ios-app/README.md` vanaf "De deelextensie" — daar staat de opzet en wat er
-> nog moet gebeuren.
+### Welke bestanden in welk target
+
+Dit is nagerekend en niet gegokt. `npm run swift:targets` volgt vanuit de drie
+`KlapperDelen`-bestanden alle typen die ze aanraken, en dat wat díé weer
+aanraken, tot de lijst niet meer groeit — en het stopt met een foutmelding als
+er ooit een bestand met `@main` in belandt. Draai hem opnieuw als er Swift
+bijkomt; dan blijft deze lijst kloppen in plaats van te verouderen. Nu geeft
+hij:
+
+**Aanvinken bij `KlapperDelen`** (target membership, in het rechterpaneel):
+
+- `KlapperDelen/DeelExtensieController.swift`
+- `KlapperDelen/DeelModel.swift`
+- `KlapperDelen/DeelScherm.swift`
+- `Klapper/Model/Contract.swift`
+- `Klapper/Netwerk/Codering.swift`
+- `Klapper/Netwerk/Klant.swift`
+- `Klapper/Netwerk/Sleutelbos.swift`
+- `Klapper/Opslag/Kast.swift`
+- `Klapper/Stijl.swift`
+
+Die zes uit `Klapper/` zitten dus in **allebei** de targets. Dat mag: Swift
+compileert ze een tweede keer mee in de extensie. Een gedeeld framework maken
+kan ook, maar dat is voor zes bestanden meer bouwwerk dan het oplevert.
+
+**Níét aanvinken bij `KlapperDelen`:**
+
+- `Klapper/KlapperApp.swift` — hier staat `@main` in. Een extensie start via
+  `NSExtensionPrincipalClass`, niet via een `App`; dit erbij zetten levert een
+  tweede startpunt op en dat is een bouwfout die nergens naar wijst.
+- `Klapper/Voorraad.swift`, `Klapper/Zoeker.swift`,
+  `Klapper/Opslag/Synchronisatie.swift`, `Klapper/Schermen/*` — de extensie
+  raakt ze niet aan, en meenemen betekent alleen meer om stuk te laten gaan.
+
+### Het bericht voor Claude Code op je Mac
+
+> Het `KlapperDelen`-target bestaat al in het Xcode-project, met App Groups
+> (`group.nl.klapper.gedeeld`) en Keychain Sharing (`nl.klapper.gedeeld`) op
+> zowel `Klapper` als `KlapperDelen`. De Swift ervoor staat klaar maar hangt
+> nog nergens aan.
 >
-> Het `KlapperDelen`-target bestaat al, met App Groups en Keychain Sharing
-> (groep `nl.klapper.gedeeld` op allebei) aangezet. Doe dit:
+> Lees eerst `ios-app/README.md` vanaf "De deelextensie" — daar staat precies
+> welke bestanden in welk target horen en welke er juist níét in mogen. Die
+> lijst is nagerekend; volg hem letterlijk.
 >
-> 1. Voeg de drie nieuwe bestanden toe aan het `KlapperDelen`-target.
-> 2. Voeg ook `Model/Contract.swift`, `Netwerk/Klant.swift`,
->    `Netwerk/Sleutelbos.swift`, `Netwerk/Codering.swift`, `Opslag/Kast.swift`
->    en `Stijl.swift` toe aan het `KlapperDelen`-target (target membership
->    aanvinken in het bestandsinspector-paneel) — die heeft de extensie nodig
->    en ze staan nu alleen op het `Klapper`-target.
-> 3. Verwijder het standaard-sjabloon dat Xcode bij het aanmaken van het target
->    neerzette (`ShareViewController.swift`/`.storyboard` of
->    `MainInterface.storyboard`, afhankelijk van wat er staat) — die wordt niet
->    meer gebruikt.
-> 4. Pas de Info.plist van het `KlapperDelen`-target aan: `NSExtensionMainStoryboard`
->    weg, `NSExtensionPrincipalClass` erbij met de waarde
+> Doe dan dit:
+>
+> 1. Vink de negen bestanden uit die lijst aan bij het `KlapperDelen`-target.
+>    Let op `KlapperApp.swift`: die mag er beslist niet bij.
+> 2. Gooi het sjabloon weg dat Xcode bij het aanmaken van het target neerzette
+>    (`ShareViewController.swift` en `MainInterface.storyboard`, of wat er
+>    staat) — dat wordt niet gebruikt.
+> 3. Pas de Info.plist van `KlapperDelen` aan: `NSExtensionMainStoryboard` eruit,
+>    `NSExtensionPrincipalClass` erin met waarde
 >    `$(PRODUCT_MODULE_NAME).DeelExtensieController`, en een
 >    `NSExtensionActivationRule` die één weblink of geselecteerde tekst
 >    toestaat (`NSExtensionActivationSupportsWebURLWithMaxCount = 1`,
->    `NSExtensionActivationSupportsText = true`). Het precieze stuk plist staat
->    als voorbeeld in `ios-schil/Info-fragment.plist` — zelfde sleutels, andere
->    klassenaam.
-> 5. Zet de Minimum Deployment van `KlapperDelen` gelijk aan die van `Klapper`
->    (18.0) als dat nog niet zo is.
-> 6. Bouw met `xcodebuild`, los fouten op in de bronbestanden, en herhaal tot
->    het bouwt.
-> 7. Test in de Simulator via Safari's deelmenu op een willekeurige pagina:
->    zoek "Klapper" (of "Bewaren in Klapper") in de lijst, tik erop, en
->    controleer of het kaartje verschijnt en "Bewaard" teruggeeft. Werkt het
->    niet meteen, kijk dan eerst of `Sleutelbos.serveradres` en `.token` in de
->    extensie hetzelfde zijn als in de app — dat loopt via de Keychain Sharing-
->    groep, en als die per ongeluk verschilt op de twee targets krijg je een
->    stille login-vraag in plaats van een bouwfout.
+>    `NSExtensionActivationSupportsText = true`). Zelfde sleutels als in
+>    `ios-schil/Info-fragment.plist`, andere klassenaam.
+> 4. Zet de Minimum Deployment van `KlapperDelen` op 18.0, gelijk aan `Klapper`.
+> 5. Bouw **beide** schema's met `xcodebuild` — eerst `Klapper`, dan
+>    `KlapperDelen`. Los fouten op in de bronbestanden onder `ios-app/` en
+>    herhaal tot allebei bouwen. De extensie is nog nooit door een compiler
+>    geweest, dus reken op wat concurrency-geklaag; de app zelf bouwde eerder
+>    al schoon.
+> 6. Draai `npm run demo` in een tweede venster (`http://localhost:3100`,
+>    wachtwoord `proefkonijn`), start de app in de Simulator en meld je aan —
+>    de extensie heeft het token van de app nodig.
+> 7. Test via Safari in de Simulator: open een pagina, deelmenu, zoek
+>    "Klapper". Controleer dat het kaartje verschijnt, dat er een naam bij
+>    staat, en dat er "Bewaard" komt. Kijk daarna in de inbox van de webapp of
+>    het item er werkelijk is.
+>
+> Vraagt de extensie om aanmelden terwijl de app wél is aangemeld, dan is dat
+> de Keychain en niet de code. `Sleutelbos.meldGroep("...")` print in DEBUG
+> welke toegangsgroep hij ziet; roep hem ook even aan bij het opstarten van de
+> app en leg de twee regels naast elkaar. Staat er een andere groep, dan is
+> Keychain Sharing niet gelijk ingesteld op de twee targets.
 >
 > Laat me daarna een schermafdruk zien van het deelkaartje in de Simulator.
 

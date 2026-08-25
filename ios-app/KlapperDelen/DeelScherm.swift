@@ -4,7 +4,9 @@ import SwiftUI
 /// Klapper tikt in het deelmenu. Dezelfde huisstijl als de app (`Stijl.swift`)
 /// — geen eigen kleurenpalet, dit hoort er zichtbaar bij te horen.
 struct DeelScherm: View {
-    @Bindable var model: DeelModel
+    // Geen `@Bindable`: er wordt nergens een `$`-binding gemaakt, en
+    // `@Observable` volgt het lezen van eigenschappen uit zichzelf.
+    let model: DeelModel
     let annuleer: () -> Void
     let klaar: () -> Void
 

@@ -19,7 +19,8 @@
     "export": "node --import ./scripts/ts-loader.mjs scripts/export.mjs",
     "dieet": "node --import ./scripts/ts-loader.mjs scripts/dieet.mjs",
     "api:check": "node scripts/api-check.mjs",
-    "swift:vorm": "node scripts/swift-vorm.mjs"
+    "swift:vorm": "node scripts/swift-vorm.mjs",
+    "swift:targets": "node scripts/swift-targets.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",

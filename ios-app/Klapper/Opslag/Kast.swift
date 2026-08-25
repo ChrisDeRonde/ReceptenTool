@@ -30,9 +30,33 @@ actor Kast {
         bestand = map.appending(path: "kast.json")
     }
 
+    /// Wat er in het bestand staat.
+    ///
+    /// De instellingen worden losjes gelezen en de recepten streng, en dat is
+    /// met opzet. Komt er een veld bij in `Instellingen` — zoals `zwanger`
+    /// erbij kwam — dan mislukt met een gesynthetiseerde decoder het hele
+    /// blok, en gaat de complete receptenkast mee de prullenbak in voor één
+    /// ontbrekende `Bool`. Dat is een dure prijs voor een schemawijziging die
+    /// niets met recepten te maken heeft.
+    ///
+    /// Andersom is streng juist goed: verandert de vorm van een `Recept`, dan
+    /// is wat er ligt echt niet meer te vertrouwen en is opnieuw ophalen de
+    /// enige goede uitkomst.
     private struct Inhoud: Codable {
         var recepten: [Recept]
         var instellingen: Instellingen
+
+        init(recepten: [Recept], instellingen: Instellingen) {
+            self.recepten = recepten
+            self.instellingen = instellingen
+        }
+
+        init(from decoder: Decoder) throws {
+            let houder = try decoder.container(keyedBy: CodingKeys.self)
+            recepten = try houder.decode([Recept].self, forKey: .recepten)
+            instellingen =
+                (try? houder.decode(Instellingen.self, forKey: .instellingen)) ?? .leeg
+        }
     }
 
     func laad() {

@@ -5,6 +5,7 @@ import UIKit
 /// in de Info.plist van het `KlapperDelen`-target, in plaats van het
 /// standaard-storyboard dat Xcode neerzet. Bouwt zelf zijn scherm op met
 /// `DeelScherm`, dezelfde SwiftUI als de rest van de app.
+@MainActor
 final class DeelExtensieController: UIViewController {
     private let model = DeelModel()
 
