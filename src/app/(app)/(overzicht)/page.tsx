@@ -26,6 +26,13 @@ import {
   type Hit,
 } from "@/lib/recipe/search";
 import { PAASEI, isPaasei } from "@/lib/paasei";
+import {
+  leesSortering,
+  sorteer,
+  SORTERINGEN,
+  SORTEER_LABELS,
+  type Sortering,
+} from "@/lib/recipe/sorteer";
 import { voorkeuren } from "@/lib/settings";
 import { beoordeelRecept, iemandZwanger, type Niveau } from "@/lib/zwanger";
 
@@ -45,6 +52,17 @@ export default async function HomePage({
   const dietFilter = readDietFilter(query.dieet);
   const rawQuery = readOne(query.q) ?? "";
   const terms = parseQuery(rawQuery);
+  const sortering = leesSortering(query.op);
+
+  const [usedMealTypes, usedCuisines, usedDiets, ratings, wensen, laatst] =
+    await Promise.all([
+    collectMealTypes(),
+    collectCuisines(),
+    collectDiets(),
+    collectRatings(),
+    voorkeuren(),
+    collectLaatstGemaakt(),
+  ]);
 
   const rows = await prisma.recipe.findMany({
     // Keuken is één waarde, dus die filtert exact in SQL. Maaltijdmomenten
@@ -72,9 +90,15 @@ export default async function HomePage({
   // Zoeken gebeurt in het geheugen: de ingrediënten zitten in de JSON-blob, en
   // bij deze aantallen is alles doorlopen sneller dan een index die kan
   // verouderen. Zonder zoekterm wordt hier niets gedaan.
+  // Bij zoeken wint de relevantie; zonder zoekterm mag jij bepalen waarop.
+  const gesorteerd =
+    terms.length === 0
+      ? sorteer(filtered, sortering, { cijfers: ratings, laatst })
+      : filtered;
+
   const scored =
     terms.length === 0
-      ? filtered.map((recipe) => ({ recipe, hit: null as Hit | null }))
+      ? gesorteerd.map((recipe) => ({ recipe, hit: null as Hit | null }))
       : filtered
           .map((recipe) => ({ recipe, hit: score(buildHaystack(recipe), terms) }))
           .filter((entry): entry is { recipe: (typeof filtered)[number]; hit: Hit } =>
@@ -93,13 +117,6 @@ export default async function HomePage({
   const complete = scored.filter((entry) => (entry.hit?.matched ?? 0) === terms.length);
   const partial = scored.filter((entry) => (entry.hit?.matched ?? 0) < terms.length);
 
-  const [usedMealTypes, usedCuisines, usedDiets, ratings, wensen] = await Promise.all([
-    collectMealTypes(),
-    collectCuisines(),
-    collectDiets(),
-    collectRatings(),
-    voorkeuren(),
-  ]);
 
   // Staat het zwangerschapsvinkje aan, dan hoort een tegel het al te verraden —
   // anders klik je een gerecht open dat toch niet kan. Alleen het zwaarste
@@ -130,12 +147,27 @@ export default async function HomePage({
     if (cuisine) params.set("keuken", cuisine);
     if (diet) params.set("dieet", diet);
     if (rawQuery) params.set("q", rawQuery);
+    if (sortering !== "vers") params.set("op", sortering);
     const qs = params.toString();
     return qs ? `/?${qs}` : "/";
   };
 
-  const filtering =
-    mealFilter !== null || cuisineFilter !== null || dietFilter !== null;
+  // De sorteerknoppen houden de filters vast, en andersom.
+  const sorteerHref = (op: Sortering) => {
+    const params = new URLSearchParams();
+    if (mealFilter) params.set("maaltijd", mealFilter);
+    if (cuisineFilter) params.set("keuken", cuisineFilter);
+    if (dietFilter) params.set("dieet", dietFilter);
+    if (rawQuery) params.set("q", rawQuery);
+    if (op !== "vers") params.set("op", op);
+    const qs = params.toString();
+    return qs ? `/?${qs}` : "/";
+  };
+
+  const actieveFilters = [mealFilter, cuisineFilter, dietFilter].filter(
+    (f) => f !== null,
+  ).length;
+  const filtering = actieveFilters > 0;
 
   // De weg terug hoort in de éérste rail die er werkelijk staat, niet vast aan
   // de maaltijdrail. Een collectie zonder maaltijdsoorten maar mét dieetlabels
@@ -176,6 +208,19 @@ export default async function HomePage({
       {/* Filtert er iets terwijl er geen enkele rail staat — een dieet uit de
           URL dat geen enkel recept heeft — dan is dit de enige uitweg. */}
       {eersteRail === null && alles && <div className="rail">{alles}</div>}
+
+      {/* De drie rails zaten hiervoor altijd open en duwden op een telefoon het
+          eerste recept tot voorbij de helft van het scherm. Nu dicht, tenzij er
+          al gefilterd wordt — dan wil je juist zien waarop, en wil je erbij
+          kunnen. `details` en geen knop met JavaScript: het moet ook werken als
+          er niets draait, en de browser onthoudt de stand niet, wat hier goed
+          uitkomt. */}
+      <details className="filters" open={filtering}>
+        <summary>
+          <Icon icon={icons.filter} size={16} />
+          <span>Filteren</span>
+          {actieveFilters > 0 && <span className="filter-telling">{actieveFilters}</span>}
+        </summary>
 
       {usedMealTypes.length > 0 && (
         <div className="rail">
@@ -221,6 +266,27 @@ export default async function HomePage({
           ))}
         </div>
       )}
+
+        {/* Sorteren hoort bij filteren: het zijn allebei manieren om de lijst
+            naar je hand te zetten, en samen in één uitklap kosten ze niets
+            zolang je ze niet nodig hebt. Weg bij zoeken — dan bepaalt de
+            relevantie de volgorde en zou een sorteerknop liegen. */}
+        {terms.length === 0 && (
+          <div className="rail sorteerrail">
+            <span className="rail-kop">Sorteren</span>
+            {SORTERINGEN.map((op) => (
+              <Link
+                key={op}
+                href={sorteerHref(op)}
+                className={`chip ${sortering === op ? "on" : ""}`}
+                aria-current={sortering === op ? "true" : undefined}
+              >
+                {SORTEER_LABELS[op]}
+              </Link>
+            ))}
+          </div>
+        )}
+      </details>
 
       {isPaasei(terms) && (
         // Het verstopte recept. Boven de resultaten, niet ervoor in de plaats:
@@ -468,5 +534,24 @@ async function collectRatings(): Promise<Map<string, number>> {
     rows
       .filter((row) => row._avg.rating !== null)
       .map((row) => [row.recipeId, row._avg.rating as number]),
+  );
+}
+
+/**
+ * Wanneer elk recept voor het laatst gemaakt is.
+ *
+ * Eén `groupBy` in plaats van de kooklogs bij elk recept ophalen: het overzicht
+ * heeft ze verder nergens voor nodig, en bij vijfhonderd recepten scheelt dat
+ * een paar duizend rijen per weergave.
+ */
+async function collectLaatstGemaakt(): Promise<Map<string, Date>> {
+  const rows = await prisma.cookLog.groupBy({
+    by: ["recipeId"],
+    _max: { cookedAt: true },
+  });
+  return new Map(
+    rows
+      .filter((row) => row._max.cookedAt !== null)
+      .map((row) => [row.recipeId, row._max.cookedAt as Date]),
   );
 }

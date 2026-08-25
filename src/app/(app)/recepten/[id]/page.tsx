@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
 import { deleteRecipe, toggleFavorite } from "@/app/actions";
 import { Knop } from "@/components/Knop";
+import { PrintKnop } from "@/components/PrintKnop";
 import { Avatar } from "@/components/Avatar";
 import { CategoryEditor } from "@/components/CategoryEditor";
 import { CookLog } from "@/components/CookLog";
@@ -261,6 +262,7 @@ export default async function RecipePage({
           )}
           {/* Het aantal personen van dít moment gaat mee naar het menu:
               plan je voor zes, dan telt de boodschappenlijst voor zes. */}
+          <PrintKnop />
           <Link
             href={`/weekmenu?kies=${row.id}${servings !== null ? `&porties=${servings}` : ""}`}
             className="button secondary icon"
@@ -307,7 +309,7 @@ export default async function RecipePage({
               <Link
                 href={servingsHref(servings - 1)}
                 aria-disabled={servings <= MIN_SERVINGS}
-                className={servings <= MIN_SERVINGS ? "off" : ""}
+                className={`raakbaar ${servings <= MIN_SERVINGS ? "off" : ""}`}
                 aria-label="Eén persoon minder"
               >
                 <Icon icon={icons.minus} size={16} />
@@ -316,7 +318,7 @@ export default async function RecipePage({
               <Link
                 href={servingsHref(servings + 1)}
                 aria-disabled={servings >= MAX_SERVINGS}
-                className={servings >= MAX_SERVINGS ? "off" : ""}
+                className={`raakbaar ${servings >= MAX_SERVINGS ? "off" : ""}`}
                 aria-label="Eén persoon meer"
               >
                 <Icon icon={icons.plus} size={16} />

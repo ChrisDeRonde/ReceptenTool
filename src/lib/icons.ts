@@ -18,6 +18,8 @@ import {
   Clock01Icon,
   Copy01Icon,
   Delete02Icon,
+  FilterHorizontalIcon,
+  PrinterIcon,
   Dish01Icon,
   Idea01Icon,
   Image01Icon,
@@ -78,6 +80,8 @@ export const icons = {
   settings: Settings01Icon,
   favorite: StarIcon,
   people: UserMultiple02Icon,
+  filter: FilterHorizontalIcon,
+  print: PrinterIcon,
   warning: Alert02Icon,
   ideas: AiMagicIcon,
 } satisfies Record<string, IconData>;

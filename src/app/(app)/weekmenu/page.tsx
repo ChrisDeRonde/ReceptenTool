@@ -88,11 +88,11 @@ export default async function WeekMenuPage({
       <Vastkop titel="Weekmenu" meta={weekLabel(monday)} />
 
       <div className="weeknav">
-        <Link href={keep(previous)} aria-label="Vorige week">
+        <Link href={keep(previous)} className="raakbaar" aria-label="Vorige week">
           <Icon icon={icons.back} size={18} />
         </Link>
         <strong>{weekLabel(monday)}</strong>
-        <Link href={keep(next)} aria-label="Volgende week">
+        <Link href={keep(next)} className="raakbaar" aria-label="Volgende week">
           <Icon icon={icons.next} size={18} />
         </Link>
       </div>

@@ -13,6 +13,7 @@ import {
   readBackupStatus,
 } from "@/lib/backup";
 import { Knop } from "@/components/Knop";
+import { Verversen } from "@/components/Verversen";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
 import { Moment } from "@/components/Moment";
@@ -48,8 +49,15 @@ export default async function InboxPage() {
     },
   });
 
+  // Loopt er nog iets? Dan hoort de pagina zichzelf bij te werken in plaats van
+  // "Bezig" te blijven tonen tot iemand ververst. Zie components/Verversen.tsx.
+  const inBehandeling = items.some(
+    (item) => item.status === "pending" || item.status === "processing",
+  );
+
   return (
     <main>
+      <Verversen actief={inBehandeling} />
       <div className="page-head">
         <h1>Inbox</h1>
         <p>Alles wat je deelt komt hier binnen — ook als het misgaat.</p>

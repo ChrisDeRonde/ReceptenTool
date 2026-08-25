@@ -3840,3 +3840,60 @@ button.gevaar {
 .aisle .zw-waarom {
   font-size: 0.75rem;
 }
+
+/* --- De filteruitklap -----------------------------------------------------
+   Drie rails onder elkaar duwden op een telefoon het eerste recept tot voorbij
+   de helft van het scherm. Nu dicht, tenzij er al gefilterd wordt. */
+
+.filters {
+  margin: 0 0 1rem;
+}
+
+.filters > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  padding: 0 0.2rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.filters > summary::-webkit-details-marker { display: none; }
+
+.filters[open] > summary {
+  color: var(--ink);
+  margin-bottom: 0.35rem;
+}
+
+/* Hoeveel er aanstaat, als je hem dicht hebt. Zonder dit is een dichtgeklapte
+   filter een reden om je af te vragen waarom je maar drie recepten ziet. */
+.filter-telling {
+  display: grid;
+  place-items: center;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.sorteerrail {
+  align-items: center;
+}
+
+.rail-kop {
+  flex: none;
+  padding-right: 0.15rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
