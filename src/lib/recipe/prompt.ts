@@ -44,8 +44,14 @@ Porties en tijden:
 - Tijden in hele minuten. Laat een tijd null als je hem niet kunt onderbouwen; verzin geen getallen.
 
 Tips:
-- Alleen tips die de bron noemt of die je met zekerheid uit het recept kunt afleiden: veelgemaakte fouten, vervangingen, bewaaradvies, wat je vooruit kunt doen.
+- Alleen tips die de bron noemt of die je met zekerheid uit het recept kunt afleiden: veelgemaakte fouten, vervangingen, wat je vooruit kunt doen.
 - Geen tips die neerkomen op "gebruik verse ingrediënten".
+- Zet bewaaradvies niet in de tips maar in het veld bewaren.
+
+Bewaren:
+- Eén korte zin: hoe lang het goed blijft en waar. Bijvoorbeeld "Drie dagen afgedekt in de koelkast; goed in te vriezen."
+- Noem invriezen alleen als de bron het zegt of als het overduidelijk is voor dit soort gerecht (een stoofpot wel, een salade niet).
+- Weet je het niet, laat het dan null. Een verzonnen bewaartermijn is erger dan geen.
 
 Regels die zwaarder wegen dan de rest:
 - Verzin nooit hoeveelheden of stappen die niet in de bron staan. Ontbreekt er iets essentieels en moet je het aanvullen om het recept kookbaar te maken, doe dat dan en noteer het letterlijk in assumptions.

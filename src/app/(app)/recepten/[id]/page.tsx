@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
-import { deleteRecipe, toggleFavorite } from "@/app/actions";
+import { addToFreezer, deleteRecipe, toggleFavorite } from "@/app/actions";
 import { Knop } from "@/components/Knop";
 import { PrintKnop } from "@/components/PrintKnop";
 import { Avatar } from "@/components/Avatar";
@@ -442,6 +442,35 @@ export default async function RecipePage({
             ))}
           </ol>
         </section>
+      )}
+
+      {/* Bewaaradvies apart en vóór de tips: dit bepaalt of je maandag dubbel
+          kookt voor woensdag, en dat is een planningsvraag. Tussen zeven tips
+          over pannen en zout lees je hem niet. */}
+      {recipe.bewaren && (
+        <div className="bewaarregel">
+          <Icon icon={icons.date} size={16} />
+          <div>
+            <p>{recipe.bewaren}</p>
+            <form action={addToFreezer} className="bewaar-vriezer">
+              <input type="hidden" name="receptId" value={row.id} />
+              <label>
+                <span className="sr">Hoeveel porties de vriezer in</span>
+                <input
+                  type="number"
+                  name="porties"
+                  min={1}
+                  max={40}
+                  defaultValue={2}
+                  inputMode="numeric"
+                />
+              </label>
+              <Knop className="chip" bezigLabel="…">
+                Porties in de vriezer
+              </Knop>
+            </form>
+          </div>
+        </div>
       )}
 
       {recipe.tips.length > 0 && (

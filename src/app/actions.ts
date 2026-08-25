@@ -778,3 +778,80 @@ export async function setGuests(formData: FormData): Promise<void> {
   revalidatePath("/weekmenu");
   revalidatePath("/weekmenu/boodschappen");
 }
+
+/* --- De vriezer ------------------------------------------------------------ */
+
+/**
+ * Iets in de vriezer leggen.
+ *
+ * Meestal vanaf de receptpagina, direct na het koken: dat is het enige moment
+ * dat je nog precies weet hoeveel bakjes je hebt gevuld. De naam wordt
+ * meegeschreven en niet alleen het recept-id, zodat het bakje er nog steeds
+ * ligt als je het recept later weggooit.
+ */
+export async function addToFreezer(formData: FormData): Promise<void> {
+  const recipeId = readField(formData, "receptId");
+  const naam = readField(formData, "naam");
+
+  const recept = recipeId
+    ? await prisma.recipe.findUnique({ where: { id: recipeId }, select: { title: true } })
+    : null;
+
+  const label = naam ?? recept?.title;
+  if (!label) return;
+
+  const porties = Number.parseInt(readField(formData, "porties") ?? "", 10);
+  const dag = readField(formData, "wanneer");
+
+  await prisma.freezerItem.create({
+    data: {
+      name: label.slice(0, 120),
+      portions: porties >= 1 && porties <= 40 ? porties : 1,
+      frozenAt: dag ? midnight(fromParam(dag)) : midnight(new Date()),
+      recipeId: recept ? recipeId : null,
+      addedBy: await currentPerson(),
+    },
+  });
+
+  revalidatePath("/vriezer");
+  revalidatePath("/weekmenu");
+  if (recipeId) revalidatePath(`/recepten/${recipeId}`);
+}
+
+/**
+ * Een bakje eruit halen.
+ *
+ * Standaard één portie tegelijk: je pakt zelden de hele stapel. Is het daarmee
+ * op, dan gaat de regel weg — een bakje van nul porties is geen bakje.
+ */
+export async function takeFromFreezer(formData: FormData): Promise<void> {
+  const id = readField(formData, "id");
+  if (!id) return;
+
+  const item = await prisma.freezerItem.findUnique({
+    where: { id },
+    select: { portions: true },
+  });
+  if (!item) return;
+
+  if (item.portions <= 1) {
+    await prisma.freezerItem.deleteMany({ where: { id } });
+  } else {
+    await prisma.freezerItem.updateMany({
+      where: { id },
+      data: { portions: item.portions - 1 },
+    });
+  }
+
+  revalidatePath("/vriezer");
+  revalidatePath("/weekmenu");
+}
+
+export async function removeFromFreezer(formData: FormData): Promise<void> {
+  const id = readField(formData, "id");
+  if (!id) return;
+
+  await prisma.freezerItem.deleteMany({ where: { id } });
+  revalidatePath("/vriezer");
+  revalidatePath("/weekmenu");
+}

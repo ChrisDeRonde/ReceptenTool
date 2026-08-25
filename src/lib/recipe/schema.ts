@@ -79,6 +79,17 @@ export const recipeSchema = z.object({
    * Default omdat recepten van vóór dit veld het niet hebben.
    */
   diets: z.array(z.string()).default([]),
+  /**
+   * Hoe lang het goed blijft en hoe je het bewaart, in één zin.
+   *
+   * Als eigen veld en niet als tip tussen de andere: dit bepaalt of je maandag
+   * dubbel kookt voor woensdag, en dat is een planningsvraag. Tussen zeven
+   * tips over pannen en zout lees je hem niet.
+   *
+   * Default omdat recepten van vóór dit veld het niet hebben — zonder die
+   * default zou elk bestaand recept in één klap onleesbaar zijn.
+   */
+  bewaren: z.string().nullable().default(null),
   /** Waar dit vandaan komt: "Allerhande", "@pastagrannies", "Leuke Recepten". */
   sourceName: z.string().nullable(),
   /** Directe URL naar een foto van het gerecht, als de bron er een had. */
@@ -132,6 +143,7 @@ export const recipeJsonSchema = {
     "mealTypes",
     "cuisine",
     "diets",
+    "bewaren",
     "sourceName",
     "imageUrl",
     "assumptions",
@@ -188,6 +200,7 @@ export const recipeJsonSchema = {
     mealTypes: { type: "array", items: { type: "string", enum: [...MEAL_TYPES] } },
     cuisine: nullableString,
     diets: { type: "array", items: { type: "string", enum: [...DIETS] } },
+    bewaren: nullableString,
     sourceName: nullableString,
     imageUrl: nullableString,
     assumptions: { type: "array", items: { type: "string" } },

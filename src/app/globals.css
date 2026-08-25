@@ -4132,3 +4132,136 @@ button.gevaar {
   margin-top: 0.1rem;
   color: var(--warn);
 }
+
+/* --- De vriezer ------------------------------------------------------------
+   Geen eigen tab: vier tabs is wat er op een telefoon past, en de vriezer is
+   iets dat je wekelijks opzoekt en niet dagelijks. Hij hangt aan het weekmenu,
+   want dáár stel je de vraag "wat eten we". */
+
+.vriezer {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vriezer li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.vriezer li:last-child {
+  border-bottom: 0;
+}
+
+.vriezer-wat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.vriezer-naam {
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.vriezer-meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* Na een maand of drie is het niet bedorven, maar wel tijd. */
+.vriezer-oud {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.vriezer-erbij {
+  display: grid;
+  grid-template-columns: 1fr 4.5rem;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.vriezer-erbij .field:nth-of-type(3) {
+  grid-column: 1 / -1;
+}
+
+.vriezer-erbij button {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+/* Wat er al klaarligt, op het weekmenu. */
+.uit-vriezer {
+  margin-top: 2rem;
+}
+
+.uit-vriezer ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.uit-vriezer li {
+  display: flex;
+  flex-direction: column;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.uit-vriezer li:last-child {
+  border-bottom: 0;
+}
+
+/* --- Bewaaradvies ---------------------------------------------------------
+   Apart van de tips en ervóór: dit bepaalt of je maandag dubbel kookt voor
+   woensdag, en dat is een planningsvraag. */
+
+.bewaarregel {
+  display: flex;
+  gap: 0.6rem;
+  align-items: start;
+  margin: 1.5rem 0 0;
+  padding: 0.85rem 1rem;
+  border-radius: var(--r-sm);
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-size: 0.92rem;
+}
+
+.bewaarregel svg {
+  flex: none;
+  margin-top: 0.15rem;
+  color: var(--accent);
+}
+
+.bewaarregel p {
+  margin: 0;
+}
+
+.bewaar-vriezer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.bewaar-vriezer input {
+  width: 3.5rem;
+  padding: 0.25rem 0.45rem;
+  font-size: 0.85rem;
+}
+
+.bewaar-vriezer button {
+  cursor: pointer;
+  border: 1px solid var(--accent);
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.8rem;
+}

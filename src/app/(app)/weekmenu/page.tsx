@@ -27,6 +27,7 @@ import {
   weekRange,
 } from "@/lib/menu/week";
 import { leesMelding } from "@/lib/menu/melding";
+import { dagenTussen, geleden } from "@/lib/tijd";
 import { haalVoorstellen } from "@/lib/menu/voorstellen";
 import { maandNaam } from "@/lib/menu/seizoen";
 import { huishouden, people } from "@/lib/settings";
@@ -69,6 +70,14 @@ export default async function WeekMenuPage({
   // Welke avondregel openstaat. In de URL en niet in het geheugen van de
   // component: zie components/Avond.tsx.
   const openAvond = readOne(query.avond);
+
+  // Wat er in de vriezer ligt. Hooguit een handvol op dit scherm — de rest
+  // staat op /vriezer; dit is een herinnering, geen inventaris.
+  const vriezer = await prisma.freezerItem.findMany({
+    orderBy: { frozenAt: "asc" },
+    take: 4,
+    include: { recipe: { select: { id: true, title: true } } },
+  });
 
   const entries = await prisma.menuEntry.findMany({
     where: { date: weekRange(monday) },
@@ -287,6 +296,35 @@ export default async function WeekMenuPage({
           );
         })}
       </div>
+
+      {/* Wat er al klaar in de vriezer ligt, vóór de voorstellen. Een gerecht
+          dat je alleen hoeft te ontdooien wint van elk voorstel eronder, en
+          het is zonde als het daar tot volgend jaar blijft liggen. */}
+      {vriezer.length > 0 && (
+        <section className="uit-vriezer">
+          <h2 className="section">Ligt al klaar</h2>
+          <ul>
+            {vriezer.map((item) => (
+              <li key={item.id}>
+                <span className="vriezer-naam">
+                  {item.recipe ? (
+                    <Link href={`/recepten/${item.recipe.id}`}>{item.name}</Link>
+                  ) : (
+                    item.name
+                  )}
+                </span>
+                <span className="vriezer-meta">
+                  {item.portions} {item.portions === 1 ? "portie" : "porties"} ·{" "}
+                  {geleden(dagenTussen(item.frozenAt, new Date()))} ingevroren
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="muted hint">
+            <Link href="/vriezer">De hele vriezer</Link>
+          </p>
+        </section>
+      )}
 
       <Voorstellen
         gepland={entries.map((e) => ({ id: e.recipe.id, cuisine: e.recipe.cuisine }))}
