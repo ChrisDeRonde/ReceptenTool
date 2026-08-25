@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Knop } from "@/components/Knop";
 import { Avatar } from "@/components/Avatar";
 import { Merk } from "@/components/Merk";
 import { MIN_PASSWORD_LENGTH, configuredPassword } from "@/lib/session";
@@ -87,7 +88,7 @@ export default async function LoginPage({
                 autoFocus
                 required
               />
-              <button type="submit">Inloggen</button>
+              <Knop bezigLabel="Even kijken…">Inloggen</Knop>
             </form>
 
             {error && (

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Knop } from "@/components/Knop";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
 import { Vastkop } from "@/components/Vastkop";
@@ -214,10 +215,10 @@ export default async function InstellingenPagina() {
         )}
 
         <div className="editor-bar">
-          <button type="submit" className="grow">
+          <Knop className="grow">
             <Icon icon={icons.done} size={17} />
             Opslaan
-          </button>
+          </Knop>
         </div>
       </form>
 

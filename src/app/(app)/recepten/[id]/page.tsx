@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
 import { deleteRecipe, toggleFavorite } from "@/app/actions";
+import { Knop } from "@/components/Knop";
 import { Avatar } from "@/components/Avatar";
 import { CategoryEditor } from "@/components/CategoryEditor";
 import { CookLog } from "@/components/CookLog";
@@ -504,10 +505,10 @@ export default async function RecipePage({
         </p>
         <form action={deleteRecipe}>
           <input type="hidden" name="id" value={row.id} />
-          <button type="submit" className="gevaar">
+          <Knop className="gevaar">
             <Icon icon={icons.delete} size={16} />
             Ja, verwijder {recipe.title}
-          </button>
+          </Knop>
         </form>
       </details>
     </main>

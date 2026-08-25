@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { addToMenu } from "@/app/actions";
+import { Knop } from "@/components/Knop";
 import { Icon } from "@/components/Icon";
 import { Vastkop } from "@/components/Vastkop";
 import { prisma } from "@/lib/db";
@@ -57,7 +58,7 @@ export default async function PickPage({
               <form action={addToMenu} key={recipe.id} className="tile-form">
                 <input type="hidden" name="recipeId" value={recipe.id} />
                 <input type="hidden" name="dag" value={dayParam} />
-                <button type="submit" className="tile">
+                <Knop className="tile">
                   <span className={`thumb ${recipe.imageUrl ? "" : "blank"}`}>
                     {recipe.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -76,7 +77,7 @@ export default async function PickPage({
                     <span className="tile-name">{recipe.title}</span>
                     {sub && <span className="sub">{sub}</span>}
                   </span>
-                </button>
+                </Knop>
               </form>
             );
           })}

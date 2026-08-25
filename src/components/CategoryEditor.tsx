@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { updateCategories } from "@/app/actions";
+import { Knop } from "@/components/Knop";
 import { Icon } from "@/components/Icon";
 import { icons } from "@/lib/icons";
 import {
@@ -105,7 +106,7 @@ export function CategoryEditor({
         </fieldset>
 
         <div className="row">
-          <button type="submit">Indeling opslaan</button>
+          <Knop>Indeling opslaan</Knop>
         </div>
       </form>
     </details>

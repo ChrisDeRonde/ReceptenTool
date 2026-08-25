@@ -219,17 +219,35 @@ export async function addToMenu(formData: FormData): Promise<void> {
   });
 
   revalidatePath("/weekmenu");
-  redirect(`/weekmenu?week=${toParam(startOfWeek(date))}`);
+  // De dag mee terug, zodat de strook kan zeggen wáár het terechtkwam. Bij een
+  // lijst van tien voorstellen weet je anders niet welke je aantikte.
+  redirect(
+    `/weekmenu?week=${toParam(startOfWeek(date))}&gedaan=gezet.${toParam(date)}`,
+  );
 }
 
 export async function removeFromMenu(formData: FormData): Promise<void> {
   const id = readField(formData, "id");
   if (!id) return;
 
+  // Eerst lezen, dan weggooien. Wat we hier ophalen is precies genoeg om het
+  // terug te kunnen zetten, en dat is de reden dat het kruisje op het weekmenu
+  // geen bevestiging hoeft te vragen: achteraf terugkrabbelen mag.
+  const regel = await prisma.menuEntry.findUnique({
+    where: { id },
+    select: { recipeId: true, date: true, servings: true },
+  });
+
   // deleteMany en niet delete: tik je op een trage verbinding twee keer op het
   // kruisje, dan is de tweede een lege opdracht in plaats van een foutpagina.
   await prisma.menuEntry.deleteMany({ where: { id } });
   revalidatePath("/weekmenu");
+
+  if (!regel) return;
+  const terug = [regel.recipeId, toParam(regel.date), regel.servings ?? ""].join(".");
+  redirect(
+    `/weekmenu?week=${toParam(startOfWeek(regel.date))}&gedaan=weg&terug=${encodeURIComponent(terug)}`,
+  );
 }
 
 /** Meer of minder personen voor één gerecht op één dag. */
@@ -261,6 +279,10 @@ export async function clearWeek(formData: FormData): Promise<void> {
 
   await prisma.menuEntry.deleteMany({ where: { date: { gte: monday, lt: end } } });
   revalidatePath("/weekmenu");
+  // Geen terugdraaiknop: dit zijn meerdere regels tegelijk, en die terugzetten
+  // is meer machinerie dan het waard is. Daarom zit hier een tussenstap vóór in
+  // plaats van een weg terug erna — zie de uitklap op het weekmenu.
+  redirect(`/weekmenu?week=${week}&gedaan=leeg`);
 }
 
 /**

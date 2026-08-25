@@ -3572,3 +3572,163 @@ button.gevaar {
     color: #444;
   }
 }
+
+/* --- Bezig ----------------------------------------------------------------
+   Zie components/Knop.tsx. Een verzendknop die onderweg is, is uitgeschakeld —
+   dat is de eigenlijke reparatie, want de tweede tik was het probleem. Dit
+   maakt alleen zichtbaar dat het zo is.
+
+   Gedempt en niet vervangen door een spinner: de knop houdt zijn maat, dus er
+   verspringt niets onder je duim. Het pulseren is traag genoeg om rustig te
+   blijven en snel genoeg om te zien dat er iets loopt. */
+
+.bezig {
+  cursor: progress;
+  animation: bezig-pols 1.1s var(--soepel) infinite;
+}
+
+.bezig:disabled {
+  /* De algemene disabled-stijl dempt sterker; onderweg zijn is iets anders dan
+     niet mogen. */
+  opacity: 1;
+}
+
+@keyframes bezig-pols {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bezig {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* --- De meldingsstrook ----------------------------------------------------
+   Zie components/Melding.tsx. Onderin, boven de tabbalk, over de volle breedte
+   van de leeskolom. Niet zwevend in een hoek: op een telefoon is de onderkant
+   waar je duim al is, en dat is precies waar "ongedaan maken" moet staan. */
+
+.melding {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--dock) + env(safe-area-inset-bottom) + 0.6rem);
+  z-index: 40;
+  width: min(calc(100% - 2 * var(--gutter)), var(--maxw));
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.7rem 0.7rem 1rem;
+  border-radius: 12px;
+  background: var(--ink);
+  color: var(--bg);
+  box-shadow: 0 6px 20px rgba(30, 28, 24, 0.22);
+  font-size: 0.92rem;
+  animation: melding-op var(--vlot) var(--soepel) both;
+}
+
+@keyframes melding-op {
+  from { opacity: 0; transform: translate(-50%, 0.5rem); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .melding { animation: none; }
+}
+
+.melding-tekst {
+  flex: 1;
+  min-width: 0;
+}
+
+/* De terugdraaiknop leest als een link maar staat op donker: de gewone
+   accentkleur heeft daar te weinig contrast, dus hier het papier zelf. */
+.melding-doen button {
+  min-height: var(--raak, 44px);
+  padding: 0 0.6rem;
+  background: none;
+  border: 0;
+  color: var(--bg);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.melding-weg {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  color: var(--bg);
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.melding-weg:hover { opacity: 1; }
+
+.melding button:focus-visible {
+  outline: 2px solid var(--bg);
+  outline-offset: 1px;
+}
+
+/* --- Week leegmaken -------------------------------------------------------
+   Hetzelfde patroon als `.weggooien` op de receptpagina: dichtgeklapt, met de
+   uitleg erin. Zie daar waarom dit geen `confirm()` is. */
+
+.week-leeg > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--raak, 44px);
+  padding: 0 0.2rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.week-leeg > summary::-webkit-details-marker { display: none; }
+
+.week-leeg[open] > summary { color: var(--ink); }
+
+.week-leeg p {
+  margin: 0.2rem 0 0.7rem;
+  max-width: 34rem;
+  color: var(--body);
+  font-size: 0.88rem;
+}
+
+/* --- Raakvlakken ----------------------------------------------------------
+   Apple houdt 44×44 aan en de Swift-kant van dit project ook
+   (`Stijl.raakhoogte`); het web bleef daarbij achter met knopjes van 26 tot 32
+   pixels. Deze klasse vergroot alléén het raakvlak — wat je ziet blijft even
+   groot, want een portieknop die ineens twee keer zo dik is leest als een
+   hoofdknop. */
+
+.raakbaar {
+  position: relative;
+}
+
+.raakbaar::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+
+/* Het kruisje op het weekmenu krijgt daarnaast echte afstand van de plusknop.
+   Alleen het raakvlak vergroten zou ze juist láten overlappen. */
+.meal-weg {
+  margin-left: 0.5rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid var(--line);
+}

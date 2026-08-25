@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { addToMenu, clearWeek, removeFromMenu, setMenuServings } from "@/app/actions";
+import { Knop } from "@/components/Knop";
+import { Melding } from "@/components/Melding";
 import { Icon } from "@/components/Icon";
 import { Vastkop } from "@/components/Vastkop";
 import { prisma } from "@/lib/db";
@@ -15,6 +17,7 @@ import {
   weekLabel,
   weekRange,
 } from "@/lib/menu/week";
+import { leesMelding } from "@/lib/menu/melding";
 import { haalVoorstellen } from "@/lib/menu/voorstellen";
 import { maandNaam } from "@/lib/menu/seizoen";
 import { huishouden } from "@/lib/settings";
@@ -36,6 +39,9 @@ export default async function WeekMenuPage({
 
   // Kwam je hier vanaf een recept, dan staat dat recept "in de hand" en kies
   // je alleen nog de dag. Dat scheelt een tussenscherm.
+  // Wat er net gebeurde, uit de URL. Zie lib/menu/melding.ts.
+  const melding = leesMelding(readOne(query.gedaan), readOne(query.terug));
+
   const holdingId = readOne(query.kies);
   const holdingServings = readOne(query.porties);
   const holding = holdingId
@@ -91,6 +97,23 @@ export default async function WeekMenuPage({
         </Link>
       </div>
 
+      {melding && (
+        <Melding tekst={melding.tekst}>
+          {melding.terug && (
+            <form action={addToMenu} className="melding-doen">
+              <input type="hidden" name="recipeId" value={melding.terug.recipeId} />
+              <input type="hidden" name="dag" value={melding.terug.dag} />
+              {melding.terug.porties && (
+                <input type="hidden" name="porties" value={melding.terug.porties} />
+              )}
+              <Knop className="linky" bezigLabel="Bezig…">
+                Ongedaan maken
+              </Knop>
+            </form>
+          )}
+        </Melding>
+      )}
+
       {holding && (
         <p className="notice">
           Kies een dag voor <strong>{holding.title}</strong>.{" "}
@@ -128,9 +151,9 @@ export default async function WeekMenuPage({
                               name="porties"
                               value={Math.max(MIN_SERVINGS, servings - 1)}
                             />
-                            <button type="submit" className="quiet" aria-label="Eén persoon minder">
+                            <Knop className="quiet raakbaar" aria-label="Eén persoon minder">
                               <Icon icon={icons.minus} size={14} />
-                            </button>
+                            </Knop>
                           </form>
                           <strong>{servings}</strong>
                           <form action={setMenuServings}>
@@ -140,17 +163,25 @@ export default async function WeekMenuPage({
                               name="porties"
                               value={Math.min(MAX_SERVINGS, servings + 1)}
                             />
-                            <button type="submit" className="quiet" aria-label="Eén persoon meer">
+                            <Knop className="quiet raakbaar" aria-label="Eén persoon meer">
                               <Icon icon={icons.plus} size={14} />
-                            </button>
+                            </Knop>
                           </form>
                         </div>
                       )}
-                      <form action={removeFromMenu}>
+                      {/* Weg van de plusknop. Hiervoor stonden −, + en × naast
+                          elkaar op elk 30×32, en dan is de afstand tussen "nog
+                          een portie" en "weg ermee" een paar millimeter duim.
+                          Nu een eigen hoek met lucht eromheen, en er is een weg
+                          terug via de strook onderin. */}
+                      <form action={removeFromMenu} className="meal-weg">
                         <input type="hidden" name="id" value={meal.id} />
-                        <button type="submit" className="quiet" aria-label="Van het menu halen">
+                        <Knop
+                          className="quiet raakbaar"
+                          aria-label={`${meal.recipe.title} van het menu halen`}
+                        >
                           <Icon icon={icons.close} size={15} />
-                        </button>
+                        </Knop>
                       </form>
                     </div>
                   </div>
@@ -164,10 +195,10 @@ export default async function WeekMenuPage({
                   {holdingServings && (
                     <input type="hidden" name="porties" value={holdingServings} />
                   )}
-                  <button type="submit" className="secondary add-day">
+                  <Knop className="secondary add-day">
                     <Icon icon={icons.plus} size={15} />
                     Hier
-                  </button>
+                  </Knop>
                 </form>
               ) : (
                 <Link href={`/weekmenu/kies?dag=${key}`} className="add-day">
@@ -194,12 +225,25 @@ export default async function WeekMenuPage({
             <Icon icon={icons.basket} size={18} />
             Boodschappenlijst
           </Link>
-          <form action={clearWeek}>
-            <input type="hidden" name="week" value={weekParam} />
-            <button type="submit" className="quiet">
-              Week leegmaken
-            </button>
-          </form>
+          {/* Achter een uitklap, net als het verwijderen van een recept: dit
+              gooit een hele week planning weg en het staat pal naast de knop
+              die je juist wél elke week gebruikt. Een `confirm()` zou het ook
+              doen, maar niet zonder JavaScript. */}
+          <details className="week-leeg">
+            <summary>Week leegmaken</summary>
+            <p>
+              Alle {entries.length}{" "}
+              {entries.length === 1 ? "geplande gerecht" : "geplande gerechten"}{" "}
+              van deze week gaan eraf. Dit kan niet ongedaan gemaakt worden — de
+              recepten zelf blijven natuurlijk staan.
+            </p>
+            <form action={clearWeek}>
+              <input type="hidden" name="week" value={weekParam} />
+              <Knop className="gevaar" bezigLabel="Bezig…">
+                Ja, maak de week leeg
+              </Knop>
+            </form>
+          </details>
         </div>
       )}
     </main>
@@ -274,9 +318,9 @@ async function Voorstellen({
             enterKeyHint="search"
           />
         </label>
-        <button type="submit" className="secondary">
+        <Knop className="secondary">
           Zoek
-        </button>
+        </Knop>
       </form>
 
       {voorstellen.length === 0 ? (

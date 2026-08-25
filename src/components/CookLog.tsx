@@ -1,4 +1,5 @@
 import { deleteCookLog, logCook } from "@/app/actions";
+import { Knop } from "@/components/Knop";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
 import { Moment } from "@/components/Moment";
@@ -207,10 +208,10 @@ export function CookLog({
             <input type="date" name="wanneer" defaultValue={today} max={today} />
           </label>
 
-          <button type="submit">
+          <Knop>
             <Icon icon={icons.done} size={17} />
             Opslaan
-          </button>
+          </Knop>
         </form>
       </details>
     </section>

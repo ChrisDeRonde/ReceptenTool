@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Knop } from "@/components/Knop";
 import { Icon } from "@/components/Icon";
 import { Vastkop } from "@/components/Vastkop";
 import { icons } from "@/lib/icons";
@@ -58,10 +59,10 @@ export default async function IdeeenPagina() {
       )}
 
       <form action={haalIdeeen} className="row ideeen-knop">
-        <button type="submit" className="grow">
+        <Knop className="grow">
           <Icon icon={icons.ideas} size={17} />
           {blad ? "Nieuwe ideeën" : "Bedenk iets"}
-        </button>
+        </Knop>
       </form>
 
       {blad?.fout && (
@@ -91,10 +92,10 @@ export default async function IdeeenPagina() {
                     <form action={ideeNaarInbox}>
                       <input type="hidden" name="url" value={idee.url} />
                       <input type="hidden" name="gerecht" value={idee.gerecht} />
-                      <button type="submit" className="secondary">
+                      <Knop className="secondary">
                         <Icon icon={icons.plus} size={15} />
                         Toevoegen
-                      </button>
+                      </Knop>
                     </form>
                   </div>
                 ) : (

@@ -12,6 +12,7 @@ import {
   backupAgeDays,
   readBackupStatus,
 } from "@/lib/backup";
+import { Knop } from "@/components/Knop";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
 import { Moment } from "@/components/Moment";
@@ -84,7 +85,7 @@ export default async function InboxPage() {
             aria-label="Recepttekst om te plakken"
           />
           <div className="row">
-            <button type="submit">Verwerken</button>
+            <Knop>Verwerken</Knop>
             <span className="muted" style={{ fontSize: "0.85rem" }}>
               Duurt ongeveer een halve minuut.
             </span>
@@ -182,10 +183,10 @@ export default async function InboxPage() {
                   </p>
                   <form action={keepAnyway}>
                     <input type="hidden" name="id" value={item.id} />
-                    <button type="submit" className="secondary">
+                    <Knop className="secondary">
                       <Icon icon={icons.plus} size={16} />
                       Toch toevoegen
-                    </button>
+                    </Knop>
                   </form>
                 </div>
               ) : (
@@ -208,20 +209,20 @@ export default async function InboxPage() {
                     />
                   )}
                   <div className="row">
-                    <button type="submit" className="secondary">
+                    <Knop className="secondary">
                       <Icon icon={icons.reset} size={16} />
                       Opnieuw proberen
-                    </button>
+                    </Knop>
                   </div>
                 </form>
               )}
 
               <form action={deleteItem} style={{ marginTop: "0.5rem" }}>
                 <input type="hidden" name="id" value={item.id} />
-                <button type="submit" className="quiet">
+                <Knop className="quiet">
                   <Icon icon={icons.delete} size={15} />
                   Verwijderen
-                </button>
+                </Knop>
               </form>
             </div>
           );
@@ -236,10 +237,10 @@ export default async function InboxPage() {
       <div className="signout">
         <WhoLine />
         <form action={logout}>
-          <button type="submit" className="quiet">
+          <Knop className="quiet">
             <Icon icon={icons.logout} size={15} />
             Uitloggen
-          </button>
+          </Knop>
         </form>
       </div>
     </main>
@@ -293,9 +294,9 @@ async function RemoteImageLine() {
           ? "Eén recept haalt zijn foto nog bij de bron op."
           : `${remaining} recepten halen hun foto nog bij de bron op.`}{" "}
         Zolang dat zo is, verdwijnt de foto als die site hem verplaatst.{" "}
-        <button type="submit" className="linky">
+        <Knop className="linky">
           Nu binnenhalen
-        </button>
+        </Knop>
       </span>
     </form>
   );

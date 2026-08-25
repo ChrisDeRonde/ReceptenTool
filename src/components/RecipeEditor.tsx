@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { updateRecipe, type BewerkStand } from "@/app/actions";
+import { Knop } from "@/components/Knop";
 import { Icon } from "@/components/Icon";
 import { Moment } from "@/components/Moment";
 import { icons } from "@/lib/icons";
@@ -435,9 +436,9 @@ export function RecipeEditor({
             <div className="row">
               {/* Naam en waarde van een verzendknop gaan mee in het formulier;
                   zo is dit dezelfde actie met één antwoord erbij. */}
-              <button type="submit" name="forceren" value="1" className="secondary">
+              <Knop name="forceren" value="1" className="secondary">
                 Toch opslaan
-              </button>
+              </Knop>
               {/* Een gewone link en geen knop: er valt hier één ding te
                   beslissen, en dat is de knop ernaast. */}
               <a href={`/recepten/${id}`} target="_blank" rel="noreferrer">
@@ -451,10 +452,10 @@ export function RecipeEditor({
           <a href={`/recepten/${id}`} className="button secondary">
             Annuleren
           </a>
-          <button type="submit" className="grow">
+          <Knop className="grow" bezigLabel="Opslaan…">
             <Icon icon={icons.done} size={17} />
             Opslaan
-          </button>
+          </Knop>
         </div>
       </div>
 
