@@ -94,8 +94,15 @@ export default async function InboxPage() {
 
       <h2 className="section">Binnengekomen</h2>
       {items.length === 0 ? (
+        // Net als op het overzicht: zeggen dát het leeg is helpt niemand
+        // verder, zeggen wat je nu kunt doen wel. Dit is bovendien het scherm
+        // waar iemand terechtkomt die nog nooit iets heeft gedeeld.
         <div className="empty">
           <p>Nog niets gedeeld.</p>
+          <p>
+            Deel een link vanuit Instagram, de AH-app of Safari naar Klapper,
+            en hij komt hier binnen. Of plak er hierboven zelf een.
+          </p>
         </div>
       ) : (
         items.map((item) => {

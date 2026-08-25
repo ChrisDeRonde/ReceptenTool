@@ -18,7 +18,14 @@ export default async function AppLayout({
 
   return (
     <div className="shell">
-      {children}
+      {/* Eerste ding in de tabvolgorde. Wie met een toetsenbord of een
+          schermlezer werkt, moet anders bij elke paginawissel eerst langs de
+          hele tabbalk voor hij bij de inhoud is. Onzichtbaar tot hij focus
+          krijgt; zie `.overslaan` in globals.css. */}
+      <a href="#inhoud" className="overslaan">
+        Naar de inhoud
+      </a>
+      <div id="inhoud">{children}</div>
       <TabBar openItems={openItems} who={await currentPerson()} />
     </div>
   );

@@ -3420,3 +3420,155 @@ button.gevaar {
 .thumb .zw-tegel.onveilig {
   background: var(--danger);
 }
+
+/* --- Het verstopte recept -------------------------------------------------
+   Zie lib/paasei.ts. Ziet er bewust uit als een oud kaartje dat tussen de
+   rest is blijven zitten: zand in plaats van papier, en een randje. */
+
+.paasei {
+  margin: 0 0 1.25rem;
+  padding: 1.1rem 1.25rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--sand);
+  animation: opkomen var(--vlot) var(--soepel) both;
+}
+
+.paasei h2 {
+  margin: 0.15rem 0 0.1rem;
+  font-size: 1.3rem;
+}
+
+.paasei-onder {
+  margin: 0 0 0.9rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.paasei-ing {
+  margin: 0 0 0.9rem;
+  padding-left: 1.1rem;
+  color: var(--body);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+.paasei-stappen {
+  margin: 0 0 0.9rem;
+  padding-left: 1.2rem;
+  color: var(--body);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.paasei-stappen li {
+  margin-bottom: 0.4rem;
+}
+
+.paasei-slot {
+  margin: 0;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-style: italic;
+}
+
+/* --- Doorspringen naar de inhoud ------------------------------------------
+   Voor wie met het toetsenbord of een schermlezer binnenkomt: zonder deze link
+   moet je bij elke paginawissel eerst langs de hele tabbalk. Onzichtbaar tot
+   hij focus krijgt. */
+
+.overslaan {
+  position: absolute;
+  left: 0.5rem;
+  top: -3rem;
+  z-index: 100;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--r-sm);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 0.9rem;
+  transition: top var(--vlot) var(--soepel);
+}
+
+.overslaan:focus {
+  top: 0.5rem;
+}
+
+/* De wikkel om de inhoud bestaat alleen als aanknopingspunt voor die link;
+   `display: contents` zorgt dat hij verder geen enkel effect op de opmaak
+   heeft, zodat er niets verschuift door een element dat je nooit ziet. */
+#inhoud {
+  display: contents;
+}
+
+/* --- Uitprinten -----------------------------------------------------------
+   Een recept op papier is nog steeds het handigste kookboek: geen scherm dat
+   uitvalt, geen natte vingers op glas. Alles wat een knop is valt weg, de
+   kleurvlakken worden lijnen, en de stappen mogen niet midden op een pagina
+   afbreken. */
+
+@media print {
+  .dock,
+  .vastkop,
+  .kop-grens,
+  .back,
+  .actions,
+  .rail,
+  .search,
+  .editor-bar,
+  button,
+  .button,
+  details,
+  /* De −/+ van de portiestepper: het getal blijft staan, de knoppen niet. */
+  .stepper a,
+  .paasei {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  main {
+    max-width: none;
+    padding: 0;
+  }
+
+  /* De foto haalt op papier weinig uit en kost een halve pagina inkt. */
+  .hero img {
+    display: none;
+  }
+
+  h1 {
+    font-size: 20pt;
+  }
+
+  .ingredients li,
+  .steps li {
+    break-inside: avoid;
+  }
+
+  /* Het zwangerschapsoordeel gaat juist wél mee: dat is precies wat je bij je
+     wilt hebben als je in de winkel staat. Zonder kleurvlak, met een rand. */
+  .zw-kaart {
+    background: none;
+    border: 1px solid #000;
+    border-left-width: 3px;
+  }
+
+  .zw-vlag {
+    background: none !important;
+    color: #000 !important;
+    border: 1px solid #000;
+  }
+
+  /* Een link waarvan je het adres niet ziet is op papier een dood woord. */
+  .hero a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #444;
+  }
+}

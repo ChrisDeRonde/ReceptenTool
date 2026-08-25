@@ -25,6 +25,7 @@ import {
   score,
   type Hit,
 } from "@/lib/recipe/search";
+import { PAASEI, isPaasei } from "@/lib/paasei";
 import { voorkeuren } from "@/lib/settings";
 import { beoordeelRecept, iemandZwanger, type Niveau } from "@/lib/zwanger";
 
@@ -219,6 +220,27 @@ export default async function HomePage({
             </Link>
           ))}
         </div>
+      )}
+
+      {isPaasei(terms) && (
+        // Het verstopte recept. Boven de resultaten, niet ervoor in de plaats:
+        // wie echt naar iets met "klapper" zocht, vindt dat er gewoon onder.
+        <article className="paasei">
+          <p className="eyebrow">Uit de la achterin</p>
+          <h2>{PAASEI.titel}</h2>
+          <p className="paasei-onder">{PAASEI.ondertitel}</p>
+          <ul className="paasei-ing">
+            {PAASEI.ingredienten.map((regel) => (
+              <li key={regel}>{regel}</li>
+            ))}
+          </ul>
+          <ol className="paasei-stappen">
+            {PAASEI.stappen.map((stap) => (
+              <li key={stap}>{stap}</li>
+            ))}
+          </ol>
+          <p className="paasei-slot">{PAASEI.slot}</p>
+        </article>
       )}
 
       {scored.length === 0 ? (
