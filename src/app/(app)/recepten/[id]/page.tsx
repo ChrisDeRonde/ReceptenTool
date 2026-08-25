@@ -370,7 +370,15 @@ export default async function RecipePage({
 
       {recipe.ingredientGroups.length > 0 && (
         <section>
-          <h2 className="section">Ingrediënten</h2>
+          <div className="sectie-kop">
+            <h2 className="section">Ingrediënten</h2>
+            {/* Bij de lijst en niet per regel: een knopje achter elk
+                ingrediënt maakt van een leeslijst een bedieningspaneel, en je
+                vervangt er hooguit één. */}
+            <Link href={`/recepten/${row.id}/vervangen`} className="chip ghost">
+              Iets vervangen
+            </Link>
+          </div>
           {scaled && (
             // Eerlijk zijn over wat er níét meeschaalt. Getallen in de
             // staptekst herschrijven is tekstmanipulatie waarbij je meer

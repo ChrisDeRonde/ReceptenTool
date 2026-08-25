@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { errorMessage, extractSource } from "@/lib/extract";
 import { findDuplicate } from "@/lib/recipe/duplicate";
+import { buildHaystack } from "@/lib/recipe/search";
+import { canonicalName } from "@/lib/shopping/units";
 import { storeRemoteImage } from "@/lib/images";
 import { parsePhotos, readPhotoBase64 } from "@/lib/photos";
 import {
@@ -11,7 +13,7 @@ import {
   packMealTypes,
 } from "@/lib/recipe/categories";
 import { parseRecipe } from "@/lib/recipe/parse";
-import { recipeSchema, type Recipe } from "@/lib/recipe/schema";
+import { flattenIngredients, recipeSchema, type Recipe } from "@/lib/recipe/schema";
 
 /**
  * Verwerkt één binnengekomen item: bron ophalen, recept eruit halen, opslaan.
@@ -54,7 +56,11 @@ export async function processShareItem(
 
       if (!options.force) {
         const known = await findKnownRecipe(
-          { sourceUrl: null, title: recipe.title },
+          {
+            sourceUrl: null,
+            title: recipe.title,
+            ingredienten: ingredientNamenVan(recipe),
+          },
           itemId,
         );
         if (known) {
@@ -135,7 +141,11 @@ export async function processShareItem(
     // bewaren we wel — anders kost "toch toevoegen" een tweede aanroep.
     if (!options.force) {
       const known = await findKnownRecipe(
-        { sourceUrl: canonical, title: recipe.title },
+        {
+          sourceUrl: canonical,
+          title: recipe.title,
+          ingredienten: ingredientNamenVan(recipe),
+        },
         itemId,
       );
       if (known) {
@@ -241,21 +251,51 @@ async function saveRecipe(params: {
  * elke bewerking bijgewerkt moet worden.
  */
 async function findKnownRecipe(
-  candidate: { sourceUrl: string | null; title: string | null },
+  candidate: {
+    sourceUrl: string | null;
+    title: string | null;
+    ingredienten?: readonly string[];
+  },
   itemId: string,
-): Promise<{ id: string; title: string; reason: "bron" | "titel" } | null> {
+): Promise<{ id: string; title: string; reason: "bron" | "titel" | "lijkt" } | null> {
   const rows = await prisma.recipe.findMany({
     // Het recept dat bij dít item hoort telt niet mee: opnieuw verwerken is
     // geen duplicaat van zichzelf.
     where: { NOT: { shareItemId: itemId } },
-    select: { id: true, title: true, sourceUrl: true },
+    // `data` komt er alleen bij als we ook op ingrediënten gaan vergelijken.
+    // Bij de goedkope controle vóór de modelaanroep is er nog geen titel en
+    // dus ook geen bijna-dubbel om te vinden; dan blijft de blob buiten beeld.
+    select: {
+      id: true,
+      title: true,
+      sourceUrl: true,
+      ...(candidate.ingredienten ? { data: true } : {}),
+    },
   });
-  return findDuplicate(candidate, rows);
+
+  return findDuplicate(
+    candidate,
+    rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      sourceUrl: row.sourceUrl,
+      ingredienten:
+        "data" in row && typeof row.data === "string"
+          ? buildHaystack({
+              title: row.title,
+              description: null,
+              tags: "",
+              cuisine: null,
+              data: row.data,
+            }).ingredientNamen
+          : undefined,
+    })),
+  );
 }
 
 async function markDuplicate(
   itemId: string,
-  known: { id: string; reason: "bron" | "titel" },
+  known: { id: string; reason: "bron" | "titel" | "lijkt" },
   extra: { attempts?: string; rawText: string; pending?: Recipe },
 ): Promise<void> {
   await prisma.shareItem.update({
@@ -263,10 +303,15 @@ async function markDuplicate(
     data: {
       status: "duplicate",
       duplicateOfId: known.id,
+      // De reden erbij, want die bepaalt hoe zeker het is. Bron en titel zijn
+      // hard; "lijkt erop" is een inschatting, en dan hoort er te staan dat je
+      // zelf mag kijken.
       error:
         known.reason === "bron"
           ? "Deze bron heb je al eens verwerkt."
-          : "Er staat al een recept met deze titel.",
+          : known.reason === "titel"
+            ? "Er staat al een recept met deze titel."
+            : "Dit lijkt sterk op een recept dat je al hebt — zelfde soort naam, grotendeels dezelfde ingrediënten.",
       rawText: extra.rawText,
       attempts: extra.attempts,
       pendingData: extra.pending ? JSON.stringify(extra.pending) : null,
@@ -310,4 +355,18 @@ export async function keepDuplicate(itemId: string): Promise<void> {
     where: { id: itemId },
     data: { duplicateOfId: null, pendingData: null, error: null },
   });
+}
+
+/**
+ * De ingrediëntnamen van een net uitgeschreven recept, in dezelfde vorm als
+ * `buildHaystack` ze uit een opgeslagen recept haalt.
+ *
+ * Beide kanten moeten door dezelfde molen, anders vergelijk je "Rode Paprika"
+ * met "rode paprika" en vindt de bijna-dubbelcontrole nooit iets.
+ */
+function ingredientNamenVan(recipe: Recipe): string[] {
+  const namen = flattenIngredients(recipe)
+    .map((item) => canonicalName(item.name))
+    .filter((naam): naam is string => naam.length > 0);
+  return [...new Set(namen)];
 }
