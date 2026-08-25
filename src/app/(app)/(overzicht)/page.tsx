@@ -25,6 +25,7 @@ import {
   score,
   type Hit,
 } from "@/lib/recipe/search";
+import { addDays, dayLabel, startOfWeek } from "@/lib/menu/week";
 import { PAASEI, isPaasei } from "@/lib/paasei";
 import {
   leesSortering,
@@ -54,7 +55,7 @@ export default async function HomePage({
   const terms = parseQuery(rawQuery);
   const sortering = leesSortering(query.op);
 
-  const [usedMealTypes, usedCuisines, usedDiets, ratings, wensen, laatst] =
+  const [usedMealTypes, usedCuisines, usedDiets, ratings, wensen, laatst, gepland] =
     await Promise.all([
     collectMealTypes(),
     collectCuisines(),
@@ -62,6 +63,7 @@ export default async function HomePage({
     collectRatings(),
     voorkeuren(),
     collectLaatstGemaakt(),
+    collectGepland(),
   ]);
 
   const rows = await prisma.recipe.findMany({
@@ -338,12 +340,12 @@ export default async function HomePage({
         </div>
       ) : (
         <>
-          <Grid entries={complete} terms={terms.length} ratings={ratings} zwangerPer={zwangerPer} />
+          <Grid entries={complete} terms={terms.length} ratings={ratings} zwangerPer={zwangerPer} gepland={gepland} />
 
           {partial.length > 0 && (
             <>
               <h2 className="section near">Bijna</h2>
-              <Grid entries={partial} terms={terms.length} ratings={ratings} zwangerPer={zwangerPer} />
+              <Grid entries={partial} terms={terms.length} ratings={ratings} zwangerPer={zwangerPer} gepland={gepland} />
             </>
           )}
         </>
@@ -370,11 +372,13 @@ function Grid({
   terms,
   ratings,
   zwangerPer,
+  gepland,
 }: {
   entries: Entry[];
   terms: number;
   ratings: Map<string, number>;
   zwangerPer: Map<string, Niveau>;
+  gepland: Map<string, string>;
 }) {
   if (entries.length === 0) return null;
 
@@ -428,6 +432,16 @@ function Grid({
             </ViewTransition>
             <div className="tile-body">
               <h2>{recipe.title}</h2>
+
+              {/* Staat het deze week al gepland? De app wist het, maar zei het
+                  niet — en dan zet je iets op het menu dat er woensdag al op
+                  staat. */}
+              {gepland.has(recipe.id) && (
+                <p className="tile-gepland">
+                  <Icon icon={icons.date} size={12} />
+                  {gepland.get(recipe.id)}
+                </p>
+              )}
 
               {/* Bij zoeken op meerdere dingen is "wat mis ik nog" de vraag. */}
               {hit && terms > 1 && hit.missing.length > 0 ? (
@@ -554,4 +568,28 @@ async function collectLaatstGemaakt(): Promise<Map<string, Date>> {
       .filter((row) => row._max.cookedAt !== null)
       .map((row) => [row.recipeId, row._max.cookedAt as Date]),
   );
+}
+
+/**
+ * Wat er deze week al op het menu staat, met de dag erbij.
+ *
+ * Alleen déze week: dat een gerecht in maart een keer gepland stond is geen
+ * reden om er nu een merkje bij te zetten. Meerdere keren op één week levert de
+ * eerste dag op — de vraag is "staat het er al", niet "hoe vaak".
+ */
+async function collectGepland(): Promise<Map<string, string>> {
+  const maandag = startOfWeek(new Date());
+  const zondag = addDays(maandag, 7);
+
+  const rijen = await prisma.menuEntry.findMany({
+    where: { date: { gte: maandag, lt: zondag } },
+    select: { recipeId: true, date: true },
+    orderBy: { date: "asc" },
+  });
+
+  const uit = new Map<string, string>();
+  for (const rij of rijen) {
+    if (!uit.has(rij.recipeId)) uit.set(rij.recipeId, dayLabel(rij.date));
+  }
+  return uit;
 }

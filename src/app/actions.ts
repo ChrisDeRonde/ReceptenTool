@@ -692,3 +692,25 @@ export async function removeExtra(formData: FormData): Promise<void> {
   await prisma.shoppingExtra.deleteMany({ where: { id } });
   revalidatePath("/weekmenu/boodschappen");
 }
+
+/**
+ * Een gepland gerecht naar een andere dag.
+ *
+ * Kon hiervoor alleen door het weg te gooien en opnieuw toe te voegen — met
+ * opnieuw zoeken en opnieuw de porties instellen. Er komt onverwacht bezoek en
+ * de lasagne moet van dinsdag naar donderdag; dat hoort twee tikken te zijn.
+ *
+ * De porties gaan mee: die horen bij het gerecht op die avond, niet bij de dag.
+ */
+export async function moveMenuEntry(formData: FormData): Promise<void> {
+  const id = readField(formData, "id");
+  const dag = readField(formData, "dag");
+  if (!id || !dag) return;
+
+  const datum = midnight(fromParam(dag));
+  await prisma.menuEntry.updateMany({ where: { id }, data: { date: datum } });
+  revalidatePath("/weekmenu");
+  redirect(
+    `/weekmenu?week=${toParam(startOfWeek(datum))}&gedaan=gezet.${toParam(datum)}`,
+  );
+}

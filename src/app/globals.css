@@ -3969,3 +3969,46 @@ button.gevaar {
   margin: 1.75rem 0 0;
   font-size: 0.8rem;
 }
+
+/* --- Weekmenu: verplaatsen en het gepland-merkje -------------------------- */
+
+.meal-schuif {
+  display: inline-grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.meal-schuif:hover { color: var(--ink); }
+
+.staat-hier {
+  margin: 0;
+  padding: 0.35rem 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* Een dag die al iets heeft, krijgt alleen een plusje. Zeven keer "+ Gerecht"
+   onder elkaar is ruis in een scherm dat je scant. */
+.add-day.kaal {
+  gap: 0;
+  padding-left: 0;
+  padding-right: 0;
+  opacity: 0.55;
+}
+
+.add-day.kaal:hover,
+.add-day.kaal:focus-visible {
+  opacity: 1;
+}
+
+/* Wat er deze week al gepland staat, op de tegel in het overzicht. */
+.tile-gepland {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0.15rem 0 0;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+}

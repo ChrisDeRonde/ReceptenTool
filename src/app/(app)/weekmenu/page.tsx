@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { addToMenu, clearWeek, removeFromMenu, setMenuServings } from "@/app/actions";
+import { addToMenu, moveMenuEntry, clearWeek, removeFromMenu, setMenuServings } from "@/app/actions";
 import { Knop } from "@/components/Knop";
 import { Melding } from "@/components/Melding";
 import { Icon } from "@/components/Icon";
@@ -42,6 +42,11 @@ export default async function WeekMenuPage({
   // Wat er net gebeurde, uit de URL. Zie lib/menu/melding.ts.
   const melding = leesMelding(readOne(query.gedaan), readOne(query.terug));
 
+  // Een gerecht dat verplaatst wordt. Dezelfde vorm als `kies`: de pagina gaat
+  // in "kies een dag"-stand en elke dag krijgt een knop. Eén patroon voor twee
+  // handelingen scheelt een tweede manier om hetzelfde te doen.
+  const verplaatsId = readOne(query.verplaats);
+
   const holdingId = readOne(query.kies);
   const holdingServings = readOne(query.porties);
   const holding = holdingId
@@ -70,10 +75,17 @@ export default async function WeekMenuPage({
   const weekParam = toParam(monday);
   const previous = toParam(addDays(monday, -7));
   const next = toParam(addDays(monday, 7));
-  const keep = (target: string) =>
-    holding
-      ? `/weekmenu?week=${target}&kies=${holding.id}${holdingServings ? `&porties=${holdingServings}` : ""}`
-      : `/weekmenu?week=${target}`;
+  const keep = (target: string) => {
+    if (holding) {
+      return `/weekmenu?week=${target}&kies=${holding.id}${holdingServings ? `&porties=${holdingServings}` : ""}`;
+    }
+    if (verplaatsId) return `/weekmenu?week=${target}&verplaats=${verplaatsId}`;
+    return `/weekmenu?week=${target}`;
+  };
+
+  const teVerplaatsen = verplaatsId
+    ? (entries.find((e) => e.id === verplaatsId) ?? null)
+    : null;
 
   return (
     <main>
@@ -117,6 +129,13 @@ export default async function WeekMenuPage({
       {holding && (
         <p className="notice">
           Kies een dag voor <strong>{holding.title}</strong>.{" "}
+          <Link href={`/weekmenu?week=${weekParam}`}>Annuleren</Link>
+        </p>
+      )}
+
+      {teVerplaatsen && (
+        <p className="notice">
+          Naar welke dag gaat <strong>{teVerplaatsen.recipe.title}</strong>?{" "}
           <Link href={`/weekmenu?week=${weekParam}`}>Annuleren</Link>
         </p>
       )}
@@ -174,6 +193,16 @@ export default async function WeekMenuPage({
                           een portie" en "weg ermee" een paar millimeter duim.
                           Nu een eigen hoek met lucht eromheen, en er is een weg
                           terug via de strook onderin. */}
+                      {/* Verplaatsen zit vóór het kruisje: het is de mildere
+                          van de twee, en dan hoort hij ook eerst te staan. */}
+                      <Link
+                        href={`/weekmenu?week=${weekParam}&verplaats=${meal.id}`}
+                        className="quiet raakbaar meal-schuif"
+                        aria-label={`${meal.recipe.title} naar een andere dag`}
+                      >
+                        <Icon icon={icons.date} size={15} />
+                      </Link>
+
                       <form action={removeFromMenu} className="meal-weg">
                         <input type="hidden" name="id" value={meal.id} />
                         <Knop
@@ -188,7 +217,20 @@ export default async function WeekMenuPage({
                 );
               })}
 
-              {holding ? (
+              {teVerplaatsen ? (
+                teVerplaatsen.date.getTime() === day.getTime() ? (
+                  <p className="add-day staat-hier">Staat hier nu</p>
+                ) : (
+                  <form action={moveMenuEntry}>
+                    <input type="hidden" name="id" value={teVerplaatsen.id} />
+                    <input type="hidden" name="dag" value={key} />
+                    <Knop className="secondary add-day" bezigLabel="…">
+                      <Icon icon={icons.next} size={15} />
+                      Hierheen
+                    </Knop>
+                  </form>
+                )
+              ) : holding ? (
                 <form action={addToMenu}>
                   <input type="hidden" name="recipeId" value={holding.id} />
                   <input type="hidden" name="dag" value={key} />
@@ -201,9 +243,17 @@ export default async function WeekMenuPage({
                   </Knop>
                 </form>
               ) : (
-                <Link href={`/weekmenu/kies?dag=${key}`} className="add-day">
+                // Op een lege dag is dit de hoofdhandeling en staat het woord
+                // erbij; staat er al iets, dan is een tweede gerecht de
+                // uitzondering en is een plusje genoeg. Zeven keer hetzelfde
+                // knopje onder elkaar is ruis in een scherm dat je scant.
+                <Link
+                  href={`/weekmenu/kies?dag=${key}`}
+                  className={`add-day raakbaar ${meals.length > 0 ? "kaal" : ""}`}
+                  aria-label={`Gerecht toevoegen op ${dayLabel(day)}`}
+                >
                   <Icon icon={icons.plus} size={15} />
-                  Gerecht
+                  {meals.length === 0 && "Gerecht"}
                 </Link>
               )}
             </section>
@@ -342,9 +392,9 @@ async function Voorstellen({
               <Link
                 href={`/weekmenu?week=${week}&kies=${voorstel.id}`}
                 className="chip"
-                aria-label={`${voorstel.title} inplannen`}
+                aria-label={`Een dag kiezen voor ${voorstel.title}`}
               >
-                Inplannen
+                Kies een dag
               </Link>
             </li>
           ))}
