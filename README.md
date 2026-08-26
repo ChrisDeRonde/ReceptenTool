@@ -884,18 +884,17 @@ blijft aan zolang je in kookmodus zit.
 ### De wekker buiten de app
 
 In de browser bestaat een timer alleen zolang het tabblad leeft, en koken is
-niet naar je telefoon kijken. Voor de native app ligt daarom een laag klaar die
-de wekker op het **vergrendelscherm en in het Dynamic Island** zet, met
-ActivityKit: `ios-app/Klapper/Wekker/` en `ios-app/KlapperWekker/`.
+niet naar je telefoon kijken. De native app zet de wekker daarom óók op het
+**vergrendelscherm en in het Dynamic Island**, met ActivityKit:
+`ios-app/Klapper/Wekker/` en `ios-app/KlapperWekker/`. De kookmodus daar
+(`ios-app/Klapper/Schermen/KookScherm.swift`) is verder dezelfde als deze —
+één stap tegelijk, ingrediënten af te vinken, een wekker per stap.
 
 De kern ervan is dat de app *niet* elke seconde bijwerkt — daar zit een budget
 op, en eroverheen gaan laat je wekker bevriezen op een getal dat niet meer
 klopt. Het aftellen tekent de widget zelf, en afgaan gebeurt via `staleDate`.
 De uitleg en de opzetstappen voor Xcode staan in
 [`ios-app/README.md`](ios-app/README.md#de-kookwekkers-klapperwekker).
-
-Er is nog geen kookscherm in de native app dat de wekker aanzet; die laag
-wacht daarop.
 
 Deze modus leunt op drie velden per stap (`ingredientRefs`, `timerMinutes`,
 `tip`) die het model invult. Recepten van vóór deze functie missen die en

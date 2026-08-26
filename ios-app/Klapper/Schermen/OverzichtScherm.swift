@@ -52,8 +52,7 @@ struct OverzichtScherm: View {
             .background(Kleur.papier)
             .navigationTitle("Recepten")
             .navigationDestination(for: Recept.self) { recept in
-                // Volgt zodra dit scherm staat; zie ios-app/README.md.
-                Text(recept.titel).font(Letter.kop(24))
+                ReceptScherm(recept: recept)
             }
             .searchable(
                 text: $zoekterm,

@@ -82,9 +82,11 @@ niet kunnen laten controleren.
 | `Opslag/Kast.swift` | De lokale kopie: één JSON-bestand, atomair weggeschreven. |
 | `Opslag/Synchronisatie.swift` | Wat er opgehaald en weggegooid moet worden. Pure functie. |
 | `Zoeker.swift` | Zoeken op ingrediënt, op het toestel. Vertaling van `search.ts`. |
+| `Model/Hoeveelheid.swift` | Porties omrekenen en hoeveelheden opschrijven. Vertaling van `scale.ts` en `format.ts`. |
 | `Voorraad.swift` | Wat de schermen zien. Knoopt klant en kast aan elkaar. |
+| `Kooksessie.swift` | Eén keer koken: waar je bent, welke pannen lopen, wat je gepakt hebt. |
 | `Stijl.swift` | De huisstijl, één op één uit `globals.css`. |
-| `Schermen/` | Aanmelden en het overzicht. De rest volgt. |
+| `Schermen/` | Aanmelden, het overzicht, het recept, de kookmodus en het gemaakt-formulier. |
 | `Wekker/` | De kookwekkers op het vergrendelscherm. Zie "De kookwekkers" onderaan. |
 
 ## Opzetten in Xcode
@@ -145,16 +147,44 @@ De hele lijst is na te kijken met `npm run api:check` vanuit de projectmap —
 zesenveertig controles over echte HTTP, inclusief de convergentie van de
 synchronisatie.
 
+## De receptpagina en de kookmodus
+
+`ReceptScherm` en `KookScherm` staan er, met dezelfde beslissingen als op het
+web. Wat er op de receptpagina staat en in welke volgorde: waar je naar keek
+toen je erop tikte (foto, titel), waar je meteen aan wilt draaien (het aantal
+personen), dan de boodschappen, dan het koken. Wat je pas achteraf leest — tips,
+aannames, wie het wanneer maakte — staat onderaan.
+
+De kookmodus doet één stap tegelijk, met de ingrediënten van díé stap erbij en
+af te vinken, een aftellende wekker per stap, en wat er straks komt. Plus het
+ding dat de browser niet kan: elke lopende wekker staat óók op het
+vergrendelscherm. Zie "De kookwekkers" hieronder.
+
+### De getallen zijn nagerekend
+
+`Model/Hoeveelheid.swift` is een handvertaling van `src/lib/recipe/scale.ts` en
+`format.ts`, en dat is precies het soort code waar een verschil pas opvalt met
+een weegschaal in je hand: 265 g op je telefoon en 266,67 g op de website.
+
+Daarom is die vertaling nagerekend en niet alleen nagelezen. De Swift is
+mechanisch teruggezet naar JS en over 73.233 vergelijkingen naast de geteste
+TypeScript-kant gelegd — willekeurige hoeveelheden bij vijftien eenheden, alle
+randgevallen rond de drempels (4, 10, 50, 500), alle breuktekens en elke
+kloktijd tot en met 8000 seconden. Nul verschillen.
+
+Wat dat níét afdekt: `String(format: "%.2f")` in Swift en `toFixed(2)` in JS
+kunnen op de laatste decimaal anders afronden. Dat pad wordt alleen gelopen door
+getallen die géén breuk zijn en geen heel getal, en het verschil is dan één
+honderdste in de weergave. Blijft het opvallen, dan is dat de plek.
+
 ## Wat er nog niet is
 
-- De receptpagina, de kookmodus, het weekmenu, de boodschappenlijst en de inbox.
+- Het weekmenu, de boodschappenlijst en de inbox.
+- De ster om iets favoriet te maken. `Klant` heeft daar nog geen aanroep voor
+  (`PATCH /api/v1/recepten/:id` bestaat op de server, maar niet in de client);
+  op het receptscherm is favoriet daarom alleen te lezen.
 
-De volgorde die ik zou aanhouden staat in de begroting: eerst dit ene scherm
-helemaal af, want daarna weet je of de rest van de schatting klopt.
-
-De laag voor de kookwekkers ligt er wél al (`Klapper/Wekker/` en
-`KlapperWekker/`), maar er is nog geen kookscherm dat hem aanroept — zie
-"De kookwekkers" hieronder.
+De volgorde die ik zou aanhouden staat in de begroting.
 
 ## De deelextensie (`KlapperDelen`)
 
@@ -269,17 +299,14 @@ timer die alleen bestaat zolang het scherm aanstaat is dan geen timer. Vandaar
 een Live Activity: het aftellen staat op het vergrendelscherm en in het Dynamic
 Island, en blijft daar staan terwijl de app in de achtergrond hangt.
 
-**Er is nog geen knop die dit aanzet.** De native app heeft nog geen kookscherm
-— `Schermen/` bevat aanmelden en het overzicht — dus de kookmodus met de timers
-staat op dit moment alleen op het web (`src/components/CookMode.tsx`). Deze laag
-ligt er wél helemaal, zodat dat kookscherm straks aan één regel per knop genoeg
-heeft:
+`Kooksessie` roept dit aan; de kookmodus hoeft er zelf niets van te weten. Eén
+regel per knop:
 
 ```swift
 Kookwekker.gedeeld.start(
     gerecht: recept.titel, receptId: recept.id,
     stap: index + 1, vanTotaal: recept.stappen.count,
-    stapTitel: stap.kort, minuten: minuten
+    stapTitel: kort(stap), minuten: minuten
 )
 Kookwekker.gedeeld.pauzeer(receptId: recept.id, stap: index + 1)
 Kookwekker.gedeeld.hervat(receptId: recept.id, stap: index + 1)
@@ -287,10 +314,15 @@ Kookwekker.gedeeld.stop(receptId: recept.id, stap: index + 1)
 Kookwekker.gedeeld.stopAlles(van: recept.id)   // kookmodus verlaten
 ```
 
+De wekker in de app en de wekker op het slot lopen dus niet los van elkaar: er
+is één bron (`Kooksessie.wekkers`) en het vergrendelscherm is daar een
+weergave van.
+
 | Bestand | Wat het doet |
 |---|---|
 | `Klapper/Wekker/KookwekkerAttributes.swift` | De vorm die app en widget delen. Hoort in **allebei** de targets. |
 | `Klapper/Wekker/Kookwekker.swift` | Zetten, pauzeren, hervatten, weghalen. Alleen het app-target. |
+| `Klapper/Kooksessie.swift` | De kant die hem aanroept: één keer koken, met alle wekkers erin. |
 | `KlapperWekker/KlapperWekkerBundle.swift` | Het startpunt van de extensie. |
 | `KlapperWekker/KookwekkerLiveActivity.swift` | Hoe hij eruitziet, op het slot én in het eiland. |
 
@@ -378,20 +410,15 @@ De Simulator kan dit. Live Activities werken vanaf iOS 16.2, het Dynamic Island
 alleen op een iPhone 14 Pro of nieuwer — kies dus zo'n toestel, anders zie je
 alleen het vergrendelscherm (⌘L).
 
-Er is nog geen knop, dus tot er een kookscherm is test je het met een tijdelijke
-aanroep, bijvoorbeeld in een `.task` van `OverzichtScherm`:
-
-```swift
-Kookwekker.gedeeld.start(
-    gerecht: "Linzensoep", receptId: "proef",
-    stap: 3, vanTotaal: 8, stapTitel: "Laten sudderen", minuten: 2
-)
-```
+Gewoon via de app: recept openen, **Koken**, doorbladeren naar een stap met een
+wekker, starten. Neem een stap met een korte tijd, of pas er eentje aan in de
+proefdata (`npm run demo`).
 
 Waar op te letten: dat de klok loopt zonder dat de app in beeld is, dat hij na
-twee minuten naar de afgegane stand springt (dat is `staleDate` die werkt), en
-dat hij ná het herstarten van de app nog steeds weg te drukken is (dat is
-`hervatBestaande()` die werkt). Zie je niets gebeuren, kijk dan eerst bij
+de afgesproken tijd naar de afgegane stand springt (dat is `staleDate` die
+werkt), en dat hij ná het herstarten van de app nog steeds weg te drukken is
+(dat is `hervatBestaande()` die werkt). En dat *Stoppen* in de kookmodus ze
+allemaal wegveegt — `Kooksessie.stop()` doet dat via `stopAlles(van:)`. Zie je niets gebeuren, kijk dan eerst bij
 Instellingen → Klapper → Live Activiteiten; `Kookwekker.beschikbaar` geeft
 `false` als die uitstaat en dan doet `start` bewust niets.
 
@@ -418,14 +445,19 @@ Instellingen → Klapper → Live Activiteiten; `Kookwekker.beschikbaar` geeft
 > 4. Zet dezelfde font-bestanden in het `KlapperWekker`-target en `UIAppFonts`
 >    in de Info.plist van de extensie — een extensie kan niet bij de fonts van
 >    de app.
-> 5. Bouw alle drie de schema's met `xcodebuild`: `Klapper`, `KlapperDelen`,
+> 5. Voeg de nieuwe bestanden toe aan het app-target als ze er nog niet in
+>    zitten: `Klapper/Model/Hoeveelheid.swift`, `Klapper/Kooksessie.swift`,
+>    `Klapper/Schermen/ReceptScherm.swift`, `KookScherm.swift` en
+>    `GemaaktBlad.swift`. Alleen het app-target — `npm run swift:targets` laat
+>    zien dat geen enkele extensie ze aanraakt.
+> 6. Bouw alle drie de schema's met `xcodebuild`: `Klapper`, `KlapperDelen`,
 >    `KlapperWekker`. Los fouten op in de bronbestanden onder `ios-app/`.
->    Reken op concurrency-geklaag rond `Kookwekker` — dat is een `@MainActor`
->    klasse die `Task { await wekker.update(...) }` doet.
-> 6. Test met een tijdelijke aanroep zoals in "Uitproberen" hierboven, op een
->    iPhone 16 Pro-simulator. Laat me een schermafdruk zien van het
->    vergrendelscherm én van het uitgeklapte eiland.
-> 7. Haal die tijdelijke aanroep daarna weer weg.
+>    Reken op concurrency-geklaag rond `Kookwekker` en `Kooksessie` — allebei
+>    `@MainActor` klassen die een `Task` opstarten.
+> 7. Test in de app: recept openen, **Koken**, een stap met een wekker starten,
+>    en dan het scherm vergrendelen. Laat me een schermafdruk zien van de
+>    kookmodus, van het vergrendelscherm én van het uitgeklapte eiland, op een
+>    iPhone 16 Pro-simulator.
 >
 > Wat ik níét wil dat je doet: de app elke seconde `Activity.update()` laten
 > aanroepen om de klok bij te werken. Dat lijkt de simpele oplossing en het is

@@ -171,9 +171,13 @@ for (const [rel, tekst] of bestanden) {
 }
 
 // Uitbreidingen op bestaande typen staan niet in die tabel; die noemen we hier.
+// Sleutel is een stuk tekst zoals het in de code staat, want een methode op een
+// bestaand type verraadt zich niet met een typenaam.
 const UITBREIDINGEN = new Map([
   ["JSONDecoder.klapper", "Klapper/Netwerk/Codering.swift"],
   ["JSONEncoder.klapper", "Klapper/Netwerk/Codering.swift"],
+  [".groepen(voor:", "Klapper/Model/Hoeveelheid.swift"],
+  [".maal(", "Klapper/Model/Hoeveelheid.swift"],
 ]);
 
 function verwijstNaar(rel) {
