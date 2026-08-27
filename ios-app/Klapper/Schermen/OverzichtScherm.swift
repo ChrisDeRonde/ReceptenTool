@@ -177,12 +177,15 @@ private struct Tegel: View {
                     .clipShape(.rect(cornerRadius: 12))
 
                 if let minuten = recept.totaalMinuten {
+                    // Glas en geen dekkend vlak: dit ligt op de foto van het
+                    // gerecht, dus er is iets om doorheen te laten zien. Zie
+                    // Glas.swift.
                     Label("\(minuten) min", systemImage: "clock")
-                        .font(Letter.tekst(12))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Kleur.vel.opacity(0.92), in: .capsule)
-                        .foregroundStyle(Kleur.tekst)
+                        .font(Letter.tekst(12).weight(.semibold))
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 5)
+                        .glas()
+                        .foregroundStyle(Kleur.inkt)
                         .padding(8)
                 }
             }
@@ -191,7 +194,7 @@ private struct Tegel: View {
                     Image(systemName: "star.fill")
                         .font(.system(size: 11))
                         .padding(7)
-                        .background(Kleur.vel.opacity(0.92), in: .circle)
+                        .glas(.circle)
                         .foregroundStyle(Kleur.salie)
                         .padding(8)
                         .accessibilityLabel("Favoriet")

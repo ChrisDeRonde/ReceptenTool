@@ -180,6 +180,39 @@ kunnen op de laatste decimaal anders afronden. Dat pad wordt alleen gelopen door
 getallen die géén breuk zijn en geen heel getal, en het verschil is dan één
 honderdste in de weergave. Blijft het opvallen, dan is dat de plek.
 
+## Glas, en Liquid Glass
+
+`Klapper/Glas.swift` geeft `.glas(_:)`: een doorschijnend vlak, nu op de tijd en
+het sterretje die op een receptfoto liggen. Dezelfde regel als op het web —
+alleen op de laag boven de inhoud, en alleen waar er iets achter langs komt.
+
+Er staat bewust **geen** `.glassEffect()` in. Dat is Apple's echte Liquid Glass
+en het bestaat pas vanaf iOS 26 en de bijbehorende SDK. Een
+`if #available(iOS 26, *)` lost dat niet op: die bepaalt wat er op een ouder
+toestel gebeurt, maar de tak moet nog steeds compileren, en met een oudere SDK
+bestaat die functie niet. Deze app staat op iOS 18 en is nog nooit door een
+compiler geweest; daar een bouwfout bovenop leggen die niets met de app te maken
+heeft is de verkeerde ruil.
+
+Bouw je met Xcode 26 en zet je de Minimum Deployment op iOS 26, dan is het één
+regel in `Glas.swift`:
+
+```swift
+func glas(_ vorm: some Shape = .capsule) -> some View {
+    glassEffect(.regular, in: vorm)
+}
+```
+
+Wat je daarmee koopt en wat het kost: je krijgt de echte lichtbreking, en de
+systeemonderdelen (tabbalk, navigatiebalk, sheets) nemen het vanzelf over zodra
+je tegen de iOS 26-SDK bouwt. Je verliest elk toestel onder iOS 26. Voor een app
+voor twee telefoons is dat een vraag die je in één blik beantwoordt: kijk welke
+iOS erop staat.
+
+Meerdere vlakken naast elkaar horen dan in een `GlassEffectContainer`, anders
+smelten ze niet in elkaar over als ze elkaar naderen. Dat geldt voor de twee
+badges op een tegel.
+
 ## Wat er nog niet is
 
 - Het weekmenu, de boodschappenlijst en de inbox.

@@ -288,6 +288,32 @@ crème, display-schreef, aards accent — is de standaardsmaak van gegenereerde
 interfaces geworden, en Fraunces heeft een lage x-hoogte die onder de zestien
 pixels slecht leest. Precies de maten waarop de app hem gebruikte.
 
+### Glas
+
+Op de laag die bóven de inhoud hangt zit doorschijnend glas: de tabbalk, de
+titelbalk die inschuift, de stapteller in de kookmodus, de meldingstrook, en de
+tijd en het sterretje op een receptfoto. Nergens anders — glas laat zien wat
+erachter zit, dus het zegt alleen iets waar er ook echt iets achter langs komt.
+Op een witte pagina is vervaagd wit gewoon wit.
+
+Twee materialen, want de afweging verschilt. Op de balken staat ónze tekst en
+schuift de jouwe eronder door: daar wint leesbaarheid, dus dichter glas
+(90%). Op de badges ligt een foto: daar wint de kleur, dus doorschijnender
+(76%) en een kleinere straal.
+
+Eén ding dat we hebben nagemeten en dat tegen je gevoel in gaat: **houd de
+blurstraal onder de hoogte van het vlak.** Op een balk van 48 pixels gaf
+`blur(36px)` een schérper spookbeeld dan `blur(8px)` — een straal groter dan het
+vlak laat de browser buiten het gebied bemonsteren, waar hij de rand dupliceert
+en de boel weer aanscherpt. Zestien op een balk, tien op een badge.
+
+Wat er niet in zit is de lichtbreking van Apple's Liquid Glass, waarbij de rand
+het beeld erachter buigt als een lens. Op het web kan dat alleen met een
+SVG-verplaatsingsfilter, en dat werkt niet in Safari — precies de browser waar
+deze app in draait. Wie doorschijnende lagen heeft uitgezet in zijn
+toegankelijkheidsinstellingen (`prefers-reduced-transparency`) krijgt overal
+dichte vlakken; de vormen blijven hetzelfde, dus er verschuift niets.
+
 Het cijfer bij een recept is één ster met een getal en niet vijf sterretjes. Op
 een tegel in een raster is die rij het enige gekleurde ding op een wit vlak, en
 hij eist meer op dan hij zegt. De vijf sterren blijven waar het oordeel zélf het
