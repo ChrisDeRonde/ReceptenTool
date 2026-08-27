@@ -260,17 +260,38 @@ naar *Overig*, onderaan maar wel op de lijst.
 
 ## Uiterlijk
 
-Zacht en zakelijk: warm papier in plaats van wit, pastelvlakken in plaats van
-verzadigde kleur, haarlijnen in plaats van randen. Eén salie-accent voor alles
-wat een actie is; zand en oudroze voor tips en alarm.
+Wit als drager, foto's als kleur, en ruimte in plaats van lijnen. Eén
+salie-accent voor alles wat een actie is; zand en oudroze voor tips en alarm.
 
-Titels staan in **Fraunces**, een zachte oudschreef met een optische as (grote
-koppen worden vanzelf fijner getekend dan kleine) plus twee assen die de app
-zijn gezicht geven: `SOFT` rondt de hoeken af en `WONK` geeft de a, g en y hun
-schuine staart. Die twee staan één keer ingesteld op de `body`, zodat élke plek
-waar de schreefletter opduikt — koppen, avatars, stapnummers — er hetzelfde
-uitziet. De lopende tekst is **Source Sans 3**: humanistisch en open, waar Inter
-neutraal en technisch is.
+Drie regels dragen de vorm, en ze komen alle drie uit dezelfde hoek:
+
+1. **Een vlak is een vlak door zijn schaduw, niet door zijn rand.** Er zijn drie
+   hoogtes (`--shadow`, `--shadow-op`, `--shadow-zweef`) en ze bestaan alle drie
+   uit een scherpe pixel plus een zachte wolk. Zonder die eerste ziet een vlak op
+   wit er wazig uit in plaats van opgetild. Randen blijven over voor waar iets
+   écht gescheiden moet worden.
+2. **Wat je aantikt is een pil.** Knoppen, chips, het zoekveld — `--r-pil`,
+   allemaal minstens 44px hoog.
+3. **Kleur is zeldzaam.** Het salie is voor doen. Een aangevinkt filter is
+   daarom inkt en geen salie: dat is een stand, geen handeling, en op één scherm
+   hoort maar één ding de kleur te hebben waar je op drukt.
+
+Titels staan in **Nunito** op 800, lopende tekst in **Nunito Sans**. Twee
+letters uit dezelfde familie, waarbij het gewicht het werk doet dat eerder een
+schreefletter deed: een kop is een kop omdat hij dikker is, niet omdat hij een
+ander soort letter is. Nunito is rond en vriendelijk en draagt de koppen; Nunito
+Sans is scherper getekend en houdt zich staande op de kleine maten waar het
+eerste paar juist wegviel. Beide staan als variabele woff2 in `public/fonts`.
+
+Waarom niet meer het oude warme papier met de schreefletter: die combinatie —
+crème, display-schreef, aards accent — is de standaardsmaak van gegenereerde
+interfaces geworden, en Fraunces heeft een lage x-hoogte die onder de zestien
+pixels slecht leest. Precies de maten waarop de app hem gebruikte.
+
+Het cijfer bij een recept is één ster met een getal en niet vijf sterretjes. Op
+een tegel in een raster is die rij het enige gekleurde ding op een wit vlak, en
+hij eist meer op dan hij zegt. De vijf sterren blijven waar het oordeel zélf het
+onderwerp is: in het blok Gemaakt, en bij het invullen ervan.
 
 Beide staan als variabel woff2-bestand in `public/fonts` — latin-subset, samen
 ±150 kB, en er gaat bij het laden niets naar een externe server. Ze worden in

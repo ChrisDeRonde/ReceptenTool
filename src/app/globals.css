@@ -1,51 +1,63 @@
 /* ==========================================================================
    Huisstijl
    --------------------------------------------------------------------------
-   Zacht en zakelijk. Warm papier als drager, pastelvlakken in plaats van
-   verzadigde kleur, haarlijnen in plaats van randen. Titels in Fraunces (een
-   zachte oudschreef met een optische as), de rest in Source Sans 3. Beide
-   staan lokaal in public/fonts — er gaat niets naar buiten.
-   Twee inkten: koppen op --ink en zwaar gezet, lopende tekst op --body.
-   Wat je aantikt blijft minstens 44px hoog, ook als het er licht uitziet.
+   Wit als drager, foto's als kleur, en ruimte in plaats van lijnen. Titels in
+   Nunito ExtraBold, lopende tekst in Nunito Sans — de eerste is rond en
+   vriendelijk en draagt de koppen, de tweede is scherper en houdt zich staande
+   op kleine maten. Beide staan lokaal in public/fonts; er gaat niets naar
+   buiten.
+
+   Drie dingen dragen de vorm, en ze komen alle drie uit dezelfde hoek:
+
+     1. Een vlak is een vlak door zijn schaduw, niet door zijn rand. Randen
+        zijn er alleen waar iets écht gescheiden moet worden.
+     2. Wat je aantikt is een pil. Knoppen, chips, het zoekveld — allemaal
+        volrond, allemaal minstens 44px hoog.
+     3. Kleur is zeldzaam. De salie is voor doen; de rest van het scherm is
+        wit, inkt en wat er op de foto staat.
 
    Elke kleur die in beide standen anders is, is een variabele. Kwam er
    verderop een `prefers-color-scheme`-blok bij, dan hoort die kleur hier.
    ========================================================================== */
 
-/* Variabele fonts, latin-subset. `swap` zodat tekst nooit onzichtbaar wacht. */
+/* Variabele fonts, latin-subset. `swap` zodat tekst nooit onzichtbaar wacht.
+   De as loopt tot 1000; wij gebruiken er 400, 600, 700 en 800 van. */
 @font-face {
-  font-family: "Fraunces";
-  src: url("/fonts/fraunces-latin.woff2") format("woff2-variations");
-  font-weight: 300 700;
+  font-family: "Nunito";
+  src: url("/fonts/nunito-latin.woff2") format("woff2-variations");
+  font-weight: 400 1000;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Source Sans 3";
-  src: url("/fonts/sourcesans-latin.woff2") format("woff2-variations");
-  font-weight: 300 700;
+  font-family: "Nunito Sans";
+  src: url("/fonts/nunitosans-latin.woff2") format("woff2-variations");
+  font-weight: 400 1000;
   font-style: normal;
   font-display: swap;
 }
 
 :root {
-  /* Warm papier, geen wit. Het scheelt de hardheid van #fff tegen zwart.
-     Alle grijzen buigen dezelfde kant op (een tikje geel-groen), zodat er
-     nergens een koude vlek in het papier zit. */
-  --bg: #f8f5ef;
-  --surface: #fffefa;
-  --sunken: #f0ebe0;
-  --line: #e5ded0;
+  /* Wit als drager. Niet omdat wit mooier is dan papier, maar omdat een foto
+     van eten op wit zijn eigen kleur houdt en op crème altijd een beetje
+     vergeeld lijkt. De grijzen eromheen houden wél een spoor warmte — een
+     zuiver neutrale lijn valt naast een warme foto op als een koude vlek. */
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --sunken: #f5f4f1;
+  --line: #ebeae6;
+  /* Waar een lijn tóch een scheiding moet zijn en geen zucht. */
+  --line-sterk: #dddcd7;
   /* Twee inkten in plaats van één: koppen staan een tint donkerder dan de
      lopende tekst. Samen met het zwaardere schreefletter-gewicht scheelt dat
      genoeg om een kop te herkennen zonder hem groter te maken.
      --muted haalt 5,1:1 op het papier en 4,7:1 op de verzonken vlakken:
      grijs genoeg om terug te treden, donker genoeg om een onderschrift van te
      maken dat ook buiten in de zon nog leesbaar is. */
-  --ink: #1e1c18;
-  --body: #454039;
-  --muted: #6e6760;
+  --ink: #1c1a17;
+  --body: #423d37;
+  --muted: #6d675f;
 
   /* Salie: donker genoeg voor tekst op papier (5,1:1) en voor witte tekst
      erop (5,5:1), met een pastelvlak ernaast voor waar hij een vlak is. */
@@ -85,10 +97,25 @@
      Niet --line: die is voor papier, niet voor pastel. */
   --track: rgb(30 28 24 / 12%);
 
-  --r-sm: 8px;
-  --r-md: 12px;
-  --r-lg: 16px;
-  --shadow: 0 1px 2px rgb(51 48 43 / 5%);
+  /* Ronder dan eerst, en één maat erbij: de pil. Alles wat je aantikt is
+     volrond, alles wat iets bevat heeft een zachte hoek. */
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+  --r-pil: 999px;
+
+  /* Drie hoogtes. --shadow ligt bijna plat en scheidt alleen een vlak van het
+     wit; --shadow-op tilt iets los (het zoekveld, een chip); --shadow-zweef is
+     voor wat écht boven de pagina hangt. Allemaal dubbel: een scherpe rand van
+     één pixel en een zachte wolk eronder. Zonder die eerste ziet een vlak op
+     wit er wazig uit in plaats van opgetild. */
+  --shadow: 0 1px 2px rgb(28 26 23 / 6%);
+  --shadow-op:
+    0 1px 2px rgb(28 26 23 / 8%),
+    0 4px 12px -2px rgb(28 26 23 / 8%);
+  --shadow-zweef:
+    0 2px 4px rgb(28 26 23 / 8%),
+    0 12px 28px -8px rgb(28 26 23 / 16%);
 
   /* Drie snelheden, meer niet.
      --tik is de reactie op je vinger en moet ónder de honderd milliseconden
@@ -106,22 +133,27 @@
   --gutter: 1.35rem;
   --dock: 3.9rem;
 
-  --font: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI",
+  --font: "Nunito Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
     system-ui, sans-serif;
-  --font-display: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+  --font-display: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    system-ui, sans-serif;
+  /* Koppen staan op 800. Nunito loopt door tot 1000, maar daarboven sluiten de
+     o en de e dicht op de maten waarop wij ze zetten. */
+  --kop-gewicht: 800;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     /* Meer lucht tussen de lagen dan in de lichte stand: op papier zie je een
        vlak aan zijn schaduw, in het donker alleen aan zijn helderheid. */
-    --bg: #151412;
-    --surface: #1e1c19;
-    --sunken: #272420;
-    --line: #35302a;
-    --ink: #f5efe5;
-    --body: #d8d1c6;
-    --muted: #9a9287;
+    --bg: #141413;
+    --surface: #1d1d1b;
+    --sunken: #262523;
+    --line: #322f2c;
+    --line-sterk: #423e39;
+    --ink: #f6f3ee;
+    --body: #d6d1c9;
+    --muted: #9a948b;
 
     --accent: #93bda6;
     --accent-ink: #14201a;
@@ -148,7 +180,11 @@
     /* Op het pastelvlak van de timer haalde --muted maar 4,3:1. */
     --muted-op-pastel: #a49b8f;
 
-    --shadow: 0 1px 2px rgb(0 0 0 / 35%);
+    /* In het donker doet een schaduw niets — daar scheidt helderheid de lagen.
+       Ze blijven bestaan zodat de vormen kloppen, maar ze zijn er nauwelijks. */
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+    --shadow-op: 0 1px 2px rgb(0 0 0 / 45%), 0 4px 12px -2px rgb(0 0 0 / 40%);
+    --shadow-zweef: 0 2px 6px rgb(0 0 0 / 50%), 0 12px 28px -8px rgb(0 0 0 / 55%);
   }
 }
 
@@ -182,12 +218,6 @@ body {
   /* Beide letters hebben een optische as; hierdoor kiest de browser per
      tekstgrootte de juiste tekening. */
   font-optical-sizing: auto;
-  /* SOFT rondt de hoeken van Fraunces iets af en WONK geeft de a, g en y hun
-     schuine staart terug. Dat is het verschil tussen "een schreefletter" en
-     déze. Het staat op de body en niet op h1–h3 omdat ook de avatars, de
-     stapnummers en de tegelnamen in Fraunces staan; Source Sans kent deze
-     assen niet en negeert ze. */
-  font-variation-settings: "SOFT" 30, "WONK" 1;
   -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
 }
@@ -465,20 +495,19 @@ button.gelukt svg {
   animation: opkomen var(--vlot) var(--soepel) both;
 }
 
-/* Koppen in de schreefletter; die geeft het geheel zijn rust en gezicht.
-   Fraunces heeft een optische as, dus een titel van 2rem wordt vanzelf fijner
-   en opener getekend dan een kopje van 0,9rem — dat regelt de browser via
-   font-optical-sizing op de body. */
+/* Koppen in Nunito, zwaar gezet.
+   Het gewicht doet hier het werk dat eerder de schreefletter deed: een kop is
+   een kop omdat hij dikker is, niet omdat hij een andere soort letter is. Dat
+   is ook waarom de tracking negatief staat — op 800 lopen de letters vanzelf
+   ruimer, en zonder die correctie valt een titel van twee rem uit elkaar. */
 h1,
 h2,
 h3 {
   font-family: var(--font-display);
-  /* 560 in plaats van 600: Fraunces zet zwaarder aan dan de meeste
-     schreefletters en werd bij 600 een streep in plaats van een kop. */
-  font-weight: 560;
+  font-weight: var(--kop-gewicht);
   color: var(--ink);
-  letter-spacing: -0.011em;
-  line-height: 1.18;
+  letter-spacing: -0.021em;
+  line-height: 1.16;
   margin: 0;
   text-wrap: pretty;
 }
@@ -547,7 +576,7 @@ h3 {
   z-index: 20;
   display: flex;
   justify-content: space-around;
-  padding: 0.4rem 1rem calc(0.4rem + env(safe-area-inset-bottom));
+  padding: 0.45rem 1rem calc(0.45rem + env(safe-area-inset-bottom));
   background: var(--surface);
   border-top: 1px solid var(--line);
 }
@@ -558,13 +587,14 @@ h3 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.15rem;
+  gap: 0.2rem;
   min-width: 4rem;
   min-height: 3rem;
   text-decoration: none;
   color: var(--muted);
-  font-size: 0.7rem;
-  letter-spacing: 0.03em;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .dock a.on {
@@ -658,9 +688,9 @@ h3 {
      ellips hieronder niet — dan duwt een lange titel de balk het scherm uit. */
   min-width: 0;
   font-family: var(--font-display);
-  font-weight: 560;
-  font-size: 1.05rem;
-  letter-spacing: -0.011em;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.021em;
   color: var(--ink);
   /* Eén regel. Een titel die hier over twee regels valt maakt de balk zo hoog
      dat hij het probleem wordt in plaats van de oplossing. */
@@ -682,51 +712,61 @@ h3 {
 }
 
 .page-head h1 {
-  /* Schreefletter draagt wat meer maat dan de schreefloze. */
-  font-size: 1.95rem;
+  font-size: 1.85rem;
 }
 
 .page-head p {
-  margin: 0.3rem 0 0;
+  margin: 0.35rem 0 0;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.88rem;
 }
 
 /* --- Zoeken -------------------------------------------------------------- */
 
+/* Een pil die boven de pagina hangt in plaats van een vakje dat erin ligt.
+   Dat is de hele truc van dit soort koppen: het zoekveld is het eerste wat je
+   ziet omdat het het enige is met hoogte. Vandaar de schaduw en geen rand —
+   een rand zou hem juist weer plat op de pagina drukken. */
 .search {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0 0.75rem;
+  gap: 0.6rem;
+  padding: 0 1.1rem;
   margin-bottom: 1rem;
   border: 1px solid var(--line);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-pil);
   background: var(--surface);
+  box-shadow: var(--shadow-op);
 }
 
 /* Het veld zelf zet zijn eigen omlijning uit (het zit in dit kader), dus de
-   focusring hoort hier. Dezelfde 1px-buitenlijn als elk ander invoerveld: bij
-   alleen een randkleurtje van een haarlijn zie je nauwelijks waar je bent. */
+   focusring hoort hier — en volgt de pilvorm, anders trekt de browser er een
+   rechthoek omheen. */
 .search:focus-within {
-  border-color: var(--accent);
-  outline: 1px solid var(--accent);
+  border-color: var(--ink);
+  outline: 1px solid var(--ink);
   outline-offset: 0;
 }
 
 .search-icon {
   display: grid;
   place-items: center;
-  color: var(--muted);
+  color: var(--ink);
 }
 
 .search input {
   flex: 1;
-  min-height: 2.9rem;
+  min-height: 3.1rem;
   padding: 0;
   border: 0;
   background: transparent;
   font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.search input::placeholder {
+  font-weight: 600;
+  color: var(--muted);
 }
 
 .search input:focus-visible {
@@ -783,25 +823,26 @@ h2.section.near {
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
-  min-height: 2.2rem;
-  padding: 0 0.85rem;
-  border-radius: var(--r-sm);
-  border: 1px solid var(--line);
-  /* Een eigen vlak in plaats van doorzichtig: op het papier verdwenen de
-     filters anders in de achtergrond en zag je niet dat het knoppen waren. */
+  min-height: 2.4rem;
+  padding: 0 1rem;
+  border-radius: var(--r-pil);
+  border: 1px solid var(--line-sterk);
   background: var(--surface);
-  box-shadow: var(--shadow);
   color: var(--body);
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 0.83rem;
+  font-weight: 600;
   text-decoration: none;
   cursor: pointer;
 }
 
+/* Aangevinkt is inkt en geen salie. Twee redenen: een rij filters is geen
+   handeling maar een stand, en het salie heeft op deze pagina al een baan —
+   dat is de knop waar je écht op drukt. */
 .chip.on {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--surface);
 }
 
 .chip.ghost {
@@ -834,6 +875,18 @@ h2.section.near {
   border-radius: var(--r-md);
   overflow: hidden;
   background: var(--sunken);
+}
+
+/* Een foto op wit heeft een rand nodig die hij zelf niet heeft: een lichte
+   gerecht op een lichte achtergrond loopt anders zo het papier in. Van binnen
+   getekend, dus hij verandert niets aan de maat. */
+.thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgb(28 26 23 / 6%);
+  pointer-events: none;
 }
 
 .thumb img {
@@ -871,42 +924,65 @@ h2.section.near {
 }
 
 .thumb .fav {
-  top: 0.5rem;
-  right: 0.5rem;
+  top: 0.55rem;
+  right: 0.55rem;
   display: grid;
   place-items: center;
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 1.9rem;
+  height: 1.9rem;
   color: var(--accent);
+  box-shadow: var(--shadow-op);
 }
 
 .thumb .clock {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  left: 0.5rem;
-  bottom: 0.5rem;
-  padding: 0.25rem 0.55rem;
-  color: var(--muted);
+  left: 0.55rem;
+  bottom: 0.55rem;
+  padding: 0.3rem 0.6rem;
+  color: var(--ink);
+  font-weight: 700;
+  box-shadow: var(--shadow-op);
   font-variant-numeric: tabular-nums;
 }
 
 .tile-body {
-  padding-top: 0.6rem;
+  padding-top: 0.65rem;
 }
 
 /* Iets kleiner dan een kop in de lopende tekst: in twee kolommen naast elkaar
    valt een receptnaam anders om de haverklap over twee regels. */
 .tile-body h2 {
-  font-size: 1rem;
-  line-height: 1.28;
+  font-size: 0.97rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.012em;
   text-wrap: balance;
 }
 
 .tile-body .sub {
-  margin: 0.15rem 0 0;
-  font-size: 0.78rem;
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
   color: var(--muted);
+}
+
+/* Eén ster en een getal. In inkt en niet in amber: op wit is die amber het
+   enige gekleurde ding op de tegel en trekt hij de aandacht weg bij de naam
+   van het gerecht, terwijl het cijfer bijzaak is. */
+.cijfer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22em;
+  color: var(--ink);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cijfer svg {
+  fill: currentcolor;
+  stroke: none;
+  vertical-align: -0.1em;
 }
 
 /* --- Receptpagina -------------------------------------------------------- */
@@ -915,10 +991,11 @@ h2.section.near {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  min-height: 2.2rem;
+  min-height: 2.4rem;
   margin-bottom: 0.75rem;
-  color: var(--muted);
-  font-size: 0.82rem;
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 600;
   text-decoration: none;
 }
 
@@ -926,19 +1003,20 @@ h2.section.near {
   width: 100%;
   aspect-ratio: 3 / 2;
   object-fit: cover;
-  border-radius: var(--r-md);
+  border-radius: var(--r-lg);
   display: block;
   margin-bottom: 1.5rem;
+  box-shadow: inset 0 0 0 1px rgb(28 26 23 / 6%);
 }
 
 .hero h1 {
-  font-size: 2rem;
+  font-size: 2.05rem;
 }
 
 .hero .lede {
-  margin: 0.5rem 0 0;
+  margin: 0.55rem 0 0;
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 0.97rem;
 }
 
 .pills {
@@ -951,18 +1029,26 @@ h2.section.near {
 /* Categorieën als tekstlinks, niet als gekleurde blokjes. Ze zien er vlak uit
    maar zijn 26px hoog om aan te tikken: onder de 24 is een doel te klein om
    met een duim te raken, en dat zie je niet aan de tekst af. */
+/* Kleine chips en geen rij kapitalen. Die kapitalen waren het luidste ding op
+   de receptpagina terwijl het bijschrift is: waar het gerecht vandaan komt en
+   wanneer je het eet. Als chip staat het er rustig bij en is het nog steeds
+   aan te tikken. */
 .pill {
   display: inline-flex;
   align-items: center;
-  min-height: 1.65rem;
+  min-height: 1.9rem;
+  padding: 0 0.7rem;
+  border-radius: var(--r-pil);
+  background: var(--sunken);
   font-size: 0.78rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--accent);
+  font-weight: 600;
+  color: var(--body);
   text-decoration: none;
 }
 
 .pill.outline {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line-sterk);
   color: var(--muted);
 }
 
@@ -1099,8 +1185,8 @@ h2.section.near {
 }
 
 h2.section {
-  font-size: 1.3rem;
-  margin: 2.25rem 0 0.85rem;
+  font-size: 1.32rem;
+  margin: 2.5rem 0 0.9rem;
 }
 
 h3.group {
@@ -1263,19 +1349,21 @@ input[type="date"],
 textarea {
   width: 100%;
   font: inherit;
-  font-size: 0.92rem;
-  padding: 0.7rem 0.85rem;
-  border: 1px solid var(--line);
+  font-size: 0.95rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line-sterk);
   border-radius: var(--r-sm);
   background: var(--surface);
   color: var(--ink);
 }
 
+/* Inkt en geen salie op de focusrand: het veld is nog geen handeling. De salie
+   blijft voor de knop waarmee je het formulier wegstuurt. */
 input:focus-visible,
 textarea:focus-visible {
-  outline: 1px solid var(--accent);
+  outline: 1px solid var(--ink);
   outline-offset: 0;
-  border-color: var(--accent);
+  border-color: var(--ink);
 }
 
 textarea {
@@ -1283,29 +1371,35 @@ textarea {
   resize: vertical;
 }
 
+/* Alles wat je indrukt is een pil, en de tekst erop staat zwaar. Dat tweede
+   is geen versiering: een knoplabel van 500 op een gekleurd vlak leest dunner
+   dan hetzelfde label op wit, en dan zakt de knop weg terwijl hij juist het
+   zwaarste ding op het scherm hoort te zijn. */
 button,
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  min-height: 2.9rem;
-  padding: 0 1.4rem;
-  border-radius: var(--r-sm);
+  gap: 0.45rem;
+  min-height: 3rem;
+  padding: 0 1.5rem;
+  border-radius: var(--r-pil);
   border: 1px solid var(--accent);
   background: var(--accent);
   color: var(--accent-ink);
   font: inherit;
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 0.92rem;
+  font-weight: 700;
   text-decoration: none;
   cursor: pointer;
 }
 
+/* De tweede knop is wit met een echte rand, niet een lichtere versie van de
+   eerste. Zo is er altijd precies één ding op het scherm dat kleur heeft. */
 button.secondary,
 .button.secondary {
-  background: transparent;
-  border-color: var(--line);
+  background: var(--surface);
+  border-color: var(--line-sterk);
   color: var(--ink);
 }
 
@@ -1568,7 +1662,7 @@ form.stack {
   display: block;
   font-family: var(--font-display);
   font-size: 1rem;
-  font-weight: 560;
+  font-weight: var(--kop-gewicht);
   line-height: 1.28;
   color: var(--ink);
   text-wrap: balance;
@@ -1866,8 +1960,8 @@ form.stack {
   white-space: nowrap;
   font-family: var(--font-display);
   font-size: 0.95rem;
-  font-weight: 560;
-  letter-spacing: -0.011em;
+  font-weight: var(--kop-gewicht);
+  letter-spacing: -0.021em;
   color: var(--ink);
   opacity: 0;
   transition: opacity 0.18s ease;
@@ -2019,10 +2113,13 @@ form.stack {
 
 .timer-clock {
   display: block;
+  font-family: var(--font-display);
   font-size: 2.6rem;
-  font-weight: 300;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  /* Zwaar in plaats van dun. Een dun getal van 2,6rem oogt elegant op een
+     ontwerp en verdwijnt in een keuken op anderhalve meter afstand. */
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2544,7 +2641,7 @@ button.add:hover {
 .cooklog-cijfer strong {
   font-family: var(--font-display);
   font-size: 1.15rem;
-  font-weight: 560;
+  font-weight: var(--kop-gewicht);
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
@@ -3958,9 +4055,9 @@ button.gevaar {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
-  margin: 1.5rem 0 0;
+  margin: 1.5rem 0 1.5rem;
   padding: 0.7rem 0.9rem;
-  border-left: 2px solid var(--line);
+  border-left: 2px solid var(--line-sterk);
   color: var(--muted);
   font-size: 0.92rem;
 }

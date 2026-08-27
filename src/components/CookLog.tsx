@@ -45,6 +45,28 @@ export function Stars({ value, size = 14 }: { value: number; size?: number }) {
   );
 }
 
+/**
+ * Het oordeel als één cijfer, niet als vijf sterretjes.
+ *
+ * Op een tegel in een raster gaat een rij van vijf sterren met de titel
+ * concurreren: het is het enige gekleurde ding op een wit vlak en het zegt
+ * minder dan het opeist. Eén ster en een getal zegt precies hetzelfde in een
+ * kwart van de ruimte, en leest ook nog van een afstand.
+ *
+ * De vijf sterren blijven waar het oordeel zelf het onderwerp is — in het
+ * blok Gemaakt, en bij het invullen ervan.
+ */
+export function Cijfer({ waarde, size = 12 }: { waarde: number; size?: number }) {
+  const heel = Number.isInteger(waarde);
+  const tekst = heel ? String(waarde) : waarde.toFixed(1).replace(".", ",");
+  return (
+    <span className="cijfer" role="img" aria-label={`${tekst} van de 5`}>
+      <Icon icon={icons.favorite} size={size} />
+      {tekst}
+    </span>
+  );
+}
+
 export function CookLog({
   recipeId,
   entries,

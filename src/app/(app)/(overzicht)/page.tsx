@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ViewTransition } from "react";
-import { Stars } from "@/components/CookLog";
+import { Cijfer } from "@/components/CookLog";
 import { Icon } from "@/components/Icon";
 import { SearchBox } from "@/components/SearchBox";
 import { Vastkop } from "@/components/Vastkop";
@@ -453,8 +453,8 @@ function Grid({
                 // regel, en dan begint de tweede met een losse punt. De keuken
                 // is genoeg: de maaltijdmomenten staan al als filter bovenaan.
                 <p className="sub">
-                  <Stars value={Math.round(rating)} size={12} />
-                  {recipe.cuisine && <span className="muted"> {recipe.cuisine}</span>}
+                  <Cijfer waarde={Math.round(rating * 10) / 10} size={12} />
+                  {recipe.cuisine && <span className="muted"> · {recipe.cuisine}</span>}
                 </p>
               ) : (
                 sub && <p className="sub">{sub}</p>

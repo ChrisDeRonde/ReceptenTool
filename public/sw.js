@@ -14,7 +14,7 @@
  */
 
 // Ophogen bij een wijziging hieronder; de oude caches worden dan opgeruimd.
-const VERSIE = "v2";
+const VERSIE = "v3";
 const STATISCH = `statisch-${VERSIE}`;
 const PAGINAS = `paginas-${VERSIE}`;
 const PLAATJES = `plaatjes-${VERSIE}`;
@@ -24,8 +24,8 @@ const MAX_PAGINAS = 60;
 
 /** Wat er meteen bij het installeren in de cache mag: alles wat nooit wijzigt. */
 const VOORAF = [
-  "/fonts/fraunces-latin.woff2",
-  "/fonts/sourcesans-latin.woff2",
+  "/fonts/nunito-latin.woff2",
+  "/fonts/nunitosans-latin.woff2",
   "/icoon/icoon-192.png",
   "/icoon/apple-touch-icon.png",
 ];

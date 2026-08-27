@@ -101,11 +101,14 @@ niet kunnen laten controleren.
 4. **App Group aanzetten**: target → Signing & Capabilities → `+ Capability` →
    App Groups → `group.nl.klapper.gedeeld`. Diezelfde naam staat in
    `Sleutelbos.groep`; wijk je ervan af, wijzig hem daar ook.
-5. **Fonts** (mag later): sleep `public/fonts/fraunces-latin.woff2` en
-   `sourcesans-latin.woff2` erin — maar woff2 werkt niet op iOS, dus haal de
-   `.ttf`-varianten van Google Fonts. Zet de bestandsnamen in Info.plist onder
-   `UIAppFonts`. Zonder deze stap valt alles terug op het systeemfont, en dat
-   zegt de app tegen je in de console.
+5. **Fonts** (mag later): de app gebruikt **Nunito** (koppen, 800) en **Nunito
+   Sans** (lopende tekst). In `public/fonts` staan ze als woff2, en dat werkt
+   niet op iOS — haal dus de `.ttf`-varianten van Google Fonts. Zet de
+   bestandsnamen in Info.plist onder `UIAppFonts`, en controleer de
+   PostScript-namen die Xcode meldt: `Stijl.swift` zoekt op "Nunito" en
+   "Nunito Sans", en bij de statische varianten heten ze soms
+   `Nunito-ExtraBold` en `NunitoSans-Regular`. Zonder deze stap valt alles
+   terug op het systeemfont, en dat zegt de app tegen je in de console.
 6. **Bouwen.** Draait Claude Code op je Mac, laat hem dan `xcodebuild` doen en
    de fouten zelf oplossen — zie bovenaan. Anders: <kbd>⌘B</kbd> en de lijst
    terugkoppelen.

@@ -69,14 +69,14 @@ export default function RootLayout({
             de systeemletter staat en daarna verspringt. */}
         <link
           rel="preload"
-          href="/fonts/sourcesans-latin.woff2"
+          href="/fonts/nunitosans-latin.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
         />
         <link
           rel="preload"
-          href="/fonts/fraunces-latin.woff2"
+          href="/fonts/nunito-latin.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
