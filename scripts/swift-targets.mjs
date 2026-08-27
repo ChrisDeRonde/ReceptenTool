@@ -178,6 +178,7 @@ const UITBREIDINGEN = new Map([
   ["JSONEncoder.klapper", "Klapper/Netwerk/Codering.swift"],
   [".groepen(voor:", "Klapper/Model/Hoeveelheid.swift"],
   [".maal(", "Klapper/Model/Hoeveelheid.swift"],
+  [".glas(", "Klapper/Glas.swift"],
 ]);
 
 function verwijstNaar(rel) {

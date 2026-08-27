@@ -186,32 +186,63 @@ honderdste in de weergave. Blijft het opvallen, dan is dat de plek.
 het sterretje die op een receptfoto liggen. Dezelfde regel als op het web —
 alleen op de laag boven de inhoud, en alleen waar er iets achter langs komt.
 
-Er staat bewust **geen** `.glassEffect()` in. Dat is Apple's echte Liquid Glass
-en het bestaat pas vanaf iOS 26 en de bijbehorende SDK. Een
-`if #available(iOS 26, *)` lost dat niet op: die bepaalt wat er op een ouder
-toestel gebeurt, maar de tak moet nog steeds compileren, en met een oudere SDK
-bestaat die functie niet. Deze app staat op iOS 18 en is nog nooit door een
-compiler geweest; daar een bouwfout bovenop leggen die niets met de app te maken
-heeft is de verkeerde ruil.
+### Het hangt aan Xcode, niet aan de telefoon
 
-Bouw je met Xcode 26 en zet je de Minimum Deployment op iOS 26, dan is het één
-regel in `Glas.swift`:
+Dit is het ding dat verwarring geeft, dus expliciet: Liquid Glass zit achter
+**twee** sloten, en ze doen niet hetzelfde.
+
+| | Waar het zit | Wat het bepaalt |
+|---|---|---|
+| De **SDK** | in Xcode | of `glassEffect` *bestaat* — of je de regel kunt intikken zonder dat de build omvalt |
+| De **iOS-versie** | op het toestel | of hij mag *draaien* |
+
+iOS 26 op je telefoon doet dus niets zolang je met een oudere Xcode bouwt. Dat
+geldt ook voor het gratis deel: de tabbalk en de navigatiebalk nemen Liquid
+Glass pas over als de app tegen de iOS 26-SDK gebouwd is. Bouw je met een oudere
+SDK, dan draait hij op iOS 26 in compatibiliteitsstand en ziet hij eruit als een
+iOS 18-app.
+
+**Erg is het niet.** Er gaat niets stuk, en `.glas()` geeft je op elke Xcode het
+matglas van iOS 15. Je mist alleen de lichtbreking.
+
+`Glas.swift` heeft allebei de poorten al ingebouwd:
 
 ```swift
-func glas(_ vorm: some Shape = .capsule) -> some View {
+#if canImport(FoundationModels)     // bouwen we tegen de iOS 26-SDK?
+if #available(iOS 26.0, *) {        // draait dit op iOS 26?
     glassEffect(.regular, in: vorm)
-}
+} else { ... }
+#else ... #endif
 ```
 
-Wat je daarmee koopt en wat het kost: je krijgt de echte lichtbreking, en de
-systeemonderdelen (tabbalk, navigatiebalk, sheets) nemen het vanzelf over zodra
-je tegen de iOS 26-SDK bouwt. Je verliest elk toestel onder iOS 26. Voor een app
-voor twee telefoons is dat een vraag die je in één blik beantwoordt: kijk welke
-iOS erop staat.
+Swift kent geen `#if sdk(...)`, dus `canImport` doet dat werk: die kijkt naar
+wat er in de SDK zit en niet naar de deployment target. FoundationModels kwam in
+iOS 26, dus zijn aanwezigheid is het antwoord. Gevolg: **er hoeft niets
+gewijzigd te worden.** Zodra je een keer met Xcode 26 bouwt, zet dit bestand
+zichzelf aan.
 
-Meerdere vlakken naast elkaar horen dan in een `GlassEffectContainer`, anders
+### Wat het níét kost
+
+De Minimum Deployment hoeft **niet** naar 26. Alleen bouwen tegen de nieuwe SDK
+is genoeg, en dat kost je geen enkel toestel: iOS 18 valt netjes terug op het
+matglas. (Dat stond hier eerder anders; dat was onnodig streng.)
+
+### Nakijken waar je staat
+
+```bash
+xcodebuild -version          # Xcode 26.x of hoger heeft de SDK
+xcodebuild -showsdks | grep iphoneos
+sw_vers -productVersion      # Xcode 26 wil macOS 15.5 of nieuwer
+```
+
+Zit je Mac onder die macOS-versie, dan is dát de echte blokkade en niet Xcode.
+
+### Als het straks aanstaat
+
+Meerdere glazen vlakken naast elkaar horen in een `GlassEffectContainer`, anders
 smelten ze niet in elkaar over als ze elkaar naderen. Dat geldt voor de twee
-badges op een tegel.
+badges op een tegel — die staan nu los, en dat is het eerste wat je wilt
+aanpassen zodra je het echt ziet werken.
 
 ## Wat er nog niet is
 
